@@ -20,6 +20,12 @@ import {
   X,
 } from "lucide-react";
 
+function formatNumber(n: number): string {
+  if (n >= 1000000) return (n / 1000000).toFixed(1).replace(/\.0$/, "") + "jt";
+  if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, "") + "rb";
+  return String(n);
+}
+
 const WA_NUMBER = "62895393039750";
 const MAX_FREE_PAGES = 10;
 
@@ -277,7 +283,7 @@ export default function BookDetailClient({ id }: { id: string }) {
                     <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-accent/10 rounded-xl">
                       <span className="text-6xl font-bold text-primary/20">
                         {book.title.charAt(0)}
-                      </span>
+                    </span>
                     </div>
                   )}
                   {isPaid && (
@@ -336,6 +342,28 @@ export default function BookDetailClient({ id }: { id: string }) {
                       })}
                     </span>
                   </div>
+                  {(book.views > 0 || book.downloads > 0 || book.purchased > 0) && (
+                    <div className="flex items-center gap-4 mt-1 pt-2.5 border-t border-border/50">
+                      {book.views > 0 && (
+                        <div className="flex items-center gap-1 text-[11px] text-muted">
+                          <Eye className="w-3.5 h-3.5" />
+                          <span>{formatNumber(book.views)}</span>
+                        </div>
+                      )}
+                      {book.downloads > 0 && (
+                        <div className="flex items-center gap-1 text-[11px] text-muted">
+                          <Download className="w-3.5 h-3.5" />
+                          <span>{formatNumber(book.downloads)}</span>
+                        </div>
+                      )}
+                      {book.purchased > 0 && (
+                        <div className="flex items-center gap-1 text-[11px] text-muted">
+                          <ShoppingCart className="w-3.5 h-3.5" />
+                          <span>{formatNumber(book.purchased)}</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
