@@ -156,6 +156,13 @@ export default function HomeContent() {
     return (
       <div className="pt-28 pb-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
+          <button
+            onClick={() => router.push("/")}
+            className="flex items-center gap-2 text-sm text-muted hover:text-primary transition-colors duration-200 mb-4 group"
+          >
+            <ChevronLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
+            Kembali ke Beranda
+          </button>
           <h2 className="text-2xl font-bold text-foreground mb-2">
             {searchQuery
               ? `Hasil pencarian: "${searchQuery}"`
@@ -287,78 +294,34 @@ export default function HomeContent() {
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
           >
-            <div className="space-y-5">
-              <div className="flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
-                    <Layers className="w-5 h-5 text-primary" />
-                  </div>
+            <div className="space-y-6">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
+                  <BookOpen className="w-5 h-5 text-primary" />
+                </div>
+                <div>
                   <h2 className="text-xl sm:text-2xl font-bold text-foreground">
-                    Jelajahi Kategori
+                    Semua Koleksi Buku
                   </h2>
-                </div>
-
-                <div className="relative">
-                  <button
-                    onClick={() => setDropdownOpen(!dropdownOpen)}
-                    className="flex items-center gap-2 px-4 py-2.5 bg-surface border border-border rounded-xl text-sm font-medium text-foreground hover:border-primary/30 transition-colors duration-200 min-w-[160px] justify-between"
-                  >
-                    <span className="truncate">
-                      {categoryQuery || "Semua Kategori"}
-                    </span>
-                    <ChevronDown className={`w-4 h-4 text-muted transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""}`} />
-                  </button>
-                  {dropdownOpen && (
-                    <>
-                      <div className="fixed inset-0 z-10" onClick={() => setDropdownOpen(false)} />
-                      <div className="absolute right-0 top-full mt-2 z-20 glass rounded-2xl shadow-lg min-w-[200px] max-h-64 overflow-y-auto py-1">
-                        <button
-                          onClick={() => handleCategorySelect("")}
-                          className={`w-full text-left px-4 py-2.5 text-sm hover:bg-surface-dark transition-colors ${!categoryQuery ? "text-primary font-medium" : "text-muted"}`}
-                        >
-                          Semua Kategori
-                        </button>
-                        {categories.map((cat) => (
-                          <button
-                            key={cat}
-                            onClick={() => handleCategorySelect(cat)}
-                            className={`w-full text-left px-4 py-2.5 text-sm hover:bg-surface-dark transition-colors ${categoryQuery === cat ? "text-primary font-medium" : "text-muted"}`}
-                          >
-                            {cat}
-                          </button>
-                        ))}
-                      </div>
-                    </>
-                  )}
+                  <p className="text-xs sm:text-sm text-muted mt-0.5">
+                    {books.length} buku tersedia
+                  </p>
                 </div>
               </div>
-
-              <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3">
-                {categories.map((cat) => (
-                  <a
-                    key={cat}
-                    href={`/?category=${encodeURIComponent(cat)}`}
-                    className={`glass flex items-center gap-2.5 p-3 sm:p-4 rounded-2xl transition-all duration-300 group ${
-                      categoryQuery === cat
-                        ? "!bg-primary/10 !border-primary/30 shadow-sm"
-                        : "hover:!border-primary/30 hover:shadow-md hover:shadow-primary/5"
-                    }`}
-                  >
-                    <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center transition-colors duration-300 flex-shrink-0 ${
-                      categoryQuery === cat
-                        ? "bg-primary/20"
-                        : "bg-primary/10 group-hover:bg-primary/20"
-                    }`}>
-                      <Layers className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
-                    </div>
-                    <span className={`text-xs sm:text-sm font-medium truncate ${
-                      categoryQuery === cat ? "text-primary" : "text-foreground"
-                    }`}>
-                      {cat}
-                    </span>
-                  </a>
-                ))}
-              </div>
+              {loading ? (
+                <BookGridSkeleton />
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
+                  {books.map((book, i) => (
+                    <BookCard
+                      key={book.id}
+                      book={book}
+                      index={i}
+                      isNew={newestIds.has(book.id)}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           </motion.div>
         </div>

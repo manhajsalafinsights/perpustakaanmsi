@@ -57,7 +57,7 @@ export default function ProfilePage() {
           <div className="space-y-4">
             <div className="w-36 h-36 mx-auto rounded-full overflow-hidden shadow-2xl shadow-primary/20 ring-4 ring-primary/20">
               <Image
-                src="https://xkxmpmbqmcdtlufdqljz.supabase.co/storage/v1/object/sign/Pribadi/Fotoku.JPG?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV80ZWVjODVkMy04ZGM2LTRlNzMtOTU0Yy1iMTBmZDhkOTg0YjYiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJQcmliYWRpL0ZvdG9rdS5KUEciLCJpYXQiOjE3Nzc5NjgzMjEsImV4cCI6MTkzNTY0ODMyMX0.YOH0qA4vudJgTcpnxjIh2tExTst1iW_X2hD-HFKPqbk"
+                src="https://fxqghtotzvapeynaqngg.supabase.co/storage/v1/object/sign/Cover%20Buku/Fotoku.JPG?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV81YjY4OGEzNS05NzkwLTRiNDktYmRkNC1lYTNiYjFlNmM0YWEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJDb3ZlciBCdWt1L0ZvdG9rdS5KUEciLCJpYXQiOjE3NzgyNDg1MDAsImV4cCI6MTkzNTkyODUwMH0.8xuk8HUjxQECMkn9IJQibWGF5BtqIAx_zZL7zdl8JSw"
                 alt="Yulianto Abu Hanna"
                 width={144}
                 height={144}
