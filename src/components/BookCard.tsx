@@ -4,7 +4,13 @@ import { Book } from "@/lib/types";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Eye, Lock } from "lucide-react";
+import { Eye, Lock, ShoppingCart } from "lucide-react";
+
+function formatNumber(n: number): string {
+  if (n >= 1000000) return (n / 1000000).toFixed(1).replace(/\.0$/, "") + "jt";
+  if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, "") + "rb";
+  return String(n);
+}
 
 interface BookCardProps {
   book: Book;
@@ -15,6 +21,9 @@ interface BookCardProps {
 }
 
 export default function BookCard({ book, index = 0, onClick, isNew, variant = "grid" }: BookCardProps) {
+  const showViews = book.views > 0;
+  const showPurchased = book.is_paid && book.purchased > 0;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
@@ -56,8 +65,24 @@ export default function BookCard({ book, index = 0, onClick, isNew, variant = "g
               <div className="flex items-center gap-1.5 text-white/90 text-xs">
                 <Eye className="w-3.5 h-3.5" />
                 Lihat Detail
-              </div>
             </div>
+            {(showViews || showPurchased) && (
+              <div className="flex items-center gap-3 mt-2 pt-2 border-t border-border/50">
+                {showViews && (
+                  <div className="flex items-center gap-1 text-[10px] text-muted">
+                    <Eye className="w-3 h-3" />
+                    <span>{formatNumber(book.views)} dibaca</span>
+                  </div>
+                )}
+                {showPurchased && (
+                  <div className="flex items-center gap-1 text-[10px] text-muted">
+                    <ShoppingCart className="w-3 h-3" />
+                    <span>{formatNumber(book.purchased)} dibeli</span>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
           </div>
           <div className="p-3 sm:p-4">
             <h3 className="text-sm font-semibold text-foreground line-clamp-1 mb-1">
