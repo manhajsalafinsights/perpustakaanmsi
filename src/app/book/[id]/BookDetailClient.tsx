@@ -84,6 +84,11 @@ export default function BookDetailClient({ id }: { id: string }) {
           }
 
           fetchComments(data.id);
+          fetch("/api/books/stats", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id: data.id, type: "views" }),
+          }).catch(() => {});
         }
       } catch {
         // ignore
@@ -97,8 +102,23 @@ export default function BookDetailClient({ id }: { id: string }) {
   const priceFormatted = (PAID_PRICE).toLocaleString("id-ID");
   const isPaid = book?.is_paid || false;
 
+  const handleDownload = () => {
+    if (!book?.file_url) return;
+    fetch("/api/books/stats", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: book.id, type: "downloads" }),
+    }).catch(() => {});
+    window.open(book.file_url, "_blank");
+  };
+
   const handleBuyWhatsApp = () => {
     if (!book) return;
+    fetch("/api/books/stats", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: book.id, type: "purchased" }),
+    }).catch(() => {});
     const price = (PAID_PRICE).toLocaleString("id-ID");
     const msg = `Assalamu'alaikum, saya ingin membeli buku:\n\n📘 *${book.title}*\n💰 Harga: Rp ${price}\n\nMohon info cara pembayarannya. Jazakallahu khairan.`;
     window.open(`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(msg)}`, "_blank");
@@ -324,15 +344,13 @@ export default function BookDetailClient({ id }: { id: string }) {
                           <BookOpen className="w-5 h-5" />
                           Baca Sekarang
                         </a>
-                        <a
-                          href={book.file_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                        <button
+                          onClick={handleDownload}
                           className="flex-1 flex items-center justify-center gap-2.5 px-6 py-3.5 glass font-semibold rounded-2xl hover:bg-surface-dark transition-colors duration-200 hover:scale-[1.02] active:scale-[0.98]"
                         >
                           <Download className="w-5 h-5" />
                           Download PDF
-                        </a>
+                        </button>
                       </>
                     )}
                   </>
@@ -516,15 +534,13 @@ export default function BookDetailClient({ id }: { id: string }) {
                 </button>
               )}
               {!isPaid && (
-                <a
-                  href={book.file_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <button
+                  onClick={handleDownload}
                   className="flex items-center gap-2 px-4 py-2 bg-primary text-white text-sm font-semibold rounded-xl hover:bg-primary-dark transition-colors"
                 >
                   <Download className="w-4 h-4" />
                   <span className="hidden sm:inline">Download</span>
-                </a>
+                </button>
               )}
             </div>
           </div>

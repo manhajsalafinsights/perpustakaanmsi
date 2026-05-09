@@ -8,6 +8,7 @@ export interface Book {
   is_paid: boolean;
   views: number;
   purchased: number;
+  downloads: number;
   created_at: string;
 }
 

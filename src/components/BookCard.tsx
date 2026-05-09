@@ -4,7 +4,7 @@ import { Book } from "@/lib/types";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Eye, Lock, ShoppingCart } from "lucide-react";
+import { Eye, Lock, ShoppingCart, Download } from "lucide-react";
 
 function formatNumber(n: number): string {
   if (n >= 1000000) return (n / 1000000).toFixed(1).replace(/\.0$/, "") + "jt";
@@ -23,6 +23,7 @@ interface BookCardProps {
 export default function BookCard({ book, index = 0, onClick, isNew, variant = "grid" }: BookCardProps) {
   const showViews = book.views > 0;
   const showPurchased = book.is_paid && book.purchased > 0;
+  const showDownloads = book.downloads > 0;
 
   return (
     <motion.div
@@ -85,12 +86,18 @@ export default function BookCard({ book, index = 0, onClick, isNew, variant = "g
                 </span>
               )}
             </div>
-            {(showViews || showPurchased) && (
+            {(showViews || showPurchased || showDownloads) && (
               <div className="flex items-center gap-3 mt-2 pt-2 border-t border-border/50">
                 {showViews && (
                   <div className="flex items-center gap-1 text-[10px] text-muted">
                     <Eye className="w-3 h-3" />
                     <span>{formatNumber(book.views)} dibaca</span>
+                  </div>
+                )}
+                {showDownloads && (
+                  <div className="flex items-center gap-1 text-[10px] text-muted">
+                    <Download className="w-3 h-3" />
+                    <span>{formatNumber(book.downloads)} download</span>
                   </div>
                 )}
                 {showPurchased && (
