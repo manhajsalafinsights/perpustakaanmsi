@@ -236,6 +236,7 @@ export default function HomeContent() {
                     book={book}
                     index={i}
                     isNew={newestIds.has(book.id)}
+                    variant="scroll"
                   />
                 ))}
               </ScrollContainer>
@@ -258,6 +259,7 @@ export default function HomeContent() {
                     book={book}
                     index={i}
                     isNew={newestIds.has(book.id)}
+                    variant="scroll"
                   />
                 ))}
               </ScrollContainer>
@@ -280,6 +282,7 @@ export default function HomeContent() {
                     book={book}
                     index={i}
                     isNew={newestIds.has(book.id)}
+                    variant="scroll"
                   />
                 ))}
               </ScrollContainer>

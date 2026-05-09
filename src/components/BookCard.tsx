@@ -11,15 +11,16 @@ interface BookCardProps {
   index?: number;
   onClick?: (book: Book) => void;
   isNew?: boolean;
+  variant?: "scroll" | "grid";
 }
 
-export default function BookCard({ book, index = 0, onClick, isNew }: BookCardProps) {
+export default function BookCard({ book, index = 0, onClick, isNew, variant = "grid" }: BookCardProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: index * 0.05 }}
-      className="group flex-shrink-0 w-44 sm:w-52"
+      className={`group ${variant === "scroll" ? "flex-shrink-0 w-44 sm:w-52" : "w-full"}`}
     >
       <Link href={`/book/${book.id}`} onClick={() => onClick?.(book)}>
         <div className="glass rounded-2xl overflow-hidden transition-all duration-300 hover:scale-[1.03] hover:shadow-lg hover:shadow-primary/10 cursor-pointer">
