@@ -6,6 +6,8 @@ export interface Book {
   file_url: string;
   category: string;
   is_paid: boolean;
+  views: number;
+  purchased: number;
   created_at: string;
 }
 

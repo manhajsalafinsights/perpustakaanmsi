@@ -143,14 +143,21 @@ export default function HomeContent() {
       .catch(() => {});
   }, [fetchBooks]);
 
-  const trendingBooks = books.slice(0, 8);
+  const trendingBooks = [...books].sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 8);
   const newBooks = [...books].sort(
     (a, b) =>
       new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
   );
   const newestIds = new Set(newBooks.slice(0, 5).map((b) => b.id));
   const freeBooks = newBooks.filter((b) => !b.is_paid);
-  const paidBooks = newBooks.filter((b) => b.is_paid);
+  const categoryPicks: Book[] = [];
+  const categorySeen = new Set<string>();
+  for (const book of newBooks) {
+    if (!categorySeen.has(book.category)) {
+      categorySeen.add(book.category);
+      categoryPicks.push(book);
+    }
+  }
 
   if (searchQuery || categoryQuery) {
     return (
@@ -274,9 +281,9 @@ export default function HomeContent() {
           >
             {loading ? (
               <SectionSkeleton />
-            ) : paidBooks.length > 0 ? (
-              <ScrollContainer title="Ebook Berbayar" icon={BadgeDollarSign}>
-                {paidBooks.slice(0, 8).map((book, i) => (
+            ) : categoryPicks.length > 0 ? (
+              <ScrollContainer title="Jelajahi Kategori" icon={Layers}>
+                {categoryPicks.map((book, i) => (
                   <BookCard
                     key={book.id}
                     book={book}

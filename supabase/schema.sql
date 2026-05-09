@@ -25,6 +25,8 @@ CREATE TABLE IF NOT EXISTS books (
   cover_url TEXT DEFAULT '',
   file_url TEXT DEFAULT '',
   category VARCHAR(100) DEFAULT 'Umum',
+  views INTEGER DEFAULT 0,
+  purchased INTEGER DEFAULT 0,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -63,7 +65,11 @@ CREATE POLICY "Public can read visitors" ON visitors
   FOR SELECT USING (true);
 
 -- ============================================
--- CATATAN PENTING
+-- MIGRATION: Tambah kolom views & purchased
+-- Jalankan SQL berikut di Supabase SQL Editor:
+-- ============================================
+-- ALTER TABLE books ADD COLUMN IF NOT EXISTS views INTEGER DEFAULT 0;
+-- ALTER TABLE books ADD COLUMN IF NOT EXISTS purchased INTEGER DEFAULT 0;
 -- ============================================
 -- 1. Untuk akses admin (POST, PUT, DELETE pada tabel books),
 --    ada dua opsi:

@@ -56,6 +56,8 @@ export default function AdminPage() {
     file_url: "",
     category: "",
     is_paid: false,
+    views: 0,
+    purchased: 0,
   });
   const [formSubmitting, setFormSubmitting] = useState(false);
   const [categories, setCategories] = useState<string[]>([]);
@@ -148,7 +150,7 @@ export default function AdminPage() {
 
   const openAddModal = () => {
     setEditingBook(null);
-    setForm({ title: "", description: "", cover_url: "", file_url: "", category: "", is_paid: false });
+    setForm({ title: "", description: "", cover_url: "", file_url: "", category: "", is_paid: false, views: 0, purchased: 0 });
     setCustomCategory("");
     setUseCustomCategory(false);
     setShowModal(true);
@@ -163,6 +165,8 @@ export default function AdminPage() {
       file_url: book.file_url,
       category: book.category,
       is_paid: book.is_paid || false,
+      views: book.views || 0,
+      purchased: book.purchased || 0,
     });
     setShowModal(true);
   };
@@ -698,6 +702,40 @@ export default function AdminPage() {
                     >
                       Berbayar (Rp 25.000)
                     </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-1.5">
+                    Statistik Buku
+                  </label>
+                  <div className="flex gap-3">
+                    <div className="flex-1">
+                      <label className="block text-xs text-muted mb-1">Jumlah Dibaca</label>
+                      <input
+                        type="number"
+                        min={0}
+                        value={form.views}
+                        onChange={(e) =>
+                          setForm({ ...form, views: parseInt(e.target.value) || 0 })
+                        }
+                        className="w-full px-4 py-3 bg-surface border border-border rounded-2xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                        placeholder="0"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <label className="block text-xs text-muted mb-1">Jumlah Dibeli</label>
+                      <input
+                        type="number"
+                        min={0}
+                        value={form.purchased}
+                        onChange={(e) =>
+                          setForm({ ...form, purchased: parseInt(e.target.value) || 0 })
+                        }
+                        className="w-full px-4 py-3 bg-surface border border-border rounded-2xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                        placeholder="0"
+                      />
+                    </div>
                   </div>
                 </div>
 
