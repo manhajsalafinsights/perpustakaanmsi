@@ -63,6 +63,12 @@ export async function POST(request: NextRequest) {
         file_url: body.file_url || "",
         category: body.category || "Umum",
         is_paid: body.is_paid || false,
+        price: body.price || 25000,
+        promo_price: body.promo_price || null,
+        promo_text: body.promo_text || "",
+        views: body.views || 0,
+        purchased: body.purchased || 0,
+        downloads: body.downloads || 0,
       },
     ])
     .select()
