@@ -576,43 +576,47 @@ export default function BookDetailClient({ id }: { id: string }) {
       {/* PDF Viewer Modal */}
       {showViewer && book.file_url && (
         <div className="fixed inset-0 z-[100] bg-background flex flex-col">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-border flex-shrink-0">
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setShowViewer(false)}
-                className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-surface-dark transition-colors"
-              >
-                <X className="w-5 h-5 text-foreground" />
-              </button>
-              <h2 className="text-sm font-semibold text-foreground truncate max-w-[200px] sm:max-w-md">
-                {book.title}
-              </h2>
-              {isPaid && !previewExpired && (
-                <span className="hidden sm:inline-flex items-center gap-1.5 text-xs font-medium text-accent bg-accent/10 px-2.5 py-1 rounded-full">
+          <div className="flex flex-col gap-2 px-3 py-2 sm:px-4 sm:py-3 border-b border-border flex-shrink-0">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 min-w-0">
+                <button
+                  onClick={() => setShowViewer(false)}
+                  className="w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0 flex items-center justify-center rounded-xl hover:bg-surface-dark transition-colors"
+                >
+                  <X className="w-4 h-4 sm:w-5 sm:h-5 text-foreground" />
+                </button>
+                <h2 className="text-xs sm:text-sm font-semibold text-foreground truncate">
+                  {book.title}
+                </h2>
+              </div>
+              <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+                {previewExpired && (
+                  <button
+                    onClick={handleBuyWhatsApp}
+                    className="flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 bg-green-600 text-white text-xs sm:text-sm font-semibold rounded-xl hover:bg-green-700 transition-colors"
+                  >
+                    <ShoppingCart className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                    <span>Beli Rp {priceFormatted}</span>
+                  </button>
+                )}
+                {!isPaid && (
+                  <button
+                    onClick={handleDownload}
+                    className="flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 bg-primary text-white text-xs sm:text-sm font-semibold rounded-xl hover:bg-primary-dark transition-colors"
+                  >
+                    <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                    <span>Download</span>
+                  </button>
+                )}
+              </div>
+            </div>
+            {isPaid && !previewExpired && (
+              <div className="flex justify-center">
+                <span className="inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-medium text-accent bg-accent/10 px-2.5 py-1 rounded-full">
                   Preview: {formatTime(previewTimeLeft)}
                 </span>
-              )}
-            </div>
-            <div className="flex items-center gap-2">
-              {previewExpired && (
-                <button
-                  onClick={handleBuyWhatsApp}
-                  className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white text-sm font-semibold rounded-xl hover:bg-green-700 transition-colors"
-                >
-                  <ShoppingCart className="w-4 h-4" />
-                  <span className="hidden sm:inline">Beli Rp {priceFormatted}</span>
-                </button>
-              )}
-              {!isPaid && (
-                <button
-                  onClick={handleDownload}
-                  className="flex items-center gap-2 px-4 py-2 bg-primary text-white text-sm font-semibold rounded-xl hover:bg-primary-dark transition-colors"
-                >
-                  <Download className="w-4 h-4" />
-                  <span className="hidden sm:inline">Download</span>
-                </button>
-              )}
-            </div>
+              </div>
+            )}
           </div>
 
           <div className="flex-1 relative">
