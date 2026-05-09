@@ -55,7 +55,7 @@ export default function BookDetailClient({ id }: { id: string }) {
   const [loading, setLoading] = useState(true);
   const [showViewer, setShowViewer] = useState(false);
   const [previewExpired, setPreviewExpired] = useState(false);
-  const [previewTimeLeft, setPreviewTimeLeft] = useState(120);
+  const [previewTimeLeft, setPreviewTimeLeft] = useState(60);
 
   const fetchComments = useCallback(async (bookId: string) => {
     try {
@@ -107,7 +107,7 @@ export default function BookDetailClient({ id }: { id: string }) {
   const handleOpenViewer = () => {
     setShowViewer(true);
     setPreviewExpired(false);
-    setPreviewTimeLeft(120);
+    setPreviewTimeLeft(60);
   };
 
   useEffect(() => {
@@ -342,7 +342,7 @@ export default function BookDetailClient({ id }: { id: string }) {
               {isPaid && (
                 <div className="glass rounded-2xl p-4 mb-4 sm:mb-6 border border-accent/20">
                   <p className="text-sm text-muted leading-relaxed">
-                    <span className="font-semibold text-accent">Preview gratis:</span> Kamu bisa preview buku ini selama 3 menit. Setelah itu, beli untuk membaca selengkapnya dan download PDF.
+                    <span className="font-semibold text-accent">Preview gratis:</span> Kamu bisa preview buku ini selama 1 menit. Setelah itu, beli untuk membaca selengkapnya dan download PDF.
                   </p>
                 </div>
               )}
