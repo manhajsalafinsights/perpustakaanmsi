@@ -65,24 +65,8 @@ export default function BookCard({ book, index = 0, onClick, isNew, variant = "g
               <div className="flex items-center gap-1.5 text-white/90 text-xs">
                 <Eye className="w-3.5 h-3.5" />
                 Lihat Detail
-            </div>
-            {(showViews || showPurchased) && (
-              <div className="flex items-center gap-3 mt-2 pt-2 border-t border-border/50">
-                {showViews && (
-                  <div className="flex items-center gap-1 text-[10px] text-muted">
-                    <Eye className="w-3 h-3" />
-                    <span>{formatNumber(book.views)} dibaca</span>
-                  </div>
-                )}
-                {showPurchased && (
-                  <div className="flex items-center gap-1 text-[10px] text-muted">
-                    <ShoppingCart className="w-3 h-3" />
-                    <span>{formatNumber(book.purchased)} dibeli</span>
-                  </div>
-                )}
               </div>
-            )}
-          </div>
+            </div>
           </div>
           <div className="p-3 sm:p-4">
             <h3 className="text-sm font-semibold text-foreground line-clamp-1 mb-1">
@@ -91,13 +75,25 @@ export default function BookCard({ book, index = 0, onClick, isNew, variant = "g
             <p className="text-xs text-muted line-clamp-2 leading-relaxed">
               {book.description}
             </p>
-            <div className="flex items-center gap-2 mt-2">
+            <div className="flex items-center gap-2 mt-2 flex-wrap">
               <span className="text-[10px] font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">
                 {book.category}
               </span>
               {!book.is_paid && (
                 <span className="text-[10px] font-medium text-green-600 bg-green-500/10 px-2 py-0.5 rounded-full">
                   Gratis
+                </span>
+              )}
+              {showViews && (
+                <span className="text-[10px] text-muted flex items-center gap-1">
+                  <Eye className="w-3 h-3" />
+                  {formatNumber(book.views)}
+                </span>
+              )}
+              {showPurchased && (
+                <span className="text-[10px] text-muted flex items-center gap-1">
+                  <ShoppingCart className="w-3 h-3" />
+                  {formatNumber(book.purchased)}
                 </span>
               )}
             </div>
