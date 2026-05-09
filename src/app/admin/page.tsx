@@ -202,8 +202,12 @@ export default function AdminPage() {
           setBooks(booksData);
           setStats((prev) => ({ ...prev, totalBooks: booksData.length }));
         }
+      } else {
+        const err = await res.json().catch(() => ({}));
+        alert("Gagal menyimpan: " + (err.error || "Unknown error"));
       }
-    } catch {
+    } catch (e) {
+      alert("Gagal menyimpan: " + (e instanceof Error ? e.message : String(e)));
       // ignore
     } finally {
       setFormSubmitting(false);
