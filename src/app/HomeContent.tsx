@@ -150,6 +150,7 @@ export default function HomeContent() {
   );
   const newestIds = new Set(newBooks.slice(0, 5).map((b) => b.id));
   const freeBooks = newBooks.filter((b) => !b.is_paid);
+  const paidBooks = newBooks.filter((b) => b.is_paid);
   const categoryPicks: Book[] = [];
   const categorySeen = new Set<string>();
   for (const book of newBooks) {
@@ -281,6 +282,29 @@ export default function HomeContent() {
           >
             {loading ? (
               <SectionSkeleton />
+            ) : paidBooks.length > 0 ? (
+              <ScrollContainer title="Ebook Berbayar" icon={BadgeDollarSign}>
+                {paidBooks.slice(0, 8).map((book, i) => (
+                  <BookCard
+                    key={book.id}
+                    book={book}
+                    index={i}
+                    isNew={newestIds.has(book.id)}
+                    variant="scroll"
+                  />
+                ))}
+              </ScrollContainer>
+            ) : null}
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+          >
+            {loading ? (
+              <SectionSkeleton />
             ) : categoryPicks.length > 0 ? (
               <ScrollContainer title="Jelajahi Kategori" icon={Layers}>
                 {categoryPicks.map((book, i) => (
@@ -297,43 +321,6 @@ export default function HomeContent() {
           </motion.div>
 
           <HadithQuote />
-
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-          >
-            <div className="space-y-6">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
-                  <BookOpen className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <h2 className="text-xl sm:text-2xl font-bold text-foreground">
-                    Semua Koleksi Buku
-                  </h2>
-                  <p className="text-xs sm:text-sm text-muted mt-0.5">
-                    {books.length} buku tersedia
-                  </p>
-                </div>
-              </div>
-              {loading ? (
-                <BookGridSkeleton />
-              ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
-                  {books.map((book, i) => (
-                    <BookCard
-                      key={book.id}
-                      book={book}
-                      index={i}
-                      isNew={newestIds.has(book.id)}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-          </motion.div>
         </div>
       </div>
     </>
