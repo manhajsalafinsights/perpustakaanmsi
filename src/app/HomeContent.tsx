@@ -226,6 +226,36 @@ export default function HomeContent() {
         </motion.div>
       </div>
 
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-4">
+        {!loading && categories.length > 0 && (
+          <div className="flex items-center gap-3 flex-wrap justify-center">
+            <button
+              onClick={() => handleCategorySelect("")}
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                !categoryQuery
+                  ? "bg-primary text-white"
+                  : "bg-surface text-muted hover:bg-surface-dark border border-border"
+              }`}
+            >
+              Semua
+            </button>
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => handleCategorySelect(cat)}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                  categoryQuery === cat
+                    ? "bg-primary text-white"
+                    : "bg-surface text-muted hover:bg-surface-dark border border-border"
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
       <div id="books" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
         <div className="space-y-20">
           <motion.div
