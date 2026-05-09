@@ -48,7 +48,7 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16 sm:h-20">
           <Link href="/" className="flex items-center gap-2.5 group">
             <Image
-              src="https://xkxmpmbqmcdtlufdqljz.supabase.co/storage/v1/object/sign/Pribadi/Manhaj%20Salaf%20Insign%20logo.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV80ZWVjODVkMy04ZGM2LTRlNzMtOTU0Yy1iMTBmZDhkOTg0YjYiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJQcmliYWRpL01hbmhhaiBTYWxhZiBJbnNpZ24gbG9nby5wbmciLCJpYXQiOjE3Nzc5Njg2MjMsImV4cCI6MTkzNTY0ODYyM30.QOivqgZr4vyLdPS994pa7i5BaPhu-TfMXMP5QrJngDo"
+              src="https://fxqghtotzvapeynaqngg.supabase.co/storage/v1/object/sign/Cover%20Buku/Manhaj%20Salaf%20Insign%20logo.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV81YjY4OGEzNS05NzkwLTRiNDktYmRkNC1lYTNiYjFlNmM0YWEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJDb3ZlciBCdWt1L01hbmhhaiBTYWxhZiBJbnNpZ24gbG9nby5wbmciLCJpYXQiOjE3NzgyODg2MzgsImV4cCI6MTgwOTgyNDYzOH0.M-EFUpq7vsiKyHBu3e4Y5rKI0XnKTV5IG-AyV-zEz6E"
               alt="Perpustakaan MSI"
               width={36}
               height={36}
