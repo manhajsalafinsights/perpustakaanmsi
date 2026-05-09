@@ -59,6 +59,9 @@ export default function AdminPage() {
     views: 0,
     purchased: 0,
     downloads: 0,
+    price: 25000,
+    promo_price: 0,
+    promo_text: "",
   });
   const [formSubmitting, setFormSubmitting] = useState(false);
   const [categories, setCategories] = useState<string[]>([]);
@@ -151,7 +154,7 @@ export default function AdminPage() {
 
   const openAddModal = () => {
     setEditingBook(null);
-    setForm({ title: "", description: "", cover_url: "", file_url: "", category: "", is_paid: false, views: 0, purchased: 0, downloads: 0 });
+    setForm({ title: "", description: "", cover_url: "", file_url: "", category: "", is_paid: false, views: 0, purchased: 0, downloads: 0, price: 25000, promo_price: 0, promo_text: "" });
     setCustomCategory("");
     setUseCustomCategory(false);
     setShowModal(true);
@@ -169,6 +172,9 @@ export default function AdminPage() {
       views: book.views || 0,
       purchased: book.purchased || 0,
       downloads: book.downloads || 0,
+      price: book.price || 25000,
+      promo_price: book.promo_price || 0,
+      promo_text: book.promo_text || "",
     });
     setShowModal(true);
   };
@@ -702,9 +708,52 @@ export default function AdminPage() {
                           : "bg-surface text-muted border border-border"
                       }`}
                     >
-                      Berbayar (Rp 25.000)
+                      Berbayar
                     </button>
                   </div>
+
+                  {form.is_paid && (
+                    <div className="space-y-3 mt-3">
+                      <div>
+                        <label className="block text-xs text-muted mb-1">Harga (Rp)</label>
+                        <input
+                          type="number"
+                          min={0}
+                          value={form.price}
+                          onChange={(e) =>
+                            setForm({ ...form, price: parseInt(e.target.value) || 0 })
+                          }
+                          className="w-full px-4 py-3 bg-surface border border-border rounded-2xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                          placeholder="25000"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs text-muted mb-1">Harga Promo (Rp) — kosongkan jika tidak ada promo</label>
+                        <input
+                          type="number"
+                          min={0}
+                          value={form.promo_price || ""}
+                          onChange={(e) =>
+                            setForm({ ...form, promo_price: parseInt(e.target.value) || 0 })
+                          }
+                          className="w-full px-4 py-3 bg-surface border border-border rounded-2xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                          placeholder="0"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs text-muted mb-1">Tulisan Promo (misal: "Diskon 50%")</label>
+                        <input
+                          type="text"
+                          value={form.promo_text}
+                          onChange={(e) =>
+                            setForm({ ...form, promo_text: e.target.value })
+                          }
+                          className="w-full px-4 py-3 bg-surface border border-border rounded-2xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                          placeholder="Diskon 50%, Ramadhan Sale, dll"
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div>

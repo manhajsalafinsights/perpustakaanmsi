@@ -20,7 +20,6 @@ import {
   X,
 } from "lucide-react";
 
-const PAID_PRICE = 25000;
 const WA_NUMBER = "62895393039750";
 const MAX_FREE_PAGES = 10;
 
@@ -99,7 +98,12 @@ export default function BookDetailClient({ id }: { id: string }) {
     load();
   }, [id, fetchComments]);
 
-  const priceFormatted = (PAID_PRICE).toLocaleString("id-ID");
+  const bookPrice = book?.price || 25000;
+  const bookPromoPrice = book?.promo_price || 0;
+  const bookPromoText = book?.promo_text || "";
+  const hasPromo = bookPromoPrice > 0 && bookPromoPrice < bookPrice;
+  const activePrice = hasPromo ? bookPromoPrice : bookPrice;
+  const priceFormatted = activePrice.toLocaleString("id-ID");
   const isPaid = book?.is_paid || false;
 
   const handleDownload = () => {
@@ -119,9 +123,24 @@ export default function BookDetailClient({ id }: { id: string }) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id: book.id, type: "purchased" }),
     }).catch(() => {});
-    const price = (PAID_PRICE).toLocaleString("id-ID");
-    const msg = `Assalamu'alaikum, saya ingin membeli buku:\n\n📘 *${book.title}*\n💰 Harga: Rp ${price}\n\nMohon info cara pembayarannya. Jazakallahu khairan.`;
-    window.open(`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(msg)}`, "_blank");
+    const price = activePrice.toLocaleString("id-ID");
+    const promoLine = hasPromo
+      ? "\nHarga Normal: ~~Rp " + bookPrice.toLocaleString("id-ID") + "~~"
+      : "";
+    const msg = [
+      "Assalamu'alaikum, saya ingin membeli buku:",
+      "",
+      "*",
+      book.title,
+      "*",
+      "Harga: Rp " + price + promoLine,
+      "",
+      "Mohon info cara pembayarannya. Jazakallahu khairan.",
+    ].join("\n");
+    window.open(
+      "https://wa.me/" + WA_NUMBER + "?text=" + encodeURIComponent(msg),
+      "_blank"
+    );
   };
 
   const handleOpenViewer = () => {
@@ -264,7 +283,12 @@ export default function BookDetailClient({ id }: { id: string }) {
                   {isPaid && (
                     <div className="absolute top-3 left-3 flex items-center gap-1.5 px-3 py-1.5 bg-accent text-white text-xs font-bold rounded-xl shadow-lg">
                       <Lock className="w-3.5 h-3.5" />
-                      Berbayar
+                      Rp {priceFormatted}
+                    </div>
+                  )}
+                  {hasPromo && bookPromoText && (
+                    <div className="absolute top-3 right-3 px-3 py-1.5 bg-green-500 text-white text-xs font-bold rounded-xl shadow-lg">
+                      {bookPromoText}
                     </div>
                   )}
                 </div>
@@ -278,9 +302,29 @@ export default function BookDetailClient({ id }: { id: string }) {
                   </div>
                   <div className="flex items-center gap-2.5">
                     <span className="text-xs font-semibold text-muted">Status:</span>
-                    <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${isPaid ? "bg-accent/10 text-accent" : "bg-green-500/10 text-green-500"}`}>
-                      {isPaid ? `Rp ${priceFormatted}` : "Gratis"}
-                    </span>
+                    {isPaid ? (
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-accent/10 text-accent">
+                          Rp {priceFormatted}
+                        </span>
+                        {hasPromo && (
+                          <>
+                            <span className="text-[10px] text-muted line-through">
+                              Rp {bookPrice.toLocaleString("id-ID")}
+                            </span>
+                            {bookPromoText && (
+                              <span className="text-[10px] font-bold text-green-600 bg-green-500/10 px-2 py-0.5 rounded-full">
+                                {bookPromoText}
+                              </span>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-green-500/10 text-green-500">
+                        Gratis
+                      </span>
+                    )}
                   </div>
                   <div className="flex items-center gap-2.5">
                     <Calendar className="w-3.5 h-3.5 text-muted flex-shrink-0" />

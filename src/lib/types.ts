@@ -9,6 +9,9 @@ export interface Book {
   views: number;
   purchased: number;
   downloads: number;
+  price: number;
+  promo_price: number | null;
+  promo_text: string;
   created_at: string;
 }
 

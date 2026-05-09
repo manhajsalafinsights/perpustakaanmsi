@@ -28,6 +28,9 @@ CREATE TABLE IF NOT EXISTS books (
   views INTEGER DEFAULT 0,
   purchased INTEGER DEFAULT 0,
   downloads INTEGER DEFAULT 0,
+  price INTEGER DEFAULT 25000,
+  promo_price INTEGER,
+  promo_text TEXT DEFAULT '',
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -72,6 +75,9 @@ CREATE POLICY "Public can read visitors" ON visitors
 -- ALTER TABLE books ADD COLUMN IF NOT EXISTS views INTEGER DEFAULT 0;
 -- ALTER TABLE books ADD COLUMN IF NOT EXISTS purchased INTEGER DEFAULT 0;
 -- ALTER TABLE books ADD COLUMN IF NOT EXISTS downloads INTEGER DEFAULT 0;
+-- ALTER TABLE books ADD COLUMN IF NOT EXISTS price INTEGER DEFAULT 25000;
+-- ALTER TABLE books ADD COLUMN IF NOT EXISTS promo_price INTEGER;
+-- ALTER TABLE books ADD COLUMN IF NOT EXISTS promo_text TEXT DEFAULT '';
 -- ============================================
 -- 1. Untuk akses admin (POST, PUT, DELETE pada tabel books),
 --    ada dua opsi:
