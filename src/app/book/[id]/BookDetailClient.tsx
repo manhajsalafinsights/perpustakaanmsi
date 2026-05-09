@@ -377,9 +377,9 @@ export default function BookDetailClient({ id }: { id: string }) {
               </div>
 
               {/* Description */}
-              <div className="glass rounded-2xl p-5 sm:p-6 mb-4 sm:mb-6">
-                <h2 className="text-lg font-semibold text-foreground mb-3">Deskripsi</h2>
-                <div className="text-muted leading-relaxed text-sm sm:text-base whitespace-pre-line">
+              <div className="glass rounded-2xl p-4 sm:p-5 mb-4 sm:mb-6">
+                <h2 className="text-sm font-semibold text-foreground mb-2">Deskripsi</h2>
+                <div className="text-muted leading-relaxed text-xs sm:text-sm line-clamp-3">
                   {book.description || "Belum ada deskripsi untuk buku ini."}
                 </div>
               </div>
