@@ -407,15 +407,13 @@ export default function BookDetailClient({ id }: { id: string }) {
                   <>
                     {book.file_url && (
                       <>
-                        <a
-                          href={book.file_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                        <button
+                          onClick={handleOpenViewer}
                           className="flex-1 flex items-center justify-center gap-2.5 px-6 py-3.5 bg-primary text-white font-semibold rounded-2xl hover:bg-primary-dark transition-colors duration-300 shadow-lg shadow-primary/15 hover:scale-[1.02] active:scale-[0.98]"
                         >
                           <BookOpen className="w-5 h-5" />
                           Baca Sekarang
-                        </a>
+                        </button>
                         <button
                           onClick={handleDownload}
                           className="flex-1 flex items-center justify-center gap-2.5 px-6 py-3.5 glass font-semibold rounded-2xl hover:bg-surface-dark transition-colors duration-200 hover:scale-[1.02] active:scale-[0.98]"
