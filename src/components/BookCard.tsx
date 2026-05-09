@@ -23,6 +23,7 @@ interface BookCardProps {
 export default function BookCard({ book, index = 0, onClick, isNew, variant = "grid" }: BookCardProps) {
   const showViews = book.views > 0;
   const showPurchased = book.is_paid && book.purchased > 0;
+  const hasPromo = book.is_paid && book.promo_price > 0 && book.promo_price < (book.price || 25000);
 
   return (
     <motion.div
@@ -52,10 +53,15 @@ export default function BookCard({ book, index = 0, onClick, isNew, variant = "g
             {book.is_paid && (
               <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-1 bg-accent/90 text-white text-[10px] font-bold rounded-lg shadow-sm">
                 <Lock className="w-3 h-3" />
-                Berbayar
+                Rp {(hasPromo ? book.promo_price : (book.price || 25000)).toLocaleString("id-ID")}
               </div>
             )}
-            {isNew && (
+            {hasPromo && book.promo_text && (
+              <div className="absolute top-2 right-2 px-2 py-0.5 bg-green-500 text-white text-[10px] font-bold rounded-lg shadow-sm">
+                {book.promo_text}
+              </div>
+            )}
+            {!hasPromo && isNew && (
               <div className="absolute top-2 right-2 px-2 py-0.5 bg-green-500 text-white text-[10px] font-bold rounded-lg shadow-sm">
                 NEW
               </div>
