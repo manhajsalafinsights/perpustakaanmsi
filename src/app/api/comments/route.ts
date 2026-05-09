@@ -1,12 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+import { supabase, createServiceClient } from "@/lib/supabase";
+
+const db = () => {
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  return serviceKey ? createServiceClient() : supabase;
+};
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const bookId = searchParams.get("book_id");
 
-  if (!bookId) {
-    return NextResponse.json({ error: "book_id is required" }, { status: 400 });
+  if (!bookId || bookId === "all") {
+    const { data, error } = await supabase
+      .from("comments")
+      .select("*, books(title)")
+      .order("created_at", { ascending: false })
+      .limit(50);
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json(data);
   }
 
   const { data, error } = await supabase
@@ -43,4 +58,21 @@ export async function POST(request: NextRequest) {
   }
 
   return NextResponse.json(data, { status: 201 });
+}
+
+export async function DELETE(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const id = searchParams.get("id");
+
+  if (!id) {
+    return NextResponse.json({ error: "id is required" }, { status: 400 });
+  }
+
+  const { error } = await db().from("comments").delete().eq("id", id);
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json({ success: true });
 }

@@ -12,6 +12,7 @@ export interface Book {
   price: number;
   promo_price: number | null;
   promo_text: string;
+  comment_count: number | { count: number };
   created_at: string;
 }
 

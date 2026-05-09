@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
   if (id) {
     const { data, error } = await supabase
       .from("books")
-      .select("*")
+      .select("*, comments(count)")
       .eq("id", id)
       .single();
 
@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
 
   let query = supabase
     .from("books")
-    .select("*")
+    .select("*, comments(count)")
     .order("created_at", { ascending: false });
 
   if (search) {

@@ -16,6 +16,7 @@ import {
   Tag,
   ShieldCheck,
   UserPlus,
+  MessageCircle,
 } from "lucide-react";
 import Link from "next/link";
 import { Book } from "@/lib/types";
@@ -32,6 +33,15 @@ interface AdminUser {
   email: string;
   is_super: boolean;
   created_at: string;
+}
+
+interface Comment {
+  id: string;
+  book_id: string;
+  name: string;
+  message: string;
+  created_at: string;
+  books?: { title: string };
 }
 
 export default function AdminPage() {
@@ -72,6 +82,8 @@ export default function AdminPage() {
   const [showAdminModal, setShowAdminModal] = useState(false);
   const [adminForm, setAdminForm] = useState({ name: "", email: "", password: "" });
   const [adminSubmitting, setAdminSubmitting] = useState(false);
+
+  const [comments, setComments] = useState<Comment[]>([]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -116,10 +128,11 @@ export default function AdminPage() {
     const fetchData = async () => {
       setStatsLoading(true);
       try {
-        const [booksRes, visitorRes, adminsRes] = await Promise.all([
+        const [booksRes, visitorRes, adminsRes, commentsRes] = await Promise.all([
           fetch("/api/books"),
           fetch("/api/visitor"),
           fetch("/api/auth"),
+          fetch("/api/comments?book_id=all"),
         ]);
         if (booksRes.ok) {
           const booksData = await booksRes.json();
@@ -135,6 +148,9 @@ export default function AdminPage() {
         if (adminsRes.ok) {
           const adminsData = await adminsRes.json();
           setAdmins(adminsData);
+        }
+        if (commentsRes.ok) {
+          setComments(await commentsRes.json());
         }
       } catch {
         // ignore
@@ -261,6 +277,18 @@ export default function AdminPage() {
       const res = await fetch(`/api/auth?id=${id}`, { method: "DELETE" });
       if (res.ok) {
         setAdmins((prev) => prev.filter((a) => a.id !== id));
+      }
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleDeleteComment = async (id: string) => {
+    if (!confirm("Yakin ingin menghapus komentar ini?")) return;
+    try {
+      const res = await fetch(`/api/comments?id=${id}`, { method: "DELETE" });
+      if (res.ok) {
+        setComments((prev) => prev.filter((c) => c.id !== id));
       }
     } catch {
       // ignore
@@ -976,6 +1004,56 @@ export default function AdminPage() {
           </motion.div>
         </>
       )}
+
+      <div className="glass rounded-2xl shadow-sm overflow-hidden">
+        <div className="p-6 border-b border-border/50 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
+              <MessageCircle className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-foreground">Kelola Komentar</h2>
+              <p className="text-xs text-muted">{comments.length} komentar terbaru</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="divide-y divide-border/50">
+          {comments.length === 0 ? (
+            <div className="px-6 py-12 text-center text-muted">
+              <MessageCircle className="w-8 h-8 mx-auto mb-2 opacity-50" />
+              <p className="text-sm">Belum ada komentar</p>
+            </div>
+          ) : (
+            comments.map((comment) => (
+              <div key={comment.id} className="px-6 py-4 flex items-start justify-between hover:bg-surface/50 transition-colors">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-sm font-medium text-foreground">{comment.name}</span>
+                    <span className="text-xs text-muted">
+                      {new Date(comment.created_at).toLocaleDateString("id-ID", {
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric",
+                      })}
+                    </span>
+                  </div>
+                  <p className="text-sm text-muted">{comment.message}</p>
+                  {comment.books && (
+                    <p className="text-xs text-primary mt-1">pada: {comment.books.title}</p>
+                  )}
+                </div>
+                <button
+                  onClick={() => handleDeleteComment(comment.id)}
+                  className="p-2 text-muted hover:text-red-500 hover:bg-red-50 rounded-lg transition-all flex-shrink-0 ml-3"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
     </div>
   );
 }

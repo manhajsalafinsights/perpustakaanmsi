@@ -4,12 +4,18 @@ import { Book } from "@/lib/types";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Eye, Lock, ShoppingCart } from "lucide-react";
+import { Eye, Lock, ShoppingCart, MessageCircle } from "lucide-react";
 
 function formatNumber(n: number): string {
   if (n >= 1000000) return (n / 1000000).toFixed(1).replace(/\.0$/, "") + "jt";
   if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, "") + "rb";
   return String(n);
+}
+
+function getCommentCount(book: Book): number {
+  if (!book.comment_count) return 0;
+  if (typeof book.comment_count === "number") return book.comment_count;
+  return book.comment_count.count || 0;
 }
 
 interface BookCardProps {
@@ -24,6 +30,7 @@ export default function BookCard({ book, index = 0, onClick, isNew, variant = "g
   const showViews = book.views > 0;
   const showPurchased = book.is_paid && book.purchased > 0;
   const hasPromo = book.is_paid && (book.promo_price || 0) > 0 && (book.promo_price || 0) < (book.price || 25000);
+  const commentCount = getCommentCount(book);
 
   if (book.is_paid && hasPromo) {
     console.log("PROMO DEBUG:", book.title, { promo_price: book.promo_price, price: book.price, promo_text: book.promo_text });
@@ -104,6 +111,12 @@ export default function BookCard({ book, index = 0, onClick, isNew, variant = "g
                 <span className="text-[10px] text-muted flex items-center gap-1">
                   <ShoppingCart className="w-3 h-3" />
                   {formatNumber(book.purchased)}
+                </span>
+              )}
+              {commentCount > 0 && (
+                <span className="text-[10px] text-muted flex items-center gap-1">
+                  <MessageCircle className="w-3 h-3" />
+                  {commentCount}
                 </span>
               )}
             </div>
