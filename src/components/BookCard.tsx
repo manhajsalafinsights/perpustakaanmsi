@@ -25,6 +25,10 @@ export default function BookCard({ book, index = 0, onClick, isNew, variant = "g
   const showPurchased = book.is_paid && book.purchased > 0;
   const hasPromo = book.is_paid && (book.promo_price || 0) > 0 && (book.promo_price || 0) < (book.price || 25000);
 
+  if (book.is_paid && hasPromo) {
+    console.log("PROMO DEBUG:", book.title, { promo_price: book.promo_price, price: book.price, promo_text: book.promo_text });
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
