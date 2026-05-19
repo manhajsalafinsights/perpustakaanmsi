@@ -52,7 +52,7 @@ export default function BookCard({ book, index = 0, onClick, isNew, variant = "g
       className={`group ${variant === "scroll" ? "flex-shrink-0 w-44 sm:w-52 snap-start" : "w-full"}`}
     >
       <Link href={`/book/${book.id}`} onClick={() => onClick?.(book)}>
-        <div className="glass rounded-2xl overflow-hidden transition-all duration-500 hover:shadow-2xl hover:shadow-primary/15 hover:-translate-y-2 cursor-pointer border border-glass-border group-hover:ring-1 group-hover:ring-primary/20">
+        <div className="glass rounded-2xl overflow-hidden transition-all duration-500 hover:shadow-[0_8px_32px_-8px_rgba(52,211,153,0.12)] hover:-translate-y-1.5 cursor-pointer border border-glass-border group-hover:border-primary/20">
           <div className="relative aspect-[3/4] overflow-hidden bg-surface-dark">
             {book.cover_url ? (
               <Image
@@ -88,7 +88,7 @@ export default function BookCard({ book, index = 0, onClick, isNew, variant = "g
             {/* Hover overlay */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500" />
             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-4 group-hover:translate-y-0">
-              <span className="flex items-center gap-2 px-4 py-2 bg-white/90 text-foreground text-xs font-semibold rounded-xl shadow-lg backdrop-blur-sm">
+              <span className="flex items-center gap-2 px-4 py-2 bg-foreground/10 text-white text-xs font-semibold rounded-xl shadow-lg backdrop-blur-sm border border-white/10">
                 <Eye className="w-4 h-4" />
                 Lihat Detail
               </span>

@@ -364,6 +364,9 @@ export default function HomeContent() {
     <>
       <Hero />
 
+      {/* Section separator */}
+      <div className="h-px bg-gradient-to-r from-transparent via-border/30 to-transparent mx-4 sm:mx-8 lg:mx-auto max-w-7xl" />
+
       <div id="trending" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 sm:pb-20">
         <div className="space-y-16 sm:space-y-20">
           {/* Stats */}
