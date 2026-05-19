@@ -4,7 +4,7 @@ import { Book } from "@/lib/types";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Eye, Lock, ShoppingCart, MessageCircle } from "lucide-react";
+import { Eye, Lock, ShoppingCart, MessageCircle, BookOpen } from "lucide-react";
 
 function formatNumber(n: number): string {
   if (n >= 1000000) return (n / 1000000).toFixed(1).replace(/\.0$/, "") + "jt";
@@ -44,26 +44,22 @@ export default function BookCard({ book, index = 0, onClick, isNew, variant = "g
   const commentCount = getCommentCount(book);
   const volumeCount = getVolumeCount(book);
 
-  if (book.is_paid && hasPromo) {
-    console.log("PROMO DEBUG:", book.title, { promo_price: book.promo_price, price: book.price, promo_text: book.promo_text });
-  }
-
   return (
     <motion.div
-      initial={{ opacity: 0, y: 16 }}
+      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay: index * 0.05 }}
+      transition={{ duration: 0.5, delay: index * 0.05, ease: [0.25, 0.1, 0.25, 1] }}
       className={`group ${variant === "scroll" ? "flex-shrink-0 w-44 sm:w-52" : "w-full"}`}
     >
       <Link href={`/book/${book.id}`} onClick={() => onClick?.(book)}>
-        <div className="glass rounded-2xl overflow-hidden transition-all duration-300 hover:scale-[1.03] hover:shadow-lg hover:shadow-primary/10 cursor-pointer">
+        <div className="glass rounded-2xl overflow-hidden transition-all duration-500 hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-1.5 cursor-pointer border border-glass-border">
           <div className="relative aspect-[3/4] overflow-hidden bg-surface-dark">
             {book.cover_url ? (
               <Image
                 src={book.cover_url}
                 alt={book.title}
                 fill
-                className="object-cover transition-transform duration-500 group-hover:scale-105"
+                className="object-cover transition-all duration-700 group-hover:scale-110"
                 unoptimized
               />
             ) : (
@@ -74,37 +70,38 @@ export default function BookCard({ book, index = 0, onClick, isNew, variant = "g
               </div>
             )}
             {book.is_paid && (
-              <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-1 bg-accent/90 text-white text-[10px] font-bold rounded-lg shadow-sm">
+              <div className="absolute top-2.5 left-2.5 flex items-center gap-1 px-2.5 py-1 bg-accent/90 text-white text-[10px] font-bold rounded-xl shadow-sm backdrop-blur-sm">
                 <Lock className="w-3 h-3" />
                 Rp {(hasPromo ? (book.promo_price || 0) : (book.price || 25000)).toLocaleString("id-ID")}
               </div>
             )}
             {hasPromo && book.promo_text && (
-              <div className="absolute top-2 right-2 px-2 py-0.5 bg-green-500 text-white text-[10px] font-bold rounded-lg shadow-sm">
+              <div className="absolute top-2.5 right-2.5 px-2 py-1 bg-green-500 text-white text-[10px] font-bold rounded-xl shadow-sm">
                 {book.promo_text}
               </div>
             )}
             {!hasPromo && isNew && (
-              <div className="absolute top-2 right-2 px-2 py-0.5 bg-green-500 text-white text-[10px] font-bold rounded-lg shadow-sm">
+              <div className="absolute top-2.5 right-2.5 px-2 py-1 bg-primary text-white text-[10px] font-bold rounded-xl shadow-sm">
                 NEW
               </div>
             )}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            <div className="absolute bottom-3 left-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0">
-              <div className="flex items-center gap-1.5 text-white/90 text-xs">
-                <Eye className="w-3.5 h-3.5" />
+            {/* Hover overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500" />
+            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-4 group-hover:translate-y-0">
+              <span className="flex items-center gap-2 px-4 py-2 bg-white/90 text-foreground text-xs font-semibold rounded-xl shadow-lg backdrop-blur-sm">
+                <Eye className="w-4 h-4" />
                 Lihat Detail
-              </div>
+              </span>
             </div>
           </div>
           <div className="p-3 sm:p-4">
-            <h3 className="text-sm font-semibold text-foreground line-clamp-1 mb-1">
+            <h3 className="text-sm font-semibold text-foreground line-clamp-1 mb-1 group-hover:text-primary transition-colors">
               {book.title}
             </h3>
             <p className="text-xs text-muted line-clamp-2 leading-relaxed">
               {book.description}
             </p>
-            <div className="flex items-center gap-2 mt-2 flex-wrap">
+            <div className="flex items-center gap-2 mt-2.5 flex-wrap">
               <span className="text-[10px] font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">
                 {book.category}
               </span>

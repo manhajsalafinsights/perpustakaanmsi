@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-background: #faf8f4;
+  --color-background: #f7f5ef;
   --color-foreground: #1a2e1a;
   --color-primary: #1b5e3b;
   --color-primary-light: #2d8a5e;
@@ -9,11 +9,13 @@
   --color-accent: #c9a84c;
   --color-accent-light: #f5ecd0;
   --color-surface: #ffffff;
-  --color-surface-dark: #f3efe8;
+  --color-surface-dark: #f0ece4;
   --color-muted: #6b7c6b;
   --color-border: #e5e0d5;
-  --color-glass: rgba(255, 255, 255, 0.85);
+  --color-glass: rgba(255, 255, 255, 0.8);
   --color-glass-border: rgba(0, 0, 0, 0.06);
+  --color-glow: rgba(27, 94, 59, 0.12);
+  --color-gold: #c9a84c;
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -32,6 +34,8 @@
   --color-border: #1f2a1f;
   --color-glass: rgba(17, 22, 17, 0.8);
   --color-glass-border: rgba(255, 255, 255, 0.06);
+  --color-glow: rgba(74, 222, 128, 0.1);
+  --color-gold: #fbbf24;
 }
 
 * {
@@ -50,6 +54,15 @@ body {
   transition: background-color 0.3s, color 0.3s;
 }
 
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='0.015'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+}
+
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
 }
@@ -60,14 +73,8 @@ body {
 }
 
 @keyframes fade-in {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .animate-fade-in {
@@ -75,12 +82,8 @@ body {
 }
 
 @keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
 
 .skeleton-shimmer {
@@ -90,25 +93,64 @@ body {
 }
 
 @keyframes float {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-8px);
-  }
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
 }
 
 .animate-float {
   animation: float 4s ease-in-out infinite;
 }
 
+@keyframes float-delayed {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.animate-float-delayed {
+  animation: float-delayed 5s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
 .glass {
   background: var(--color-glass);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--color-glass-border);
 }
 
 .dark .glass {
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+}
+
+.glass-strong {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.dark .glass-strong {
+  background: rgba(17, 22, 17, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.text-balance {
+  text-wrap: balance;
+}
+
+@keyframes scroll-hint {
+  0%, 100% { opacity: 1; transform: translateY(0); }
+  50% { opacity: 0.3; transform: translateY(4px); }
+}
+
+.animate-scroll-hint {
+  animation: scroll-hint 2s ease-in-out infinite;
 }
