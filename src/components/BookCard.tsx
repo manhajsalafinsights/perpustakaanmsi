@@ -18,6 +18,17 @@ function getCommentCount(book: Book): number {
   return book.comment_count.count || 0;
 }
 
+function getVolumeCount(book: Book): number {
+  if (!book.volumes) return 0;
+  if (Array.isArray(book.volumes)) {
+    if (book.volumes.length > 0 && "count" in book.volumes[0]) {
+      return (book.volumes[0] as unknown as { count: number }).count || 0;
+    }
+    return book.volumes.length;
+  }
+  return 0;
+}
+
 interface BookCardProps {
   book: Book;
   index?: number;
@@ -31,6 +42,7 @@ export default function BookCard({ book, index = 0, onClick, isNew, variant = "g
   const showPurchased = book.is_paid && book.purchased > 0;
   const hasPromo = book.is_paid && (book.promo_price || 0) > 0 && (book.promo_price || 0) < (book.price || 25000);
   const commentCount = getCommentCount(book);
+  const volumeCount = getVolumeCount(book);
 
   if (book.is_paid && hasPromo) {
     console.log("PROMO DEBUG:", book.title, { promo_price: book.promo_price, price: book.price, promo_text: book.promo_text });
@@ -99,6 +111,11 @@ export default function BookCard({ book, index = 0, onClick, isNew, variant = "g
               {!book.is_paid && (
                 <span className="text-[10px] font-medium text-green-600 bg-green-500/10 px-2 py-0.5 rounded-full">
                   Gratis
+                </span>
+              )}
+              {volumeCount > 0 && (
+                <span className="text-[10px] font-medium text-muted bg-surface-dark px-2 py-0.5 rounded-full">
+                  {volumeCount} Jilid
                 </span>
               )}
               {showViews && (

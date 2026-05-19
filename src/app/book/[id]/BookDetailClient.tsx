@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Book } from "@/lib/types";
+import { Book, BookVolume } from "@/lib/types";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -18,6 +18,7 @@ import {
   Lock,
   ShoppingCart,
   X,
+  FileText,
 } from "lucide-react";
 
 function formatNumber(n: number): string {
@@ -52,6 +53,8 @@ interface Comment {
 
 export default function BookDetailClient({ id }: { id: string }) {
   const [book, setBook] = useState<Book | null>(null);
+  const [volumes, setVolumes] = useState<BookVolume[]>([]);
+  const [selectedVolume, setSelectedVolume] = useState<BookVolume | null>(null);
   const [relatedBooks, setRelatedBooks] = useState<Book[]>([]);
   const [comments, setComments] = useState<Comment[]>([]);
   const [commentName, setCommentName] = useState("");
@@ -74,10 +77,16 @@ export default function BookDetailClient({ id }: { id: string }) {
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch(`/api/books?id=${id}`);
+        const res = await fetch(`/api/books?id=${id}&include_volumes=true`);
         if (res.ok) {
           const data = await res.json();
           setBook(data);
+
+          const bookVolumes = data.volumes || [];
+          if (bookVolumes.length === 0 && data.file_url) {
+            bookVolumes.push({ id: "legacy", book_id: data.id, title: "Full Book", file_url: data.file_url, created_at: data.created_at });
+          }
+          setVolumes(bookVolumes);
 
           const allRes = await fetch("/api/books");
           if (allRes.ok) {
@@ -112,14 +121,15 @@ export default function BookDetailClient({ id }: { id: string }) {
   const priceFormatted = activePrice.toLocaleString("id-ID");
   const isPaid = book?.is_paid || false;
 
-  const handleDownload = () => {
-    if (!book?.file_url) return;
+  const handleDownload = (vol?: BookVolume) => {
+    const url = vol?.file_url || book?.file_url;
+    if (!url || !book) return;
     fetch("/api/books/stats", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id: book.id, type: "downloads" }),
     }).catch(() => {});
-    window.open(book.file_url, "_blank");
+    window.open(url, "_blank");
   };
 
   const handleBuyWhatsApp = () => {
@@ -149,7 +159,8 @@ export default function BookDetailClient({ id }: { id: string }) {
     );
   };
 
-  const handleOpenViewer = () => {
+  const handleOpenViewer = (vol?: BookVolume) => {
+    setSelectedVolume(vol || null);
     setShowViewer(true);
     setPreviewExpired(false);
     setPreviewTimeLeft(60);
@@ -384,48 +395,63 @@ export default function BookDetailClient({ id }: { id: string }) {
                 </div>
               </div>
 
-              {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row gap-3 mb-4 sm:mb-6">
-                {isPaid ? (
-                  <>
-                    <button
-                      onClick={handleOpenViewer}
-                      className="flex-1 flex items-center justify-center gap-2.5 px-6 py-3.5 bg-primary text-white font-semibold rounded-2xl hover:bg-primary-dark transition-colors duration-300 shadow-lg shadow-primary/15 hover:scale-[1.02] active:scale-[0.98]"
-                    >
-                      <Eye className="w-5 h-5" />
-                      Preview Gratis
-                    </button>
-                    <button
-                      onClick={handleBuyWhatsApp}
-                      className="flex-1 flex items-center justify-center gap-2.5 px-6 py-3.5 bg-green-600 text-white font-semibold rounded-2xl hover:bg-green-700 transition-colors duration-300 shadow-lg shadow-green-600/15 hover:scale-[1.02] active:scale-[0.98]"
-                    >
-                      <ShoppingCart className="w-5 h-5" />
-                      Beli Rp {priceFormatted}
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    {book.file_url && (
-                      <>
-                        <button
-                          onClick={handleOpenViewer}
-                          className="flex-1 flex items-center justify-center gap-2.5 px-6 py-3.5 bg-primary text-white font-semibold rounded-2xl hover:bg-primary-dark transition-colors duration-300 shadow-lg shadow-primary/15 hover:scale-[1.02] active:scale-[0.98]"
-                        >
-                          <BookOpen className="w-5 h-5" />
-                          Baca Sekarang
-                        </button>
-                        <button
-                          onClick={handleDownload}
-                          className="flex-1 flex items-center justify-center gap-2.5 px-6 py-3.5 glass font-semibold rounded-2xl hover:bg-surface-dark transition-colors duration-200 hover:scale-[1.02] active:scale-[0.98]"
-                        >
-                          <Download className="w-5 h-5" />
-                          Download PDF
-                        </button>
-                      </>
-                    )}
-                  </>
-                )}
-              </div>
+              {/* Author */}
+              {book.author && (
+                <div className="text-sm text-muted mb-4">
+                  Penulis: <span className="font-medium text-foreground">{book.author}</span>
+                </div>
+              )}
+
+              {/* Volume List */}
+              {volumes.length > 0 && (
+                <div className="glass rounded-2xl overflow-hidden mb-4 sm:mb-6 border border-border/50">
+                  <div className="px-4 sm:px-5 py-3 border-b border-border/50 bg-surface/30">
+                    <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                      <FileText className="w-4 h-4 text-primary" />
+                      Daftar Jilid ({volumes.length})
+                    </h2>
+                  </div>
+                  <div className="divide-y divide-border/30">
+                    {volumes.map((vol, idx) => (
+                      <div key={vol.id || idx} className="px-4 sm:px-5 py-3 flex items-center justify-between gap-3 hover:bg-surface/30 transition-colors">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-medium text-foreground truncate">
+                            {vol.title}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          {isPaid ? (
+                            <button
+                              onClick={() => handleOpenViewer(vol)}
+                              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-primary rounded-xl hover:bg-primary-dark transition-colors"
+                            >
+                              <Eye className="w-3.5 h-3.5" />
+                              Preview
+                            </button>
+                          ) : (
+                            <>
+                              <button
+                                onClick={() => handleOpenViewer(vol)}
+                                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-primary rounded-xl hover:bg-primary-dark transition-colors"
+                              >
+                                <BookOpen className="w-3.5 h-3.5" />
+                                Baca
+                              </button>
+                              <button
+                                onClick={() => handleDownload(vol)}
+                                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-foreground glass rounded-xl hover:bg-surface-dark transition-colors"
+                              >
+                                <Download className="w-3.5 h-3.5" />
+                                Download
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {isPaid && (
                 <div className="glass rounded-2xl p-4 mb-4 sm:mb-6 border border-accent/20">
@@ -433,6 +459,16 @@ export default function BookDetailClient({ id }: { id: string }) {
                     <span className="font-semibold text-accent">Preview gratis:</span> Kamu bisa preview buku ini selama 1 menit. Setelah itu, beli untuk membaca selengkapnya dan download PDF.
                   </p>
                 </div>
+              )}
+
+              {isPaid && (
+                <button
+                  onClick={handleBuyWhatsApp}
+                  className="w-full flex items-center justify-center gap-2.5 px-6 py-3.5 bg-green-600 text-white font-semibold rounded-2xl hover:bg-green-700 transition-colors duration-300 shadow-lg shadow-green-600/15 mb-4 sm:mb-6"
+                >
+                  <ShoppingCart className="w-5 h-5" />
+                  Beli Rp {priceFormatted}
+                </button>
               )}
 
               {/* Comments */}
@@ -574,7 +610,7 @@ export default function BookDetailClient({ id }: { id: string }) {
       </div>
 
       {/* PDF Viewer Modal */}
-      {showViewer && book.file_url && (
+      {showViewer && (selectedVolume?.file_url || book?.file_url) && (
         <div className="fixed inset-0 z-[100] bg-background flex flex-col">
           <div className="flex flex-col gap-2 px-3 py-2 sm:px-4 sm:py-3 border-b border-border flex-shrink-0">
             <div className="flex items-center justify-between">
@@ -585,9 +621,14 @@ export default function BookDetailClient({ id }: { id: string }) {
                 >
                   <X className="w-4 h-4 sm:w-5 sm:h-5 text-foreground" />
                 </button>
-                <h2 className="text-xs sm:text-sm font-semibold text-foreground truncate">
-                  {book.title}
-                </h2>
+                <div className="min-w-0">
+                  <h2 className="text-xs sm:text-sm font-semibold text-foreground truncate">
+                    {book?.title}
+                  </h2>
+                  {selectedVolume && (
+                    <p className="text-[10px] sm:text-xs text-muted truncate">{selectedVolume.title}</p>
+                  )}
+                </div>
               </div>
               <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
                 {previewExpired && (
@@ -601,7 +642,7 @@ export default function BookDetailClient({ id }: { id: string }) {
                 )}
                 {!isPaid && (
                   <button
-                    onClick={handleDownload}
+                    onClick={() => handleDownload(selectedVolume || undefined)}
                     className="flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 bg-primary text-white text-xs sm:text-sm font-semibold rounded-xl hover:bg-primary-dark transition-colors"
                   >
                     <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -643,9 +684,9 @@ export default function BookDetailClient({ id }: { id: string }) {
               </div>
             ) : null}
             <iframe
-              src={getEmbedUrl(book.file_url)}
+              src={getEmbedUrl(selectedVolume?.file_url || book?.file_url || "")}
               className="w-full h-full border-0"
-              title={book.title}
+              title={book?.title || "Buku"}
               allow="autoplay"
             />
           </div>

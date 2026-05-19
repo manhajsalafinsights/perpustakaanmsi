@@ -19,7 +19,7 @@ import {
   MessageCircle,
 } from "lucide-react";
 import Link from "next/link";
-import { Book } from "@/lib/types";
+import { Book, BookVolume } from "@/lib/types";
 import { StatsSkeleton } from "@/components/Skeleton";
 
 interface AdminStats {
@@ -63,8 +63,8 @@ export default function AdminPage() {
     title: "",
     description: "",
     cover_url: "",
-    file_url: "",
     category: "",
+    author: "",
     is_paid: false,
     views: 0,
     purchased: 0,
@@ -73,6 +73,9 @@ export default function AdminPage() {
     promo_price: 0,
     promo_text: "",
   });
+  const [volumes, setVolumes] = useState<{ title: string; file_url: string }[]>([
+    { title: "Jilid 1", file_url: "" },
+  ]);
   const [formSubmitting, setFormSubmitting] = useState(false);
   const [categories, setCategories] = useState<string[]>([]);
   const [customCategory, setCustomCategory] = useState("");
@@ -170,20 +173,21 @@ export default function AdminPage() {
 
   const openAddModal = () => {
     setEditingBook(null);
-    setForm({ title: "", description: "", cover_url: "", file_url: "", category: "", is_paid: false, views: 0, purchased: 0, downloads: 0, price: 25000, promo_price: 0, promo_text: "" });
+    setForm({ title: "", description: "", cover_url: "", category: "", author: "", is_paid: false, views: 0, purchased: 0, downloads: 0, price: 25000, promo_price: 0, promo_text: "" });
+    setVolumes([{ title: "Jilid 1", file_url: "" }]);
     setCustomCategory("");
     setUseCustomCategory(false);
     setShowModal(true);
   };
 
-  const openEditModal = (book: Book) => {
+  const openEditModal = async (book: Book) => {
     setEditingBook(book);
     setForm({
       title: book.title,
       description: book.description,
       cover_url: book.cover_url,
-      file_url: book.file_url,
       category: book.category,
+      author: book.author || "",
       is_paid: book.is_paid || false,
       views: book.views || 0,
       purchased: book.purchased || 0,
@@ -192,6 +196,25 @@ export default function AdminPage() {
       promo_price: book.promo_price || 0,
       promo_text: book.promo_text || "",
     });
+
+    try {
+      const res = await fetch(`/api/books?id=${book.id}&include_volumes=true`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.volumes && data.volumes.length > 0) {
+          setVolumes(data.volumes.map((v: BookVolume) => ({ title: v.title, file_url: v.file_url })));
+        } else if (book.file_url) {
+          setVolumes([{ title: "Jilid 1", file_url: book.file_url }]);
+        } else {
+          setVolumes([{ title: "Jilid 1", file_url: "" }]);
+        }
+      } else {
+        setVolumes(book.file_url ? [{ title: "Jilid 1", file_url: book.file_url }] : [{ title: "Jilid 1", file_url: "" }]);
+      }
+    } catch {
+      setVolumes(book.file_url ? [{ title: "Jilid 1", file_url: book.file_url }] : [{ title: "Jilid 1", file_url: "" }]);
+    }
+
     setShowModal(true);
   };
 
@@ -199,10 +222,21 @@ export default function AdminPage() {
     e.preventDefault();
     setFormSubmitting(true);
 
+    const validVolumes = volumes.filter((v) => v.file_url.trim());
+    if (validVolumes.length === 0) {
+      alert("Minimal satu jilid harus memiliki link download!");
+      setFormSubmitting(false);
+      return;
+    }
+
     try {
-      const url = editingBook ? "/api/books" : "/api/books";
+      const url = "/api/books";
       const method = editingBook ? "PUT" : "POST";
-      const body = editingBook ? { ...form, id: editingBook.id } : form;
+      const body: Record<string, unknown> = {
+        ...form,
+        volumes: validVolumes,
+      };
+      if (editingBook) body.id = editingBook.id;
 
       const res = await fetch(url, {
         method,
@@ -217,6 +251,8 @@ export default function AdminPage() {
           const booksData = await booksRes.json();
           setBooks(booksData);
           setStats((prev) => ({ ...prev, totalBooks: booksData.length }));
+          const uniqueCategories = [...new Set(booksData.map((b: Book) => b.category).filter(Boolean) as string[])];
+          setCategories(uniqueCategories);
         }
       } else {
         const err = await res.json().catch(() => ({}));
@@ -224,7 +260,6 @@ export default function AdminPage() {
       }
     } catch (e) {
       alert("Gagal menyimpan: " + (e instanceof Error ? e.message : String(e)));
-      // ignore
     } finally {
       setFormSubmitting(false);
     }
@@ -462,6 +497,9 @@ export default function AdminPage() {
                 <th className="text-left text-xs font-semibold text-muted uppercase tracking-wider px-6 py-3 hidden sm:table-cell">
                   Kategori
                 </th>
+                <th className="text-center text-xs font-semibold text-muted uppercase tracking-wider px-6 py-3 hidden md:table-cell">
+                  Jilid
+                </th>
                 <th className="text-left text-xs font-semibold text-muted uppercase tracking-wider px-6 py-3 hidden md:table-cell">
                   Tanggal
                 </th>
@@ -471,7 +509,9 @@ export default function AdminPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border/50">
-              {filteredBooks.map((book) => (
+              {filteredBooks.map((book) => {
+                const volCount = book.volumes?.length || (book.file_url ? 1 : 0);
+                return (
                 <tr
                   key={book.id}
                   className="hover:bg-surface/50 transition-colors"
@@ -511,6 +551,16 @@ export default function AdminPage() {
                       </span>
                     </div>
                   </td>
+                  <td className="px-6 py-4 hidden md:table-cell text-center">
+                    {volCount > 0 ? (
+                      <span className="inline-flex items-center gap-1 text-xs font-semibold text-primary bg-primary/10 px-2.5 py-1 rounded-full">
+                        <BookOpen className="w-3 h-3" />
+                        {volCount} Jilid
+                      </span>
+                    ) : (
+                      <span className="text-xs text-muted">-</span>
+                    )}
+                  </td>
                   <td className="px-6 py-4 hidden md:table-cell">
                     <span className="text-sm text-muted">
                       {new Date(book.created_at).toLocaleDateString("id-ID", {
@@ -537,10 +587,11 @@ export default function AdminPage() {
                     </div>
                   </td>
                 </tr>
-              ))}
+                );
+              })}
               {filteredBooks.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="px-6 py-12 text-center text-muted">
+                  <td colSpan={5} className="px-6 py-12 text-center text-muted">
                     <BookOpen className="w-8 h-8 mx-auto mb-2 opacity-50" />
                     <p className="text-sm">
                       {searchQuery
@@ -631,19 +682,16 @@ export default function AdminPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-1.5">
-                    <div className="flex items-center gap-1.5">
-                      <FileText className="w-4 h-4" />
-                      Link PDF (Google Drive)
-                    </div>
+                    Penulis
                   </label>
                   <input
-                    type="url"
-                    value={form.file_url}
+                    type="text"
+                    value={form.author}
                     onChange={(e) =>
-                      setForm({ ...form, file_url: e.target.value })
+                      setForm({ ...form, author: e.target.value })
                     }
                     className="w-full px-4 py-3 bg-surface border border-border rounded-2xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
-                    placeholder="https://drive.google.com/..."
+                    placeholder="Nama penulis"
                   />
                 </div>
 
@@ -713,6 +761,77 @@ export default function AdminPage() {
                       />
                     )}
                   </div>
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <label className="block text-sm font-medium text-foreground">
+                      Daftar Jilid *
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setVolumes([...volumes, { title: `Jilid ${volumes.length + 1}`, file_url: "" }])}
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-primary bg-primary/10 rounded-xl hover:bg-primary/20 transition-colors"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      Tambah Jilid
+                    </button>
+                  </div>
+                  <div className="space-y-3">
+                    {volumes.map((vol, idx) => (
+                      <motion.div
+                        key={idx}
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="glass rounded-xl p-3 border border-border/50"
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-xs font-semibold text-foreground">Jilid {idx + 1}</span>
+                          {volumes.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => setVolumes(volumes.filter((_, i) => i !== idx))}
+                              className="p-1 text-muted hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </div>
+                        <div className="space-y-2">
+                          <input
+                            type="text"
+                            value={vol.title}
+                            onChange={(e) => {
+                              const next = [...volumes];
+                              next[idx] = { ...next[idx], title: e.target.value };
+                              setVolumes(next);
+                            }}
+                            className="w-full px-3 py-2 bg-surface border border-border rounded-xl text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                            placeholder="Nama jilid (mis: Jilid 1)"
+                          />
+                          <div className="flex items-center gap-1.5">
+                            <FileText className="w-3.5 h-3.5 text-muted flex-shrink-0" />
+                            <input
+                              type="url"
+                              value={vol.file_url}
+                              onChange={(e) => {
+                                const next = [...volumes];
+                                next[idx] = { ...next[idx], file_url: e.target.value };
+                                setVolumes(next);
+                              }}
+                              required
+                              className="w-full px-3 py-2 bg-surface border border-border rounded-xl text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                              placeholder="Link PDF (Google Drive)..."
+                            />
+                          </div>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                  {volumes.filter((v) => v.file_url.trim()).length === 0 && (
+                    <p className="text-xs text-red-500 mt-1">Minimal satu jilid harus memiliki link download</p>
+                  )}
                 </div>
 
                 <div>

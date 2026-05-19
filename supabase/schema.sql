@@ -25,6 +25,7 @@ CREATE TABLE IF NOT EXISTS books (
   cover_url TEXT DEFAULT '',
   file_url TEXT DEFAULT '',
   category VARCHAR(100) DEFAULT 'Umum',
+  author VARCHAR(255) DEFAULT '',
   views INTEGER DEFAULT 0,
   purchased INTEGER DEFAULT 0,
   downloads INTEGER DEFAULT 0,
@@ -33,6 +34,17 @@ CREATE TABLE IF NOT EXISTS books (
   promo_text TEXT DEFAULT '',
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Tabel Jilid Buku (1 buku memiliki banyak jilid)
+CREATE TABLE IF NOT EXISTS book_volumes (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  book_id UUID NOT NULL REFERENCES books(id) ON DELETE CASCADE,
+  title VARCHAR(255) NOT NULL DEFAULT '',
+  file_url TEXT NOT NULL DEFAULT '',
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_book_volumes_book_id ON book_volumes (book_id);
 
 -- Tabel Pengunjung
 CREATE TABLE IF NOT EXISTS visitors (
@@ -54,10 +66,15 @@ CREATE INDEX IF NOT EXISTS idx_books_created_at ON books (created_at DESC);
 
 -- Aktifkan RLS
 ALTER TABLE books ENABLE ROW LEVEL SECURITY;
+ALTER TABLE book_volumes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE visitors ENABLE ROW LEVEL SECURITY;
 
 -- Policy: Semua orang bisa membaca buku
 CREATE POLICY "Public can read books" ON books
+  FOR SELECT USING (true);
+
+-- Policy: Semua orang bisa membaca jilid buku
+CREATE POLICY "Public can read book_volumes" ON book_volumes
   FOR SELECT USING (true);
 
 -- Policy: Semua orang bisa menambah pengunjung

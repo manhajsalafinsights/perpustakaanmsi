@@ -11,11 +11,17 @@ export async function GET(request: NextRequest) {
   const search = searchParams.get("search") || "";
   const category = searchParams.get("category") || "";
   const id = searchParams.get("id") || "";
+  const includeVolumes = searchParams.get("include_volumes") === "true";
+
+  let selectQuery = "*, comments(count)";
+  if (includeVolumes) {
+    selectQuery = "*, comments(count), volumes:*";
+  }
 
   if (id) {
     const { data, error } = await supabase
       .from("books")
-      .select("*, comments(count)")
+      .select(selectQuery)
       .eq("id", id)
       .single();
 
@@ -26,9 +32,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(data);
   }
 
+  if (!includeVolumes) {
+    selectQuery = "*, comments(count), volumes:book_volumes(count)";
+  }
+
   let query = supabase
     .from("books")
-    .select("*, comments(count)")
+    .select(selectQuery)
     .order("created_at", { ascending: false });
 
   if (search) {
@@ -52,23 +62,25 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
+  const { volumes, ...bookData } = body;
 
   const { data, error } = await db()
     .from("books")
     .insert([
       {
-        title: body.title,
-        description: body.description || "",
-        cover_url: body.cover_url || "",
-        file_url: body.file_url || "",
-        category: body.category || "Umum",
-        is_paid: body.is_paid || false,
-        price: body.price || 25000,
-        promo_price: body.promo_price || null,
-        promo_text: body.promo_text || "",
-        views: body.views || 0,
-        purchased: body.purchased || 0,
-        downloads: body.downloads || 0,
+        title: bookData.title,
+        description: bookData.description || "",
+        cover_url: bookData.cover_url || "",
+        file_url: bookData.file_url || "",
+        category: bookData.category || "Umum",
+        author: bookData.author || "",
+        is_paid: bookData.is_paid || false,
+        price: bookData.price || 25000,
+        promo_price: bookData.promo_price || null,
+        promo_text: bookData.promo_text || "",
+        views: bookData.views || 0,
+        purchased: bookData.purchased || 0,
+        downloads: bookData.downloads || 0,
       },
     ])
     .select()
@@ -78,12 +90,34 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json(data, { status: 201 });
+  if (volumes && volumes.length > 0) {
+    const volumeRows = volumes.map((v: { title: string; file_url: string }) => ({
+      book_id: data.id,
+      title: v.title || "Jilid 1",
+      file_url: v.file_url || "",
+    }));
+
+    const { error: volError } = await db()
+      .from("book_volumes")
+      .insert(volumeRows);
+
+    if (volError) {
+      return NextResponse.json({ error: volError.message }, { status: 500 });
+    }
+  }
+
+  const { data: fullData } = await supabase
+    .from("books")
+    .select("*, volumes:*")
+    .eq("id", data.id)
+    .single();
+
+  return NextResponse.json(fullData || data, { status: 201 });
 }
 
 export async function PUT(request: NextRequest) {
   const body = await request.json();
-  const { id, ...updates } = body;
+  const { id, volumes, ...updates } = body;
 
   if (!id) {
     return NextResponse.json({ error: "ID is required" }, { status: 400 });
@@ -100,7 +134,33 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json(data);
+  if (volumes && Array.isArray(volumes)) {
+    await db().from("book_volumes").delete().eq("book_id", id);
+
+    if (volumes.length > 0) {
+      const volumeRows = volumes.map((v: { title: string; file_url: string }) => ({
+        book_id: id,
+        title: v.title || "Jilid 1",
+        file_url: v.file_url || "",
+      }));
+
+      const { error: volError } = await db()
+        .from("book_volumes")
+        .insert(volumeRows);
+
+      if (volError) {
+        return NextResponse.json({ error: volError.message }, { status: 500 });
+      }
+    }
+  }
+
+  const { data: fullData } = await supabase
+    .from("books")
+    .select("*, volumes:*")
+    .eq("id", id)
+    .single();
+
+  return NextResponse.json(fullData || data);
 }
 
 export async function DELETE(request: NextRequest) {
@@ -110,6 +170,8 @@ export async function DELETE(request: NextRequest) {
   if (!id) {
     return NextResponse.json({ error: "ID is required" }, { status: 400 });
   }
+
+  await db().from("book_volumes").delete().eq("book_id", id);
 
   const { error } = await db().from("books").delete().eq("id", id);
 
