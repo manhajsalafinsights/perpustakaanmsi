@@ -78,20 +78,54 @@ function ScrollContainer({
         </div>
       </div>
       <div
-        ref={scrollRef}
-        className="flex gap-4 overflow-x-auto hide-scrollbar pb-2"
-      >
+          ref={scrollRef}
+          className="flex gap-4 overflow-x-auto hide-scrollbar pb-2 snap-x snap-mandatory"
+        >
         {children}
       </div>
     </div>
   );
 }
 
-function StatsSection({ totalBooks, totalVisitors }: { totalBooks: number; totalVisitors: number }) {
+function AnimatedCounter({ value, suffix = "" }: { value: number; suffix?: string }) {
+  const [count, setCount] = useState(0);
+  const ref = useRef<HTMLSpanElement>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          let start = 0;
+          const duration = 1500;
+          const step = Math.ceil(value / (duration / 16));
+          const timer = setInterval(() => {
+            start += step;
+            if (start >= value) {
+              setCount(value);
+              clearInterval(timer);
+            } else {
+              setCount(start);
+            }
+          }, 16);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.3 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [value]);
+
+  return <span ref={ref}>{count.toLocaleString("id-ID")}{suffix}</span>;
+}
+
+function StatsSection({ totalBooks, totalVisitors, totalCategories }: { totalBooks: number; totalVisitors: number; totalCategories: number }) {
   const stats = [
     { label: "Buku Tersedia", value: totalBooks, icon: Library, color: "from-emerald-500 to-emerald-600" },
     { label: "Pengunjung", value: totalVisitors, icon: Users, color: "from-blue-500 to-blue-600" },
-    { label: "Kategori", value: 8, icon: Hash, color: "from-amber-500 to-amber-600" },
+    { label: "Kategori", value: totalCategories, icon: Hash, color: "from-amber-500 to-amber-600" },
     { label: "Gratis", value: Math.floor(totalBooks * 0.6), icon: Gift, color: "from-violet-500 to-violet-600" },
   ];
 
@@ -104,12 +138,14 @@ function StatsSection({ totalBooks, totalVisitors }: { totalBooks: number; total
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5, delay: i * 0.1 }}
-          className="glass rounded-2xl p-4 sm:p-5 border border-border/40 hover:shadow-md hover:shadow-primary/5 transition-all duration-300"
+          className="glass rounded-2xl p-4 sm:p-5 border border-border/40 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-0.5 transition-all duration-300"
         >
-          <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${stat.color} bg-opacity-10 flex items-center justify-center mb-3`}>
+          <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center mb-3 shadow-sm`}>
             <stat.icon className="w-5 h-5 text-white" />
           </div>
-          <p className="text-2xl sm:text-3xl font-bold text-foreground">{stat.value.toLocaleString("id-ID")}</p>
+          <p className="text-2xl sm:text-3xl font-bold text-foreground">
+            <AnimatedCounter value={stat.value} />
+          </p>
           <p className="text-xs text-muted mt-0.5">{stat.label}</p>
         </motion.div>
       ))}
@@ -337,7 +373,7 @@ export default function HomeContent() {
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
           >
-            <StatsSection totalBooks={books.length} totalVisitors={visitorCount} />
+            <StatsSection totalBooks={books.length} totalVisitors={visitorCount} totalCategories={categories.length} />
           </motion.div>
 
           {/* Category Filter */}
@@ -351,7 +387,11 @@ export default function HomeContent() {
               <div className="flex items-center gap-2 flex-wrap justify-center">
                 <button
                   onClick={() => handleCategorySelect("")}
-                  className="px-4 py-2 rounded-full text-xs font-medium transition-colors bg-primary text-white shadow-sm"
+                  className={`px-5 py-2 rounded-2xl text-xs font-semibold transition-all duration-300 ${
+                    !categoryQuery
+                      ? "bg-primary text-white shadow-lg shadow-primary/20"
+                      : "glass border border-border/40 text-muted hover:bg-surface-dark hover:border-primary/30 hover:text-foreground"
+                  }`}
                 >
                   Semua
                 </button>
@@ -359,7 +399,11 @@ export default function HomeContent() {
                   <button
                     key={cat}
                     onClick={() => handleCategorySelect(cat)}
-                    className="px-4 py-2 rounded-full text-xs font-medium transition-all duration-200 glass border border-border/40 hover:bg-surface-dark hover:border-primary/20"
+                    className={`px-5 py-2 rounded-2xl text-xs font-semibold transition-all duration-300 ${
+                      categoryQuery === cat
+                        ? "bg-primary text-white shadow-lg shadow-primary/20"
+                        : "glass border border-border/40 text-muted hover:bg-surface-dark hover:border-primary/30 hover:text-foreground"
+                    }`}
                   >
                     {cat}
                   </button>

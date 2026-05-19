@@ -49,10 +49,10 @@ export default function BookCard({ book, index = 0, onClick, isNew, variant = "g
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: index * 0.05, ease: [0.25, 0.1, 0.25, 1] }}
-      className={`group ${variant === "scroll" ? "flex-shrink-0 w-44 sm:w-52" : "w-full"}`}
+      className={`group ${variant === "scroll" ? "flex-shrink-0 w-44 sm:w-52 snap-start" : "w-full"}`}
     >
       <Link href={`/book/${book.id}`} onClick={() => onClick?.(book)}>
-        <div className="glass rounded-2xl overflow-hidden transition-all duration-500 hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-1.5 cursor-pointer border border-glass-border">
+        <div className="glass rounded-2xl overflow-hidden transition-all duration-500 hover:shadow-2xl hover:shadow-primary/15 hover:-translate-y-2 cursor-pointer border border-glass-border group-hover:ring-1 group-hover:ring-primary/20">
           <div className="relative aspect-[3/4] overflow-hidden bg-surface-dark">
             {book.cover_url ? (
               <Image
