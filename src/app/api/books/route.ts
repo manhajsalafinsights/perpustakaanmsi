@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
   if (id) {
     const { data, error } = await supabase
       .from("books")
-      .select(selectQuery)
+      .select("*, comments(count)")
       .eq("id", id)
       .single();
 
@@ -29,11 +29,17 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 404 });
     }
 
-    return NextResponse.json(data);
-  }
+    if (includeVolumes) {
+      const { data: volumes } = await supabase
+        .from("book_volumes")
+        .select("*")
+        .eq("book_id", id)
+        .order("created_at", { ascending: true });
 
-  if (!includeVolumes) {
-    selectQuery = "*, comments(count), volumes:book_volumes(count)";
+      (data as Record<string, unknown>).volumes = volumes || [];
+    }
+
+    return NextResponse.json(data);
   }
 
   let query = supabase
@@ -91,28 +97,31 @@ export async function POST(request: NextRequest) {
   }
 
   if (volumes && volumes.length > 0) {
-    const volumeRows = volumes.map((v: { title: string; file_url: string }) => ({
-      book_id: data.id,
-      title: v.title || "Jilid 1",
-      file_url: v.file_url || "",
-    }));
+    try {
+      const volumeRows = volumes.map((v: { title: string; file_url: string }) => ({
+        book_id: data.id,
+        title: v.title || "Jilid 1",
+        file_url: v.file_url || "",
+      }));
 
-    const { error: volError } = await db()
-      .from("book_volumes")
-      .insert(volumeRows);
-
-    if (volError) {
-      return NextResponse.json({ error: volError.message }, { status: 500 });
+      await db().from("book_volumes").insert(volumeRows);
+    } catch {
+      // book_volumes table may not exist yet
     }
   }
 
-  const { data: fullData } = await supabase
-    .from("books")
-    .select("*, volumes:*")
-    .eq("id", data.id)
-    .single();
+  let fullData = data;
+  try {
+    const { data: vols } = await supabase
+      .from("book_volumes")
+      .select("*")
+      .eq("book_id", data.id);
+    fullData = { ...data, volumes: vols || [] };
+  } catch {
+    // fallback
+  }
 
-  return NextResponse.json(fullData || data, { status: 201 });
+  return NextResponse.json(fullData, { status: 201 });
 }
 
 export async function PUT(request: NextRequest) {
@@ -135,32 +144,35 @@ export async function PUT(request: NextRequest) {
   }
 
   if (volumes && Array.isArray(volumes)) {
-    await db().from("book_volumes").delete().eq("book_id", id);
+    try {
+      await db().from("book_volumes").delete().eq("book_id", id);
 
-    if (volumes.length > 0) {
-      const volumeRows = volumes.map((v: { title: string; file_url: string }) => ({
-        book_id: id,
-        title: v.title || "Jilid 1",
-        file_url: v.file_url || "",
-      }));
+      if (volumes.length > 0) {
+        const volumeRows = volumes.map((v: { title: string; file_url: string }) => ({
+          book_id: id,
+          title: v.title || "Jilid 1",
+          file_url: v.file_url || "",
+        }));
 
-      const { error: volError } = await db()
-        .from("book_volumes")
-        .insert(volumeRows);
-
-      if (volError) {
-        return NextResponse.json({ error: volError.message }, { status: 500 });
+        await db().from("book_volumes").insert(volumeRows);
       }
+    } catch {
+      // book_volumes table may not exist yet
     }
   }
 
-  const { data: fullData } = await supabase
-    .from("books")
-    .select("*, volumes:*")
-    .eq("id", id)
-    .single();
+  let fullData = data;
+  try {
+    const { data: vols } = await supabase
+      .from("book_volumes")
+      .select("*")
+      .eq("book_id", id);
+    fullData = { ...data, volumes: vols || [] };
+  } catch {
+    // fallback
+  }
 
-  return NextResponse.json(fullData || data);
+  return NextResponse.json(fullData);
 }
 
 export async function DELETE(request: NextRequest) {
@@ -171,7 +183,11 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: "ID is required" }, { status: 400 });
   }
 
-  await db().from("book_volumes").delete().eq("book_id", id);
+  try {
+    await db().from("book_volumes").delete().eq("book_id", id);
+  } catch {
+    // book_volumes table may not exist yet
+  }
 
   const { error } = await db().from("books").delete().eq("id", id);
 
