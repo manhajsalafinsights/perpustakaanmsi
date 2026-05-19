@@ -9,10 +9,12 @@ import { Book } from "@/lib/types";
 import IslamicPattern from "./IslamicPattern";
 
 function FloatingBook({ book, index, total }: { book: Book; index: number; total: number }) {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => { setIsMobile(window.innerWidth < 1024); }, []);
   const angle = (index / total) * 360;
-  const radius = 120 + (index % 3) * 30;
+  const radius = isMobile ? 70 + (index % 3) * 20 : 120 + (index % 3) * 30;
   const x = Math.cos((angle * Math.PI) / 180) * radius;
-  const y = Math.sin((angle * Math.PI) / 180) * radius * 0.6;
+  const y = Math.sin((angle * Math.PI) / 180) * radius * 0.5;
   const delay = index * 0.3;
   const floatDuration = 4 + (index % 3) * 1.5;
 
@@ -23,7 +25,7 @@ function FloatingBook({ book, index, total }: { book: Book; index: number; total
         opacity: 1,
         scale: 1,
         x,
-        y: [y - 8, y + 8, y - 8],
+        y: [y - 6, y + 6, y - 6],
       }}
       transition={{
         opacity: { duration: 0.6, delay },
@@ -32,12 +34,12 @@ function FloatingBook({ book, index, total }: { book: Book; index: number; total
         y: { duration: floatDuration, repeat: Infinity, ease: "easeInOut", delay: delay * 0.5 },
       }}
       className="absolute"
-      style={{ left: "50%", top: "50%", marginLeft: -32, marginTop: -44 }}
+      style={{ left: "50%", top: "50%", marginLeft: -24, marginTop: -34 }}
     >
       <Link href={`/book/${book.id}`}>
         <motion.div
           whileHover={{ scale: 1.15, rotate: [0, -3, 3, 0], transition: { duration: 0.4 } }}
-          className="relative w-16 h-22 sm:w-20 sm:h-28 rounded-lg overflow-hidden shadow-lg cursor-pointer"
+          className="relative w-12 h-16 sm:w-16 sm:h-22 lg:w-20 lg:h-28 rounded-lg overflow-hidden shadow-lg cursor-pointer"
           style={{
             rotate: `${(index % 5) * 6 - 12}deg`,
             boxShadow: "0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06)",
@@ -66,7 +68,7 @@ function FloatingBook({ book, index, total }: { book: Book; index: number; total
 function FloatingBooks({ books }: { books: Book[] }) {
   const displayBooks = books.slice(0, 8);
   return (
-    <div className="relative w-full h-[280px] sm:h-[320px] lg:h-[380px]">
+    <div className="relative w-full h-[200px] sm:h-[280px] lg:h-[380px]">
       <motion.div
         animate={{ rotate: [0, 3, 0, -3, 0] }}
         transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
@@ -193,8 +195,9 @@ export default function Hero() {
 
           {/* Right: Floating Books */}
           <FadeUp delay={0.4}>
-            <div className="relative hidden lg:block">
-              <div className="absolute inset-0 bg-gradient-to-r from-background via-transparent to-transparent z-10 pointer-events-none" />
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-background via-transparent to-transparent z-10 pointer-events-none lg:block hidden" />
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/20 to-background z-10 pointer-events-none lg:hidden block" />
               {loaded && <FloatingBooks books={books} />}
             </div>
           </FadeUp>
