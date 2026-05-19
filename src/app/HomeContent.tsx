@@ -10,7 +10,7 @@ import {
   BookGridSkeleton,
   SectionSkeleton,
 } from "@/components/Skeleton";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -30,10 +30,7 @@ import {
   Hash,
   Eye,
   ArrowRight,
-  MessageCircle,
-  Play,
-  Camera,
-  Globe2,
+  ChevronDown,
 } from "lucide-react";
 
 function ScrollContainer({
@@ -529,6 +526,7 @@ export default function HomeContent() {
 }
 
 function DeveloperSection() {
+  const [isOpen, setIsOpen] = useState(false);
   const socials = [
     {
       label: "Instagram",
@@ -589,121 +587,156 @@ function DeveloperSection() {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.7 }}
-      className="relative overflow-hidden rounded-3xl border border-primary/10 bg-gradient-to-br from-primary/[0.04] via-background to-accent/[0.04] p-6 sm:p-10 lg:p-14"
+      className="relative overflow-hidden rounded-3xl border border-primary/10 bg-gradient-to-br from-primary/[0.04] via-background to-accent/[0.04]"
     >
-      {/* Background glow */}
-      <div className="absolute -top-20 -right-20 w-60 h-60 bg-primary/15 rounded-full blur-[100px] pointer-events-none" />
-      <div className="absolute -bottom-20 -left-20 w-60 h-60 bg-accent/10 rounded-full blur-[100px] pointer-events-none" />
-
-      {/* Floating particles */}
-      {[...Array(5)].map((_, i) => (
-        <motion.div
-          key={i}
-          className="absolute w-1.5 h-1.5 rounded-full bg-primary/20"
-          style={{
-            left: `${15 + i * 20}%`,
-            top: `${10 + (i % 3) * 30}%`,
-          }}
-          animate={{
-            y: [-6, 6, -6],
-            opacity: [0.3, 0.8, 0.3],
-          }}
-          transition={{
-            duration: 3 + i * 0.5,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: i * 0.4,
-          }}
-        />
-      ))}
-
-      <div className="relative flex flex-col lg:flex-row items-center gap-8 lg:gap-14">
-        {/* Photo */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="flex-shrink-0"
-        >
-          <div className="relative group">
-            <div className="w-32 h-32 sm:w-40 sm:h-40 lg:w-48 lg:h-48 rounded-2xl overflow-hidden ring-4 ring-primary/10 shadow-xl shadow-primary/10 transition-all duration-500 group-hover:ring-primary/20 group-hover:shadow-primary/20">
-              <Image
-                src="https://fxqghtotzvapeynaqngg.supabase.co/storage/v1/object/sign/Buku%20Saya/Fotoku.JPG?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV81YjY4OGEzNS05NzkwLTRiNDktYmRkNC1lYTNiYjFlNmM0YWEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJCdWt1IFNheWEvRm90b2t1LkpQRyIsImlhdCI6MTc3OTE5OTAyNywiZXhwIjoxODEwNzM1MDI3fQ.6SqxiP2aSqq8T03UVS5j9Bo63kqeXPu1pGfSZzbY9C4"
-                alt="Yulianto Abu Hanna"
-                width={192}
-                height={192}
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                unoptimized
-              />
-            </div>
-            {/* Glow behind photo */}
-            <div className="absolute -inset-4 bg-primary/10 rounded-[32px] blur-2xl -z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+      {/* Toggle button */}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between p-6 sm:p-10 lg:p-14 cursor-pointer group"
+      >
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center">
+            <BookOpen className="w-6 h-6 text-primary" />
           </div>
-        </motion.div>
-
-        {/* Content */}
-        <div className="flex-1 text-center lg:text-left space-y-5">
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-          >
-            <p className="text-xs font-semibold text-primary tracking-[0.2em] uppercase mb-2">
-              Tentang Pengembang
-            </p>
-            <h3 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground leading-tight">
-              Yulianto <span className="text-primary">Abu Hanna</span>
-            </h3>
-            <p className="text-sm sm:text-base text-muted mt-1.5 font-medium">
-              Full-Stack Developer &amp; Founder YAIAPPS
-            </p>
-          </motion.div>
-
-          <motion.p
-            initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-            className="text-sm sm:text-base text-muted leading-relaxed max-w-xl mx-auto lg:mx-0"
-          >
-            Membangun solusi website untuk dakwah, pendidikan, dan berbagai kebutuhan digital Indonesia.
-          </motion.p>
-
-          <motion.blockquote
-            initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.5 }}
-            className="border-l-2 border-primary/30 pl-4 py-2 text-sm sm:text-base text-foreground/80 italic leading-relaxed mx-auto lg:mx-0 max-w-md"
-          >
-            &ldquo;Membangun teknologi yang bermanfaat untuk dakwah dan umat.&rdquo;
-          </motion.blockquote>
-
-          {/* Social Icons */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.6 }}
-            className="flex items-center justify-center lg:justify-start gap-3 pt-2"
-          >
-            {socials.map((s) => (
-              <Link
-                key={s.label}
-                href={s.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group flex items-center justify-center w-11 h-11 rounded-xl glass border border-border/50 hover:border-primary/30 hover:bg-primary/5 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-0.5 transition-all duration-300"
-                aria-label={s.label}
-              >
-                {socialIcon(s.icon, "w-5 h-5 text-muted group-hover:text-primary transition-colors duration-300")}
-              </Link>
-            ))}
-          </motion.div>
+          <div className="text-left">
+            <h3 className="text-lg sm:text-xl font-bold text-foreground">Tentang Pengembang</h3>
+            <p className="text-sm text-muted">Yulianto Abu Hanna — Full-Stack Developer</p>
+          </div>
         </div>
-      </div>
+        <motion.div
+          animate={{ rotate: isOpen ? 180 : 0 }}
+          transition={{ duration: 0.3 }}
+          className="w-10 h-10 rounded-xl glass border border-border/50 flex items-center justify-center group-hover:border-primary/30 transition-colors"
+        >
+          <ChevronDown className="w-5 h-5 text-muted" />
+        </motion.div>
+      </button>
+
+      <AnimatePresence initial={false}>
+        {isOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+            className="overflow-hidden"
+          >
+            <div className="px-6 sm:px-10 lg:px-14 pb-6 sm:pb-10 lg:pb-14">
+              {/* Background glow */}
+              <div className="absolute -top-20 -right-20 w-60 h-60 bg-primary/15 rounded-full blur-[100px] pointer-events-none" />
+              <div className="absolute -bottom-20 -left-20 w-60 h-60 bg-accent/10 rounded-full blur-[100px] pointer-events-none" />
+
+              {/* Floating particles */}
+              {[...Array(5)].map((_, i) => (
+                <motion.div
+                  key={i}
+                  className="absolute w-1.5 h-1.5 rounded-full bg-primary/20"
+                  style={{
+                    left: `${15 + i * 20}%`,
+                    top: `${10 + (i % 3) * 30}%`,
+                  }}
+                  animate={{
+                    y: [-6, 6, -6],
+                    opacity: [0.3, 0.8, 0.3],
+                  }}
+                  transition={{
+                    duration: 3 + i * 0.5,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                    delay: i * 0.4,
+                  }}
+                />
+              ))}
+
+              <div className="relative flex flex-col lg:flex-row items-center gap-8 lg:gap-14">
+                {/* Photo */}
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6, delay: 0.2 }}
+                  className="flex-shrink-0"
+                >
+                  <div className="relative group">
+                    <div className="w-32 h-32 sm:w-40 sm:h-40 lg:w-48 lg:h-48 rounded-2xl overflow-hidden ring-4 ring-primary/10 shadow-xl shadow-primary/10 transition-all duration-500 group-hover:ring-primary/20 group-hover:shadow-primary/20">
+                      <Image
+                        src="https://fxqghtotzvapeynaqngg.supabase.co/storage/v1/object/sign/Buku%20Saya/Fotoku.JPG?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV81YjY4OGEzNS05NzkwLTRiNDktYmRkNC1lYTNiYjFlNmM0YWEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJCdWt1IFNheWEvRm90b2t1LkpQRyIsImlhdCI6MTc3OTE5OTAyNywiZXhwIjoxODEwNzM1MDI3fQ.6SqxiP2aSqq8T03UVS5j9Bo63kqeXPu1pGfSZzbY9C4"
+                        alt="Yulianto Abu Hanna"
+                        width={192}
+                        height={192}
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                        unoptimized
+                      />
+                    </div>
+                    <div className="absolute -inset-4 bg-primary/10 rounded-[32px] blur-2xl -z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  </div>
+                </motion.div>
+
+                {/* Content */}
+                <div className="flex-1 text-center lg:text-left space-y-5">
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5, delay: 0.3 }}
+                  >
+                    <p className="text-xs font-semibold text-primary tracking-[0.2em] uppercase mb-2">
+                      Tentang Pengembang
+                    </p>
+                    <h3 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground leading-tight">
+                      Yulianto <span className="text-primary">Abu Hanna</span>
+                    </h3>
+                    <p className="text-sm sm:text-base text-muted mt-1.5 font-medium">
+                      Full-Stack Developer &amp; Founder YAIAPPS
+                    </p>
+                  </motion.div>
+
+                  <motion.p
+                    initial={{ opacity: 0, y: 10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5, delay: 0.4 }}
+                    className="text-sm sm:text-base text-muted leading-relaxed max-w-xl mx-auto lg:mx-0"
+                  >
+                    Membangun solusi website untuk dakwah, pendidikan, dan berbagai kebutuhan digital Indonesia.
+                  </motion.p>
+
+                  <motion.blockquote
+                    initial={{ opacity: 0, y: 10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5, delay: 0.5 }}
+                    className="border-l-2 border-primary/30 pl-4 py-2 text-sm sm:text-base text-foreground/80 italic leading-relaxed mx-auto lg:mx-0 max-w-md"
+                  >
+                    &ldquo;Membangun teknologi yang bermanfaat untuk dakwah dan umat.&rdquo;
+                  </motion.blockquote>
+
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5, delay: 0.6 }}
+                    className="flex items-center justify-center lg:justify-start gap-3 pt-2"
+                  >
+                    {socials.map((s) => (
+                      <Link
+                        key={s.label}
+                        href={s.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group flex items-center justify-center w-11 h-11 rounded-xl glass border border-border/50 hover:border-primary/30 hover:bg-primary/5 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-0.5 transition-all duration-300"
+                        aria-label={s.label}
+                      >
+                        {socialIcon(s.icon, "w-5 h-5 text-muted group-hover:text-primary transition-colors duration-300")}
+                      </Link>
+                    ))}
+                  </motion.div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
