@@ -89,7 +89,7 @@ export default function ProfilePage() {
               <BookOpen className="w-4 h-4" />
               Literasi Digital
             </span>
-            <span className="inline-flex items-center gap-1.5 px-4 py-2 bg-green-100 text-green-600 text-sm font-medium rounded-full">
+            <span className="inline-flex items-center gap-1.5 px-4 py-2 bg-primary/10 text-primary text-sm font-medium rounded-full">
               <Code2 className="w-4 h-4" />
               Next.js + Supabase
             </span>
@@ -154,8 +154,8 @@ export default function ProfilePage() {
 
           <div className="glass rounded-3xl shadow-sm p-8">
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
-                <Heart className="w-5 h-5 text-green-600" />
+              <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
+                <Heart className="w-5 h-5 text-primary" />
               </div>
               <h2 className="text-xl font-bold text-foreground">Kontak & Sosial Media</h2>
             </div>

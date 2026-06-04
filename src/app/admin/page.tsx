@@ -357,7 +357,7 @@ export default function AdminPage() {
 
             <form onSubmit={handleLogin} className="space-y-4">
               {loginError && (
-                <div className="p-3 bg-red-50 text-red-600 text-sm rounded-xl border border-red-100">
+                <div className="p-3 bg-red-500/10 text-red-400 text-sm rounded-xl border border-red-500/20">
                   {loginError}
                 </div>
               )}
@@ -423,7 +423,7 @@ export default function AdminPage() {
         </div>
         <button
           onClick={handleLogout}
-          className="flex items-center gap-2 px-4 py-2.5 text-sm text-muted hover:text-red-500 hover:bg-red-50 rounded-2xl transition-all"
+          className="flex items-center gap-2 px-4 py-2.5 text-sm text-muted hover:text-red-400 hover:bg-red-500/10 rounded-2xl transition-all"
         >
           <LogOut className="w-4 h-4" />
           Logout
@@ -580,7 +580,7 @@ export default function AdminPage() {
                       </button>
                       <button
                         onClick={() => handleDelete(book.id)}
-                        className="p-2 text-muted hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                        className="p-2 text-muted hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -792,7 +792,7 @@ export default function AdminPage() {
                             <button
                               type="button"
                               onClick={() => setVolumes(volumes.filter((_, i) => i !== idx))}
-                              className="p-1 text-muted hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                              className="p-1 text-muted hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
@@ -830,7 +830,7 @@ export default function AdminPage() {
                     ))}
                   </div>
                   {volumes.filter((v) => v.file_url.trim()).length === 0 && (
-                    <p className="text-xs text-red-500 mt-1">Minimal satu jilid harus memiliki link download</p>
+                    <p className="text-xs text-red-400 mt-1">Minimal satu jilid harus memiliki link download</p>
                   )}
                 </div>
 
@@ -1029,7 +1029,7 @@ export default function AdminPage() {
               {!admin.is_super && (
                 <button
                   onClick={() => handleDeleteAdmin(admin.id)}
-                  className="p-2 text-muted hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                    className="p-2 text-muted hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
@@ -1164,7 +1164,7 @@ export default function AdminPage() {
                 </div>
                 <button
                   onClick={() => handleDeleteComment(comment.id)}
-                  className="p-2 text-muted hover:text-red-500 hover:bg-red-50 rounded-lg transition-all flex-shrink-0 ml-3"
+                  className="p-2 text-muted hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all flex-shrink-0 ml-3"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>

@@ -330,7 +330,7 @@ export default function BookDetailClient({ id }: { id: string }) {
                               Rp {bookPrice.toLocaleString("id-ID")}
                             </span>
                             {bookPromoText && (
-                              <span className="text-[10px] font-bold text-green-600 bg-green-500/10 px-2 py-0.5 rounded-full">
+                              <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
                                 {bookPromoText}
                               </span>
                             )}
@@ -338,7 +338,7 @@ export default function BookDetailClient({ id }: { id: string }) {
                         )}
                       </div>
                     ) : (
-                      <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-green-500/10 text-green-500">
+                      <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-primary/10 text-primary">
                         Gratis
                       </span>
                     )}
@@ -594,7 +594,7 @@ export default function BookDetailClient({ id }: { id: string }) {
                             {rb.category}
                           </span>
                           {!rb.is_paid && (
-                            <span className="text-[10px] font-medium text-green-600 bg-green-500/10 px-2 py-0.5 rounded-full">
+                            <span className="text-[10px] font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">
                               Gratis
                             </span>
                           )}

@@ -106,7 +106,7 @@ export default function BookCard({ book, index = 0, onClick, isNew, variant = "g
                 {book.category}
               </span>
               {!book.is_paid && (
-                <span className="text-[10px] font-medium text-green-600 bg-green-500/10 px-2 py-0.5 rounded-full">
+                <span className="text-[10px] font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">
                   Gratis
                 </span>
               )}
