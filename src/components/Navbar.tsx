@@ -167,6 +167,10 @@ export default function Navbar() {
                 >
                   Profil
                 </Link>
+                <div className="flex items-center justify-between px-4 py-2.5">
+                  <span className="text-sm text-muted">Tema Gelap</span>
+                  <ThemeToggle />
+                </div>
                 <Link
                   href="/admin"
                   onClick={() => setMobileOpen(false)}
