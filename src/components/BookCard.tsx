@@ -51,7 +51,7 @@ export default function BookCard({ book, index = 0, onClick, isNew }: BookCardPr
       className="group w-full"
     >
       <Link href={`/book/${book.id}`} onClick={() => onClick?.(book)}>
-        <div className="glass rounded-xl overflow-hidden transition-all duration-500 hover:shadow-[0_8px_32px_-8px_rgba(52,211,153,0.12)] hover:-translate-y-1 cursor-pointer border border-glass-border group-hover:border-primary/20 h-full">
+        <div className="glass rounded-xl overflow-hidden transition-all duration-500 hover:shadow-[0_8px_32px_rgba(59,130,246,0.18)] hover:-translate-y-1 cursor-pointer border border-glass-border group-hover:border-primary/40 h-full">
           <div className="relative aspect-[3/4] overflow-hidden bg-surface-dark">
             {book.cover_url ? (
               <Image

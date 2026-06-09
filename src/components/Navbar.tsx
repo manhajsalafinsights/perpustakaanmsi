@@ -92,7 +92,7 @@ export default function Navbar() {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onFocus={() => setShowSuggestions(true)}
                   onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                  className="w-full pl-8 pr-3 py-1.5 bg-surface-dark/80 border border-border rounded-lg text-xs text-foreground placeholder:text-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all duration-300"
+                  className="w-full pl-8 pr-3 py-1.5 bg-surface/80 border border-border rounded-lg text-xs text-foreground placeholder:text-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all duration-300"
                 />
                 {showSuggestions && searchQuery.trim() && (
                   <div className="absolute top-full left-0 right-0 mt-1 glass rounded-xl border border-border shadow-lg overflow-hidden z-50">
@@ -123,7 +123,7 @@ export default function Navbar() {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onFocus={() => setShowSuggestions(true)}
                   onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                  className="w-full pl-10 pr-12 py-2.5 bg-surface-dark/80 border border-border rounded-2xl text-sm text-foreground placeholder:text-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 focus:bg-surface transition-all duration-300"
+                  className="w-full pl-10 pr-12 py-2.5 bg-surface/80 border border-border rounded-2xl text-sm text-foreground placeholder:text-muted/50 focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary/60 focus:bg-surface-dark transition-all duration-300"
                 />
                 <kbd className="absolute right-3 top-1/2 -translate-y-1/2 hidden sm:flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] text-muted/40 bg-surface border border-border rounded-md font-mono group-focus-within:hidden">
                   <Command className="w-2.5 h-2.5" />

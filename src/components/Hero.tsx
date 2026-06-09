@@ -115,11 +115,11 @@ export default function Hero({ compact = false }: { compact?: boolean }) {
   if (compact) {
     return (
       <section className="relative overflow-hidden pt-16 sm:pt-28 pb-3 sm:pb-6">
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/[0.03] via-transparent to-transparent sm:block" />
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/[0.04] via-transparent to-transparent sm:block" />
         <div className="absolute inset-0 opacity-[0.35]">
           <IslamicPattern />
         </div>
-        <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px] pointer-events-none animate-pulse-glow" />
+        <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-primary/[0.08] rounded-full blur-[120px] pointer-events-none animate-pulse-glow" />
         <div className="relative max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
             <div className="text-center sm:text-left space-y-2 sm:space-y-4 py-2">
@@ -170,17 +170,17 @@ export default function Hero({ compact = false }: { compact?: boolean }) {
   return (
     <section className="relative overflow-hidden pt-28 sm:pt-32 pb-16 sm:pb-20 lg:pb-24">
       {/* Background layers */}
-      <div className="absolute inset-0 bg-gradient-to-b from-primary/[0.03] via-transparent to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-b from-primary/[0.04] via-transparent to-transparent" />
       <div className="absolute inset-0 opacity-[0.35]">
         <IslamicPattern />
       </div>
 
       {/* Glow orbs */}
-      <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px] pointer-events-none animate-pulse-glow" />
-      <div className="absolute bottom-0 left-1/4 w-[400px] h-[400px] bg-accent/8 rounded-full blur-[100px] pointer-events-none animate-pulse-glow" style={{ animationDelay: "1.5s" }} />
+      <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-primary/[0.08] rounded-full blur-[120px] pointer-events-none animate-pulse-glow" />
+      <div className="absolute bottom-0 left-1/4 w-[400px] h-[400px] bg-primary/[0.04] rounded-full blur-[100px] pointer-events-none animate-pulse-glow" style={{ animationDelay: "1.5s" }} />
 
       {/* Subtle grid lines */}
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.02)_1px,transparent_1px)] bg-[size:60px_60px]" />
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(59,130,246,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(59,130,246,0.02)_1px,transparent_1px)] bg-[size:60px_60px]" />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
