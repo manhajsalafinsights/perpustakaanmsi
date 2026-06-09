@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { BookOpen, ArrowDown, Star, ChevronRight } from "lucide-react";
+import { BookOpen, ArrowDown, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { Book } from "@/lib/types";
@@ -125,7 +125,6 @@ export default function Hero({ compact = false }: { compact?: boolean }) {
             <div className="text-left space-y-3 sm:space-y-4 py-2">
               <FadeUp delay={0.1}>
                 <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary/8 border border-primary/10 rounded-full text-xs text-primary font-medium">
-                  <Star className="w-3.5 h-3.5 fill-current" />
                   Perpustakaan Digital Islami
                 </div>
               </FadeUp>
@@ -190,7 +189,6 @@ export default function Hero({ compact = false }: { compact?: boolean }) {
           <div className="relative z-10 text-left space-y-6 sm:space-y-8">
             <FadeUp delay={0.1}>
               <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary/8 border border-primary/10 rounded-full text-xs text-primary font-medium">
-                <Star className="w-3.5 h-3.5 fill-current" />
                 Perpustakaan Digital Islami
               </div>
             </FadeUp>
