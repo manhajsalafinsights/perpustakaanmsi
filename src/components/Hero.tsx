@@ -119,12 +119,12 @@ export default function Hero({ compact = false }: { compact?: boolean }) {
         <div className="absolute inset-0 opacity-[0.35]">
           <IslamicPattern />
         </div>
-        <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px] pointer-events-none animate-pulse-glow max-sm:hidden" />
+        <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px] pointer-events-none animate-pulse-glow" />
         <div className="relative max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
             <div className="text-center sm:text-left space-y-2 sm:space-y-4 py-2">
               <FadeUp delay={0.1}>
-                <div className="hidden sm:inline-flex items-center gap-2 px-3 py-1.5 bg-primary/8 border border-primary/10 rounded-full text-xs text-primary font-medium">
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary/8 border border-primary/10 rounded-full text-xs text-primary font-medium">
                   Perpustakaan Digital Islami
                 </div>
               </FadeUp>
@@ -139,13 +139,12 @@ export default function Hero({ compact = false }: { compact?: boolean }) {
               </FadeUp>
               <FadeUp delay={0.35}>
                 <p className="text-xs sm:text-base text-muted leading-relaxed max-w-lg mx-auto sm:mx-0 sm:text-balance">
-                  <span className="max-sm:hidden">Karena tidak semua yang kita lihat mendekatkan kita kepada Allah. </span>
-                  Jelajahi ribuan buku islami pilihan.
+                  Karena tidak semua yang kita lihat mendekatkan kita kepada Allah. Jelajahi ribuan buku islami pilihan.
                 </p>
               </FadeUp>
               <FadeUp delay={0.5}>
                 <div className="flex items-center justify-center sm:justify-start gap-4 sm:gap-6 pt-1">
-                  <div className="flex -space-x-2 max-sm:hidden">
+                  <div className="flex -space-x-2">
                     {[1, 2, 3, 4].map((i) => (
                       <div
                         key={i}
