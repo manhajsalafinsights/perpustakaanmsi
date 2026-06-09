@@ -270,7 +270,6 @@ export default function HomeContent() {
                 key={book.id}
                 book={book}
                 index={i}
-                isNew={newestIds.has(book.id)}
               />
             ))}
           </div>
@@ -309,7 +308,7 @@ export default function HomeContent() {
               ) : freeBooks.length > 0 ? (
                 <div className={GRID_CLASSES}>
                   {(expanded.free ? freeBooks : freeBooks.slice(0, freeLimit)).map((book, i) => (
-                    <BookCard key={book.id} book={book} index={i} isNew={newestIds.has(book.id)} />
+                    <BookCard key={book.id} book={book} index={i} />
                   ))}
                 </div>
               ) : null}
@@ -395,7 +394,7 @@ export default function HomeContent() {
               ) : (
                 <div className={GRID_CLASSES}>
                   {(expanded.populer ? trendingBooks : trendingBooks.slice(0, defaultLimit)).map((book, i) => (
-                    <BookCard key={book.id} book={book} index={i} isNew={newestIds.has(book.id)} />
+                    <BookCard key={book.id} book={book} index={i} />
                   ))}
                 </div>
               )}
@@ -422,7 +421,7 @@ export default function HomeContent() {
               ) : categoryPicks.length > 0 ? (
                 <div className={GRID_CLASSES}>
                   {(expanded.kategori ? categoryPicks : categoryPicks.slice(0, defaultLimit)).map((book, i) => (
-                    <BookCard key={book.id} book={book} index={i} isNew={newestIds.has(book.id)} />
+                    <BookCard key={book.id} book={book} index={i} />
                   ))}
                 </div>
               ) : null}
@@ -449,7 +448,7 @@ export default function HomeContent() {
               ) : paidBooks.length > 0 ? (
                 <div className={GRID_CLASSES}>
                   {(expanded.berbayar ? paidBooks : paidBooks.slice(0, defaultLimit)).map((book, i) => (
-                    <BookCard key={book.id} book={book} index={i} isNew={newestIds.has(book.id)} />
+                    <BookCard key={book.id} book={book} index={i} />
                   ))}
                 </div>
               ) : null}
