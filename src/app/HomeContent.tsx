@@ -264,6 +264,7 @@ export default function HomeContent() {
   }
 
   const defaultLimit = 10;
+  const freeLimit = 20;
 
   return (
     <>
@@ -283,15 +284,15 @@ export default function HomeContent() {
               <SectionHeader
                 icon={Gift}
                 title="Ebook Gratis"
-                showAll={freeBooks.length > defaultLimit}
+                showAll={freeBooks.length > freeLimit}
                 isExpanded={!!expanded.free}
                 onToggle={() => toggleExpand("free")}
               />
               {loading ? (
-                <SectionSkeleton />
+                <SectionSkeleton count={freeLimit} />
               ) : freeBooks.length > 0 ? (
                 <div className={GRID_CLASSES}>
-                  {(expanded.free ? freeBooks : freeBooks.slice(0, defaultLimit)).map((book, i) => (
+                  {(expanded.free ? freeBooks : freeBooks.slice(0, freeLimit)).map((book, i) => (
                     <BookCard key={book.id} book={book} index={i} isNew={newestIds.has(book.id)} />
                   ))}
                 </div>
