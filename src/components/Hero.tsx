@@ -122,40 +122,29 @@ export default function Hero({ compact = false }: { compact?: boolean }) {
         <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px] pointer-events-none animate-pulse-glow max-sm:hidden" />
         <div className="relative max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-            <div className="text-left space-y-2 sm:space-y-4 py-2">
+            <div className="text-center sm:text-left space-y-2 sm:space-y-4 py-2">
               <FadeUp delay={0.1}>
                 <div className="hidden sm:inline-flex items-center gap-2 px-3 py-1.5 bg-primary/8 border border-primary/10 rounded-full text-xs text-primary font-medium">
                   Perpustakaan Digital Islami
                 </div>
               </FadeUp>
               <FadeUp delay={0.2}>
-                <h1 className="text-xl sm:text-3xl lg:text-4xl font-bold text-foreground leading-[1.1] tracking-tight sm:text-balance">
-                  {/* Desktop: static */}
-                  <span className="max-sm:hidden">
-                    Temani hatimu dengan{" "}
-                    <span className="text-primary relative">
-                      membaca
-                      <span className="absolute -bottom-1 left-0 right-0 h-2 bg-primary/15 rounded-full -rotate-1" />
-                    </span>
-                  </span>
-                  {/* Mobile: running text */}
-                  <span className="sm:hidden flex overflow-hidden whitespace-nowrap">
-                    <span className="animate-marquee inline-block">
-                      Temani hatimu dengan membaca&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                      Temani hatimu dengan membaca&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                      Temani hatimu dengan membaca
-                    </span>
+                <h1 className="text-xl sm:text-3xl lg:text-4xl font-bold text-foreground leading-[1.1] tracking-tight text-center sm:text-left">
+                  Temani hatimu dengan{" "}
+                  <span className="text-primary relative">
+                    membaca
+                    <span className="absolute -bottom-1 left-0 right-0 h-1.5 sm:h-2 bg-primary/15 rounded-full -rotate-1" />
                   </span>
                 </h1>
               </FadeUp>
               <FadeUp delay={0.35}>
-                <p className="text-xs sm:text-base text-muted leading-relaxed max-w-lg sm:text-balance">
+                <p className="text-xs sm:text-base text-muted leading-relaxed max-w-lg mx-auto sm:mx-0 sm:text-balance">
                   <span className="max-sm:hidden">Karena tidak semua yang kita lihat mendekatkan kita kepada Allah. </span>
                   Jelajahi ribuan buku islami pilihan.
                 </p>
               </FadeUp>
               <FadeUp delay={0.5}>
-                <div className="flex items-center gap-4 sm:gap-6 pt-1">
+                <div className="flex items-center justify-center sm:justify-start gap-4 sm:gap-6 pt-1">
                   <div className="flex -space-x-2 max-sm:hidden">
                     {[1, 2, 3, 4].map((i) => (
                       <div
