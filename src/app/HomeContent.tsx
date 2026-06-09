@@ -106,13 +106,13 @@ function FeaturedCategoryCard({ name, index }: { name: string; index: number }) 
     <Link href={`/?category=${encodeURIComponent(name)}`}>
       <motion.div
         whileHover={{ scale: 1.02, y: -2 }}
-        className="glass rounded-2xl p-4 sm:p-5 border border-border/40 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 group cursor-pointer"
+        className="glass rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-border/40 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 group cursor-pointer"
       >
-        <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${color.from} ${color.to} flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300`}>
-          <color.icon className="w-6 h-6 text-primary" />
+        <div className={`w-8 h-8 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-gradient-to-br ${color.from} ${color.to} flex items-center justify-center mb-2 sm:mb-3 group-hover:scale-110 transition-transform duration-300`}>
+          <color.icon className="w-4 h-4 sm:w-6 sm:h-6 text-primary" />
         </div>
-        <h3 className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">{name}</h3>
-        <p className="text-xs text-muted mt-1">Jelajahi buku {name.toLowerCase()}</p>
+        <h3 className="text-xs sm:text-sm font-semibold text-foreground group-hover:text-primary transition-colors">{name}</h3>
+        <p className="text-[10px] sm:text-xs text-muted mt-0.5 sm:mt-1">Jelajahi buku {name.toLowerCase()}</p>
       </motion.div>
     </Link>
   );
@@ -322,11 +322,11 @@ export default function HomeContent() {
                   ))}
                 </div>
               ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-                  {categories.slice(0, 6).map((cat, i) => (
-                    <FeaturedCategoryCard key={cat} name={cat} index={i} />
-                  ))}
-                </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3">
+                {categories.slice(0, 6).map((cat, i) => (
+                  <FeaturedCategoryCard key={cat} name={cat} index={i} />
+                ))}
+              </div>
               )}
             </div>
           </motion.div>
