@@ -114,38 +114,38 @@ export default function Hero({ compact = false }: { compact?: boolean }) {
 
   if (compact) {
     return (
-      <section className="relative overflow-hidden pt-24 sm:pt-28 pb-4 sm:pb-6">
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/[0.03] via-transparent to-transparent" />
+      <section className="relative overflow-hidden pt-16 sm:pt-28 pb-3 sm:pb-6">
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/[0.03] via-transparent to-transparent sm:block" />
         <div className="absolute inset-0 opacity-[0.35]">
           <IslamicPattern />
         </div>
-        <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px] pointer-events-none animate-pulse-glow" />
+        <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px] pointer-events-none animate-pulse-glow max-sm:hidden" />
         <div className="relative max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-            <div className="text-left space-y-3 sm:space-y-4 py-2">
+            <div className="text-left space-y-2 sm:space-y-4 py-2">
               <FadeUp delay={0.1}>
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary/8 border border-primary/10 rounded-full text-xs text-primary font-medium">
+                <div className="hidden sm:inline-flex items-center gap-2 px-3 py-1.5 bg-primary/8 border border-primary/10 rounded-full text-xs text-primary font-medium">
                   Perpustakaan Digital Islami
                 </div>
               </FadeUp>
               <FadeUp delay={0.2}>
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground leading-[1.1] tracking-tight text-balance">
-                  Temani hatimu dengan{" "}
+                <h1 className="text-xl sm:text-3xl lg:text-4xl font-bold text-foreground leading-[1.1] tracking-tight sm:text-balance">
+                  <span className="max-sm:hidden">Temani hatimu dengan </span>
                   <span className="text-primary relative">
                     membaca
-                    <span className="absolute -bottom-1 left-0 right-0 h-2 bg-primary/15 rounded-full -rotate-1" />
+                    <span className="absolute -bottom-1 left-0 right-0 h-1.5 sm:h-2 bg-primary/15 rounded-full -rotate-1" />
                   </span>
                 </h1>
               </FadeUp>
               <FadeUp delay={0.35}>
-                <p className="text-sm sm:text-base text-muted leading-relaxed max-w-lg text-balance">
-                  Karena tidak semua yang kita lihat mendekatkan kita kepada Allah.
+                <p className="text-xs sm:text-base text-muted leading-relaxed max-w-lg sm:text-balance">
+                  <span className="max-sm:hidden">Karena tidak semua yang kita lihat mendekatkan kita kepada Allah. </span>
                   Jelajahi ribuan buku islami pilihan.
                 </p>
               </FadeUp>
               <FadeUp delay={0.5}>
                 <div className="flex items-center gap-4 sm:gap-6 pt-1">
-                  <div className="flex -space-x-2">
+                  <div className="flex -space-x-2 max-sm:hidden">
                     {[1, 2, 3, 4].map((i) => (
                       <div
                         key={i}
