@@ -4,31 +4,31 @@ import { Heart, BookOpen } from "lucide-react";
 
 export default function Footer() {
   return (
-    <footer className="glass border-t border-border mt-20">
-      <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="flex flex-col items-center mb-10">
-          <Link href="/" className="flex items-center gap-2.5 mb-3">
+    <footer className="glass border-t border-border mt-8 sm:mt-12">
+      <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        <div className="flex flex-col sm:flex-row items-center sm:items-start sm:justify-between gap-4 sm:gap-6 mb-6 sm:mb-8">
+          <div className="flex items-center gap-2.5">
             <Image
               src="https://fxqghtotzvapeynaqngg.supabase.co/storage/v1/object/sign/Cover%20Buku/Manhaj%20Salaf%20Insign%20logo.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV81YjY4OGEzNS05NzkwLTRiNDktYmRkNC1lYTNiYjFlNmM0YWEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJDb3ZlciBCdWt1L01hbmhhaiBTYWxhZiBJbnNpZ24gbG9nby5wbmciLCJpYXQiOjE3NzgyODg2MzgsImV4cCI6MTgwOTgyNDYzOH0.M-EFUpq7vsiKyHBu3e4Y5rKI0XnKTV5IG-AyV-zEz6E"
               alt="Perpustakaan MSI"
               width={36}
               height={36}
-              className="w-9 h-9 rounded-xl"
+              className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl"
               unoptimized
             />
-            <span className="text-lg font-bold text-foreground">
+            <span className="text-base sm:text-lg font-bold text-foreground">
               Perpustakaan<span className="text-primary">MSI</span>
             </span>
-          </Link>
-          <p className="text-xs text-muted text-center leading-relaxed max-w-xs">
+          </div>
+          <p className="text-xs text-muted text-center sm:text-left leading-relaxed max-w-xs">
             Perpustakaan digital untuk menuntut ilmu agama dengan mudah.
           </p>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-8">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
           <div>
-            <h4 className="font-semibold text-foreground mb-3 text-xs">Navigasi</h4>
-            <div className="space-y-1.5">
+            <h4 className="font-semibold text-foreground mb-2 sm:mb-3 text-xs">Navigasi</h4>
+            <div className="space-y-1">
               <Link href="/" className="block text-xs text-muted hover:text-primary transition-colors duration-200">
                 Beranda
               </Link>
@@ -42,8 +42,8 @@ export default function Footer() {
           </div>
 
           <div>
-            <h4 className="font-semibold text-foreground mb-3 text-xs">Kategori</h4>
-            <div className="space-y-1.5">
+            <h4 className="font-semibold text-foreground mb-2 sm:mb-3 text-xs">Kategori</h4>
+            <div className="space-y-1">
               {["Aqidah", "Fiqih", "Hadits", "Akhlak"].map((cat) => (
                 <Link
                   key={cat}
@@ -57,8 +57,8 @@ export default function Footer() {
           </div>
 
           <div>
-            <h4 className="font-semibold text-foreground mb-3 text-xs">Akses</h4>
-            <div className="space-y-1.5">
+            <h4 className="font-semibold text-foreground mb-2 sm:mb-3 text-xs">Akses</h4>
+            <div className="space-y-1">
               <Link href="/admin" className="block text-xs text-muted hover:text-primary transition-colors duration-200">
                 Admin Panel
               </Link>
@@ -66,8 +66,8 @@ export default function Footer() {
           </div>
 
           <div>
-            <h4 className="font-semibold text-foreground mb-3 text-xs">Pengembang</h4>
-            <div className="space-y-1.5">
+            <h4 className="font-semibold text-foreground mb-2 sm:mb-3 text-xs">Pengembang</h4>
+            <div className="space-y-1">
               <p className="text-xs text-muted">Yulianto Abu Hanna</p>
               <p className="text-xs text-muted">Full-Stack Developer</p>
               <Link
@@ -90,12 +90,12 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-10 pt-6 border-t border-border text-center">
-          <p className="text-sm text-muted italic leading-relaxed max-w-md mx-auto">
+        <div className="mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-border text-center">
+          <p className="text-xs sm:text-sm text-muted italic leading-relaxed max-w-md mx-auto">
             &ldquo;Semoga setiap huruf yang dibaca,
             menjadi cahaya di akhirat.&rdquo;
           </p>
-          <p className="text-xs text-muted/60 mt-4">
+          <p className="text-xs text-muted/60 mt-3 sm:mt-4">
             &copy; {new Date().getFullYear()} PerpustakaanMSI. Dibuat dengan{" "}
             <Heart className="w-3 h-3 inline text-primary" /> untuk umat.
           </p>

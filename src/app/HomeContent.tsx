@@ -270,8 +270,8 @@ export default function HomeContent() {
     <>
       <Hero compact />
 
-      <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 pb-16 sm:pb-20">
-        <div className="space-y-12 sm:space-y-16">
+      <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 pb-8 sm:pb-12">
+        <div className="space-y-8 sm:space-y-12">
 
           {/* ── Ebook Gratis ── */}
           <motion.div
