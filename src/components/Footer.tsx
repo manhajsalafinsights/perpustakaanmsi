@@ -1,6 +1,30 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Heart, BookOpen } from "lucide-react";
+import { Heart, ChevronDown } from "lucide-react";
+
+function FooterColumn({ title, defaultOpen = false, children }: { title: string; defaultOpen?: boolean; children: React.ReactNode }) {
+  const [open, setOpen] = useState(defaultOpen);
+
+  return (
+    <div className="border-b sm:border-none border-border/50">
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex items-center justify-between w-full py-2.5 sm:cursor-default sm:py-0"
+      >
+        <h4 className="font-semibold text-foreground text-xs">{title}</h4>
+        <ChevronDown className={`w-3.5 h-3.5 text-muted sm:hidden transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
+      </button>
+      <div className={`${open ? "block" : "hidden"} sm:block pb-2 sm:pb-0`}>
+        <div className="space-y-1">
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function Footer() {
   return (
@@ -25,67 +49,60 @@ export default function Footer() {
           </p>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
+        {/* Mobile: accordion */}
+        <div className="sm:hidden">
+          <FooterColumn title="Navigasi">
+            <Link href="/" className="block text-xs text-muted hover:text-primary transition-colors duration-200">Beranda</Link>
+            <Link href="/#books" className="block text-xs text-muted hover:text-primary transition-colors duration-200">Koleksi Buku</Link>
+            <Link href="/profile" className="block text-xs text-muted hover:text-primary transition-colors duration-200">Tentang Kami</Link>
+          </FooterColumn>
+          <FooterColumn title="Kategori">
+            {["Aqidah", "Fiqih", "Hadits", "Akhlak"].map((cat) => (
+              <Link key={cat} href={`/?category=${encodeURIComponent(cat)}`} className="block text-xs text-muted hover:text-primary transition-colors duration-200">{cat}</Link>
+            ))}
+          </FooterColumn>
+          <FooterColumn title="Akses">
+            <Link href="/admin" className="block text-xs text-muted hover:text-primary transition-colors duration-200">Admin Panel</Link>
+          </FooterColumn>
+          <FooterColumn title="Pengembang">
+            <p className="text-xs text-muted">Yulianto Abu Hanna</p>
+            <p className="text-xs text-muted">Full-Stack Developer</p>
+            <Link href="https://www.instagram.com/yuliantoabuhanna" target="_blank" rel="noopener noreferrer" className="block text-xs text-muted hover:text-primary transition-colors duration-200">Instagram</Link>
+            <Link href="https://wa.me/6281297007070" target="_blank" rel="noopener noreferrer" className="block text-xs text-muted hover:text-primary transition-colors duration-200">WhatsApp</Link>
+          </FooterColumn>
+        </div>
+
+        {/* Desktop: grid */}
+        <div className="hidden sm:grid sm:grid-cols-4 gap-6">
           <div>
             <h4 className="font-semibold text-foreground mb-2 sm:mb-3 text-xs">Navigasi</h4>
             <div className="space-y-1">
-              <Link href="/" className="block text-xs text-muted hover:text-primary transition-colors duration-200">
-                Beranda
-              </Link>
-              <Link href="/#books" className="block text-xs text-muted hover:text-primary transition-colors duration-200">
-                Koleksi Buku
-              </Link>
-              <Link href="/profile" className="block text-xs text-muted hover:text-primary transition-colors duration-200">
-                Tentang Kami
-              </Link>
+              <Link href="/" className="block text-xs text-muted hover:text-primary transition-colors duration-200">Beranda</Link>
+              <Link href="/#books" className="block text-xs text-muted hover:text-primary transition-colors duration-200">Koleksi Buku</Link>
+              <Link href="/profile" className="block text-xs text-muted hover:text-primary transition-colors duration-200">Tentang Kami</Link>
             </div>
           </div>
-
           <div>
             <h4 className="font-semibold text-foreground mb-2 sm:mb-3 text-xs">Kategori</h4>
             <div className="space-y-1">
               {["Aqidah", "Fiqih", "Hadits", "Akhlak"].map((cat) => (
-                <Link
-                  key={cat}
-                  href={`/?category=${encodeURIComponent(cat)}`}
-                  className="block text-xs text-muted hover:text-primary transition-colors duration-200"
-                >
-                  {cat}
-                </Link>
+                <Link key={cat} href={`/?category=${encodeURIComponent(cat)}`} className="block text-xs text-muted hover:text-primary transition-colors duration-200">{cat}</Link>
               ))}
             </div>
           </div>
-
           <div>
             <h4 className="font-semibold text-foreground mb-2 sm:mb-3 text-xs">Akses</h4>
             <div className="space-y-1">
-              <Link href="/admin" className="block text-xs text-muted hover:text-primary transition-colors duration-200">
-                Admin Panel
-              </Link>
+              <Link href="/admin" className="block text-xs text-muted hover:text-primary transition-colors duration-200">Admin Panel</Link>
             </div>
           </div>
-
           <div>
             <h4 className="font-semibold text-foreground mb-2 sm:mb-3 text-xs">Pengembang</h4>
             <div className="space-y-1">
               <p className="text-xs text-muted">Yulianto Abu Hanna</p>
               <p className="text-xs text-muted">Full-Stack Developer</p>
-              <Link
-                href="https://www.instagram.com/yuliantoabuhanna"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block text-xs text-muted hover:text-primary transition-colors duration-200"
-              >
-                Instagram
-              </Link>
-              <Link
-                href="https://wa.me/6281297007070"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block text-xs text-muted hover:text-primary transition-colors duration-200"
-              >
-                WhatsApp
-              </Link>
+              <Link href="https://www.instagram.com/yuliantoabuhanna" target="_blank" rel="noopener noreferrer" className="block text-xs text-muted hover:text-primary transition-colors duration-200">Instagram</Link>
+              <Link href="https://wa.me/6281297007070" target="_blank" rel="noopener noreferrer" className="block text-xs text-muted hover:text-primary transition-colors duration-200">WhatsApp</Link>
             </div>
           </div>
         </div>
