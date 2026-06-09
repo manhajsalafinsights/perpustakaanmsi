@@ -160,7 +160,7 @@ export default function Hero({ compact = false }: { compact?: boolean }) {
                 </div>
               </FadeUp>
             </div>
-            <div className="relative">
+            <div className="relative hidden lg:block">
               {loaded && <FloatingBooks books={books} />}
             </div>
           </div>
