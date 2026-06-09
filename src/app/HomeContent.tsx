@@ -60,12 +60,12 @@ function AnimatedCounter({ value, suffix = "" }: { value: number; suffix?: strin
   return <span ref={ref}>{count.toLocaleString("id-ID")}{suffix}</span>;
 }
 
-function StatsSection({ totalBooks, totalVisitors, totalCategories }: { totalBooks: number; totalVisitors: number; totalCategories: number }) {
+function StatsSection({ totalBooks, totalVisitors, totalCategories, totalFree }: { totalBooks: number; totalVisitors: number; totalCategories: number; totalFree: number }) {
   const stats = [
     { label: "Buku Tersedia", value: totalBooks, icon: Library, color: "from-emerald-500 to-emerald-600" },
     { label: "Pengunjung", value: totalVisitors, icon: Users, color: "from-blue-500 to-blue-600" },
     { label: "Kategori", value: totalCategories, icon: Hash, color: "from-amber-500 to-amber-600" },
-    { label: "Gratis", value: Math.floor(totalBooks * 0.6), icon: Gift, color: "from-violet-500 to-violet-600" },
+    { label: "Gratis", value: totalFree, icon: Gift, color: "from-violet-500 to-violet-600" },
   ];
 
   return (
@@ -463,7 +463,7 @@ export default function HomeContent() {
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
           >
-            <StatsSection totalBooks={books.length} totalVisitors={visitorCount} totalCategories={categories.length} />
+            <StatsSection totalBooks={books.length} totalVisitors={visitorCount} totalCategories={categories.length} totalFree={freeBooks.length} />
           </motion.div>
 
         </div>
