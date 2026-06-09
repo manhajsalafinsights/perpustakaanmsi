@@ -130,10 +130,21 @@ export default function Hero({ compact = false }: { compact?: boolean }) {
               </FadeUp>
               <FadeUp delay={0.2}>
                 <h1 className="text-xl sm:text-3xl lg:text-4xl font-bold text-foreground leading-[1.1] tracking-tight sm:text-balance">
-                  <span className="max-sm:hidden">Temani hatimu dengan </span>
-                  <span className="text-primary relative">
-                    membaca
-                    <span className="absolute -bottom-1 left-0 right-0 h-1.5 sm:h-2 bg-primary/15 rounded-full -rotate-1" />
+                  {/* Desktop: static */}
+                  <span className="max-sm:hidden">
+                    Temani hatimu dengan{" "}
+                    <span className="text-primary relative">
+                      membaca
+                      <span className="absolute -bottom-1 left-0 right-0 h-2 bg-primary/15 rounded-full -rotate-1" />
+                    </span>
+                  </span>
+                  {/* Mobile: running text */}
+                  <span className="sm:hidden flex overflow-hidden whitespace-nowrap">
+                    <span className="animate-marquee inline-block">
+                      Temani hatimu dengan membaca&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                      Temani hatimu dengan membaca&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                      Temani hatimu dengan membaca
+                    </span>
                   </span>
                 </h1>
               </FadeUp>
