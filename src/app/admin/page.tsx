@@ -17,6 +17,11 @@ import {
   ShieldCheck,
   UserPlus,
   MessageCircle,
+  Clock,
+  CheckCircle2,
+  XCircle,
+  Loader2,
+  MailQuestion,
 } from "lucide-react";
 import Link from "next/link";
 import { Book, BookVolume } from "@/lib/types";
@@ -42,6 +47,17 @@ interface Comment {
   message: string;
   created_at: string;
   books?: { title: string };
+}
+
+interface BookRequest {
+  id: string;
+  title: string;
+  author: string | null;
+  description: string | null;
+  name: string | null;
+  email: string | null;
+  status: "pending" | "approved" | "rejected";
+  created_at: string;
 }
 
 export default function AdminPage() {
@@ -87,6 +103,8 @@ export default function AdminPage() {
   const [adminSubmitting, setAdminSubmitting] = useState(false);
 
   const [comments, setComments] = useState<Comment[]>([]);
+  const [bookRequests, setBookRequests] = useState<BookRequest[]>([]);
+  const [bookRequestLoading, setBookRequestLoading] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -137,6 +155,7 @@ export default function AdminPage() {
           fetch("/api/auth"),
           fetch("/api/comments?book_id=all"),
         ]);
+        const token = sessionStorage.getItem("admin_token");
         if (booksRes.ok) {
           const booksData = await booksRes.json();
           setBooks(booksData);
@@ -161,7 +180,25 @@ export default function AdminPage() {
         setStatsLoading(false);
       }
     };
+
+    const fetchBookRequests = async () => {
+      setBookRequestLoading(true);
+      try {
+        const token = sessionStorage.getItem("admin_token");
+        const res = await fetch("/api/book-requests", {
+          headers: { authorization: token || "" },
+        });
+        if (res.ok) {
+          setBookRequests(await res.json());
+        }
+      } catch {
+        // ignore
+      } finally {
+        setBookRequestLoading(false);
+      }
+    };
     fetchData();
+    fetchBookRequests();
   }, [isLoggedIn]);
 
   const handleLogout = () => {
@@ -324,6 +361,39 @@ export default function AdminPage() {
       const res = await fetch(`/api/comments?id=${id}`, { method: "DELETE" });
       if (res.ok) {
         setComments((prev) => prev.filter((c) => c.id !== id));
+      }
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleUpdateRequestStatus = async (id: string, status: string) => {
+    try {
+      const token = sessionStorage.getItem("admin_token");
+      const res = await fetch("/api/book-requests", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", authorization: token || "" },
+        body: JSON.stringify({ id, status }),
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setBookRequests((prev) => prev.map((r) => (r.id === id ? updated : r)));
+      }
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleDeleteRequest = async (id: string) => {
+    if (!confirm("Yakin ingin menghapus usulan ini?")) return;
+    try {
+      const token = sessionStorage.getItem("admin_token");
+      const res = await fetch(`/api/book-requests?id=${id}`, {
+        method: "DELETE",
+        headers: { authorization: token || "" },
+      });
+      if (res.ok) {
+        setBookRequests((prev) => prev.filter((r) => r.id !== id));
       }
     } catch {
       // ignore
@@ -1168,6 +1238,106 @@ export default function AdminPage() {
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+
+      {/* ── Usulan Buku ── */}
+      <div className="glass rounded-2xl shadow-sm overflow-hidden">
+        <div className="p-6 border-b border-border/50 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-accent/10 rounded-xl flex items-center justify-center">
+              <MailQuestion className="w-5 h-5 text-accent" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-foreground">Usulan Buku</h2>
+              <p className="text-xs text-muted">{bookRequests.length} usulan</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="divide-y divide-border/50">
+          {bookRequestLoading ? (
+            <div className="px-6 py-12 flex items-center justify-center text-muted">
+              <Loader2 className="w-5 h-5 animate-spin mr-2" />
+              <p className="text-sm">Memuat usulan...</p>
+            </div>
+          ) : bookRequests.length === 0 ? (
+            <div className="px-6 py-12 text-center text-muted">
+              <MailQuestion className="w-8 h-8 mx-auto mb-2 opacity-50" />
+              <p className="text-sm">Belum ada usulan buku</p>
+            </div>
+          ) : (
+            bookRequests.map((req) => (
+              <div key={req.id} className="px-6 py-4 hover:bg-surface/50 transition-colors">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-sm font-medium text-foreground">{req.title}</span>
+                      {req.author && (
+                        <span className="text-xs text-muted">— {req.author}</span>
+                      )}
+                    </div>
+                    {req.description && (
+                      <p className="text-xs text-muted mb-1.5 line-clamp-2">{req.description}</p>
+                    )}
+                    <div className="flex items-center gap-2 text-xs text-muted">
+                      {req.name && <span>{req.name}</span>}
+                      {req.email && <span>{req.email}</span>}
+                      <span>•</span>
+                      <span>
+                        {new Date(req.created_at).toLocaleDateString("id-ID", {
+                          day: "numeric",
+                          month: "short",
+                          year: "numeric",
+                        })}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    {req.status === "pending" && (
+                      <>
+                        <button
+                          onClick={() => handleUpdateRequestStatus(req.id, "approved")}
+                          className="p-2 text-emerald-400 hover:bg-emerald-500/10 rounded-lg transition-all"
+                          title="Setujui"
+                        >
+                          <CheckCircle2 className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleUpdateRequestStatus(req.id, "rejected")}
+                          className="p-2 text-red-400 hover:bg-red-500/10 rounded-lg transition-all"
+                          title="Tolak"
+                        >
+                          <XCircle className="w-4 h-4" />
+                        </button>
+                      </>
+                    )}
+                    {req.status === "approved" && (
+                      <span className="flex items-center gap-1 text-xs font-medium text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full">
+                        <CheckCircle2 className="w-3 h-3" />
+                        Disetujui
+                      </span>
+                    )}
+                    {req.status === "rejected" && (
+                      <span className="flex items-center gap-1 text-xs font-medium text-red-400 bg-red-500/10 px-2.5 py-1 rounded-full">
+                        <XCircle className="w-3 h-3" />
+                        Ditolak
+                      </span>
+                    )}
+                    {isSuper && (
+                      <button
+                        onClick={() => handleDeleteRequest(req.id)}
+                        className="p-2 text-muted hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all"
+                        title="Hapus"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                </div>
               </div>
             ))
           )}

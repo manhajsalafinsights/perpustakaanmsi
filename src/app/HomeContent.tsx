@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { Book } from "@/lib/types";
 import Hero from "@/components/Hero";
 import BookCard from "@/components/BookCard";
+import BookRequestModal from "@/components/BookRequestModal";
 import {
   BookGridSkeleton,
   SectionSkeleton,
@@ -163,6 +164,7 @@ export default function HomeContent() {
   const [loading, setLoading] = useState(true);
   const [visitorCount, setVisitorCount] = useState(5000000);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const [requestModalOpen, setRequestModalOpen] = useState(false);
 
   const toggleExpand = (key: string) => {
     setExpanded((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -238,15 +240,29 @@ export default function HomeContent() {
         {loading ? (
           <BookGridSkeleton count={books.length || 20} />
         ) : books.length === 0 ? (
-          <div className="text-center py-20">
-            <div className="w-20 h-20 bg-surface-dark rounded-full flex items-center justify-center mx-auto mb-4">
-              <Layers className="w-8 h-8 text-muted" />
+          <>
+            <div className="text-center py-20">
+              <div className="w-20 h-20 bg-surface-dark rounded-full flex items-center justify-center mx-auto mb-4">
+                <Layers className="w-8 h-8 text-muted" />
+              </div>
+              <h3 className="text-lg font-semibold text-foreground mb-2">
+                Buku tidak ditemukan
+              </h3>
+              <p className="text-muted mb-6">Coba kata kunci lain atau jelajahi kategori.</p>
+              <button
+                onClick={() => setRequestModalOpen(true)}
+                className="inline-flex items-center gap-2 px-6 py-3 bg-accent text-white font-medium rounded-2xl hover:bg-accent/90 transition-colors shadow-lg shadow-accent/20"
+              >
+                <BookOpen className="w-4 h-4" />
+                Usulkan Buku Ini
+              </button>
             </div>
-            <h3 className="text-lg font-semibold text-foreground mb-2">
-              Buku tidak ditemukan
-            </h3>
-            <p className="text-muted">Coba kata kunci lain atau jelajahi kategori.</p>
-          </div>
+            <BookRequestModal
+              isOpen={requestModalOpen}
+              onClose={() => setRequestModalOpen(false)}
+              searchQuery={searchQuery}
+            />
+          </>
         ) : (
           <div className={GRID_CLASSES}>
             {books.map((book, i) => (
