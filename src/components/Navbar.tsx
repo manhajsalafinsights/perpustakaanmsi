@@ -78,6 +78,37 @@ export default function Navbar() {
               </span>
             </Link>
 
+            {/* Mobile search */}
+            <form
+              onSubmit={handleSearch}
+              className="flex-1 mx-2 sm:hidden"
+            >
+              <div className="relative">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted" />
+                <input
+                  type="text"
+                  placeholder="Cari buku..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onFocus={() => setShowSuggestions(true)}
+                  onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                  className="w-full pl-8 pr-3 py-1.5 bg-surface-dark/80 border border-border rounded-lg text-xs text-foreground placeholder:text-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all duration-300"
+                />
+                {showSuggestions && searchQuery.trim() && (
+                  <div className="absolute top-full left-0 right-0 mt-1 glass rounded-xl border border-border shadow-lg overflow-hidden z-50">
+                    <button
+                      type="submit"
+                      className="w-full flex items-center gap-2 px-3 py-2 text-xs text-foreground hover:bg-surface-dark transition-colors"
+                    >
+                      <Search className="w-3.5 h-3.5 text-muted" />
+                      Cari &ldquo;{searchQuery}&rdquo;
+                    </button>
+                  </div>
+                )}
+              </div>
+            </form>
+
+            {/* Desktop search */}
             <form
               onSubmit={handleSearch}
               className="flex-1 max-w-md mx-4 sm:mx-8 hidden sm:block"
@@ -148,18 +179,6 @@ export default function Navbar() {
               className="sm:hidden glass border-t border-border"
             >
               <div className="px-4 py-4 space-y-3">
-                <form onSubmit={handleSearch}>
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
-                    <input
-                      type="text"
-                      placeholder="Cari buku..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2.5 bg-surface-dark border border-border rounded-2xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40"
-                    />
-                  </div>
-                </form>
                 <Link
                   href="/profile"
                   onClick={() => setMobileOpen(false)}
