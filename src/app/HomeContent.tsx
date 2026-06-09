@@ -203,7 +203,7 @@ export default function HomeContent() {
     (a, b) =>
       new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
   );
-  const newestIds = new Set(newBooks.slice(0, 5).map((b) => b.id));
+  const newestIds = new Set(newBooks.slice(0, 10).map((b) => b.id));
   const freeBooks = newBooks.filter((b) => !b.is_paid);
   const paidBooks = newBooks.filter((b) => b.is_paid);
   const categoryPicks: Book[] = [];
