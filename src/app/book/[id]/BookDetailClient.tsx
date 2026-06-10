@@ -5,6 +5,16 @@ import { Book, BookVolume } from "@/lib/types";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { Document, Page, pdfjs } from "react-pdf";
+import "react-pdf/dist/Page/AnnotationLayer.css";
+import "react-pdf/dist/Page/TextLayer.css";
+
+if (typeof window !== "undefined") {
+  pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+    "pdfjs-dist/build/pdf.worker.min.mjs",
+    import.meta.url,
+  ).toString();
+}
 import {
   BookOpen,
   Download,
@@ -12,6 +22,7 @@ import {
   Send,
   User,
   ChevronRight,
+  ChevronLeft,
   Calendar,
   Eye,
   ArrowLeft,
@@ -19,6 +30,7 @@ import {
   ShoppingCart,
   X,
   FileText,
+  Loader2,
 } from "lucide-react";
 
 function formatNumber(n: number): string {
@@ -63,7 +75,9 @@ export default function BookDetailClient({ id }: { id: string }) {
   const [loading, setLoading] = useState(true);
   const [showViewer, setShowViewer] = useState(false);
   const [previewExpired, setPreviewExpired] = useState(false);
-  const [previewTimeLeft, setPreviewTimeLeft] = useState(60);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [numPages, setNumPages] = useState(0);
+  const [pdfError, setPdfError] = useState(false);
 
   const fetchComments = useCallback(async (bookId: string) => {
     try {
@@ -163,28 +177,17 @@ export default function BookDetailClient({ id }: { id: string }) {
     setSelectedVolume(vol || null);
     setShowViewer(true);
     setPreviewExpired(false);
-    setPreviewTimeLeft(60);
+    setCurrentPage(1);
+    setPdfError(false);
   };
 
-  useEffect(() => {
-    if (!showViewer || !isPaid || previewExpired) return;
-    const timer = setInterval(() => {
-      setPreviewTimeLeft((t) => {
-        if (t <= 1) {
-          clearInterval(timer);
-          setPreviewExpired(true);
-          return 0;
-        }
-        return t - 1;
-      });
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [showViewer, isPaid, previewExpired]);
-
-  const formatTime = (s: number) => {
-    const m = Math.floor(s / 60);
-    const sec = s % 60;
-    return `${m}:${sec.toString().padStart(2, "0")}`;
+  const goToPage = (page: number) => {
+    if (page < 1 || page > (numPages || 1)) return;
+    if (isPaid && page > MAX_FREE_PAGES) {
+      setPreviewExpired(true);
+      return;
+    }
+    setCurrentPage(page);
   };
 
   const handleSubmitComment = async (e: React.FormEvent) => {
@@ -456,7 +459,7 @@ export default function BookDetailClient({ id }: { id: string }) {
               {isPaid && (
                 <div className="glass rounded-2xl p-4 mb-4 sm:mb-6 border border-accent/20">
                   <p className="text-sm text-muted leading-relaxed">
-                    <span className="font-semibold text-accent">Preview gratis:</span> Kamu bisa preview buku ini selama 1 menit. Setelah itu, beli untuk membaca selengkapnya dan download PDF.
+                    <span className="font-semibold text-accent">Preview gratis:</span> Kamu bisa preview {MAX_FREE_PAGES} halaman pertama. Beli untuk membaca selengkapnya dan download PDF.
                   </p>
                 </div>
               )}
@@ -631,7 +634,7 @@ export default function BookDetailClient({ id }: { id: string }) {
                 </div>
               </div>
               <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
-                {previewExpired && (
+                {(previewExpired || !isPaid) && isPaid && (
                   <button
                     onClick={handleBuyWhatsApp}
                     className="flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 bg-green-600 text-white text-xs sm:text-sm font-semibold rounded-xl hover:bg-green-700 transition-colors"
@@ -651,44 +654,106 @@ export default function BookDetailClient({ id }: { id: string }) {
                 )}
               </div>
             </div>
-            {isPaid && !previewExpired && (
-              <div className="flex justify-center">
-                <span className="inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-medium text-accent bg-accent/10 px-2.5 py-1 rounded-full">
-                  Preview: {formatTime(previewTimeLeft)}
+            {isPaid && !previewExpired && numPages > 0 && (
+              <div className="flex items-center justify-center gap-3">
+                <button
+                  onClick={() => goToPage(currentPage - 1)}
+                  disabled={currentPage <= 1}
+                  className="w-7 h-7 flex items-center justify-center rounded-lg bg-surface-dark hover:bg-border disabled:opacity-30 transition-colors"
+                >
+                  <ChevronLeft className="w-4 h-4 text-foreground" />
+                </button>
+                <span className="text-[11px] sm:text-xs font-medium text-accent bg-accent/10 px-2.5 py-1 rounded-full">
+                  {currentPage} / {Math.min(numPages, MAX_FREE_PAGES)}
                 </span>
+                <button
+                  onClick={() => goToPage(currentPage + 1)}
+                  disabled={currentPage >= MAX_FREE_PAGES || currentPage >= numPages}
+                  className="w-7 h-7 flex items-center justify-center rounded-lg bg-surface-dark hover:bg-border disabled:opacity-30 transition-colors"
+                >
+                  <ChevronRight className="w-4 h-4 text-foreground" />
+                </button>
               </div>
             )}
           </div>
 
-          <div className="flex-1 relative">
-            {previewExpired ? (
+          <div className="flex-1 relative overflow-hidden">
+            {(previewExpired) ? (
               <div className="absolute inset-0 flex items-center justify-center z-10 bg-background/90 backdrop-blur-md">
                 <div className="text-center max-w-sm mx-auto px-6">
                   <div className="w-16 h-16 bg-accent/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
                     <Lock className="w-8 h-8 text-accent" />
                   </div>
                   <h3 className="text-xl font-bold text-foreground mb-2">
-                    Preview Berakhir
+                    Halaman Terkunci
                   </h3>
                   <p className="text-sm text-muted mb-6">
-                    Waktu preview gratis telah habis. Beli buku ini untuk membaca selengkapnya dan download PDF.
+                    Preview gratis hanya sampai halaman {MAX_FREE_PAGES}. Beli buku ini untuk membaca selengkapnya dan download PDF.
                   </p>
-                  <button
-                    onClick={handleBuyWhatsApp}
-                    className="inline-flex items-center gap-2 px-6 py-3.5 bg-green-600 text-white font-semibold rounded-2xl hover:bg-green-700 transition-colors shadow-lg"
-                  >
-                    <ShoppingCart className="w-5 h-5" />
-                    Beli Rp {priceFormatted}
-                  </button>
+                  <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                    <button
+                      onClick={() => { setPreviewExpired(false); setCurrentPage(MAX_FREE_PAGES); }}
+                      className="inline-flex items-center gap-2 px-5 py-2.5 bg-surface-dark text-foreground text-sm font-medium rounded-2xl hover:bg-border transition-colors"
+                    >
+                      Kembali ke Preview
+                    </button>
+                    <button
+                      onClick={handleBuyWhatsApp}
+                      className="inline-flex items-center gap-2 px-6 py-3.5 bg-green-600 text-white font-semibold rounded-2xl hover:bg-green-700 transition-colors shadow-lg"
+                    >
+                      <ShoppingCart className="w-5 h-5" />
+                      Beli Rp {priceFormatted}
+                    </button>
+                  </div>
                 </div>
               </div>
             ) : null}
-            <iframe
-              src={getEmbedUrl(selectedVolume?.file_url || book?.file_url || "")}
-              className="w-full h-full border-0"
-              title={book?.title || "Buku"}
-              allow="autoplay"
-            />
+
+            {isPaid ? (
+              <div className="h-full overflow-auto bg-[#f0f0f0] dark:bg-surface-dark">
+                {pdfError ? (
+                  <div className="flex flex-col items-center justify-center h-full text-center px-6">
+                    <FileText className="w-12 h-12 text-muted mb-3" />
+                    <p className="text-sm text-muted">Gagal memuat PDF. Coba buka melalui Google Drive.</p>
+                    <a
+                      href={getEmbedUrl(selectedVolume?.file_url || book?.file_url || "")}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-3 inline-flex items-center gap-2 px-4 py-2 bg-primary text-white text-sm font-medium rounded-xl hover:bg-primary-dark transition-colors"
+                    >
+                      <BookOpen className="w-4 h-4" />
+                      Buka di Google Drive
+                    </a>
+                  </div>
+                ) : (
+                  <Document
+                    file={`/api/pdf-proxy?url=${encodeURIComponent(selectedVolume?.file_url || book?.file_url || "")}`}
+                    onLoadSuccess={({ numPages: pages }) => setNumPages(pages)}
+                    onLoadError={() => setPdfError(true)}
+                    loading={
+                      <div className="flex items-center justify-center py-20">
+                        <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                      </div>
+                    }
+                    className="flex justify-center py-4"
+                  >
+                    <Page
+                      pageNumber={currentPage}
+                      width={typeof window !== "undefined" ? Math.min(window.innerWidth - 64, 900) : 800}
+                      renderTextLayer={false}
+                      renderAnnotationLayer={false}
+                    />
+                  </Document>
+                )}
+              </div>
+            ) : (
+              <iframe
+                src={getEmbedUrl(selectedVolume?.file_url || book?.file_url || "")}
+                className="w-full h-full border-0"
+                title={book?.title || "Buku"}
+                allow="autoplay"
+              />
+            )}
           </div>
         </div>
       )}
