@@ -74,14 +74,12 @@ export default function BookDetailClient({ id }: { id: string }) {
   const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showViewer, setShowViewer] = useState(false);
-  const [previewExpired, setPreviewExpired] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [numPages, setNumPages] = useState(0);
   const [pdfError, setPdfError] = useState(false);
+  const [pdfLoading, setPdfLoading] = useState(false);
   const [savedPage, setSavedPage] = useState(0);
   const [saveFeedback, setSaveFeedback] = useState(false);
-  const viewerRef = useRef<HTMLDivElement>(null);
-  const pageRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   const PROGRESS_KEY = `book_progress_${id}`;
 
@@ -194,43 +192,10 @@ export default function BookDetailClient({ id }: { id: string }) {
   const handleOpenViewer = (vol?: BookVolume, startPage?: number) => {
     setSelectedVolume(vol || null);
     setShowViewer(true);
-    setPreviewExpired(false);
     setCurrentPage(startPage || 1);
     setPdfError(false);
-    setTimeout(() => {
-      if (startPage && startPage > 1 && pageRefs.current[startPage - 1]) {
-        pageRefs.current[startPage - 1]?.scrollIntoView({ behavior: "instant", block: "start" });
-      }
-    }, 500);
+    setPdfLoading(true);
   };
-
-  const goToPage = (page: number) => {
-    if (page < 1 || page > (numPages || 9999)) return;
-    if (isPaid && page > MAX_FREE_PAGES) {
-      setPreviewExpired(true);
-      return;
-    }
-    setCurrentPage(page);
-    persistPage(page);
-  };
-
-  useEffect(() => {
-    if (!showViewer) return;
-    pageRefs.current = pageRefs.current.slice(0, numPages || 0);
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            const p = parseInt(entry.target.getAttribute("data-page") || "0");
-            if (p > 0) setCurrentPage((prev) => Math.max(prev, p));
-          }
-        }
-      },
-      { threshold: 0.3 }
-    );
-    pageRefs.current.forEach((el) => { if (el) observer.observe(el); });
-    return () => observer.disconnect();
-  }, [showViewer, numPages]);
 
   const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -685,7 +650,7 @@ export default function BookDetailClient({ id }: { id: string }) {
                 </div>
               </div>
               <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
-                {(previewExpired || !isPaid) && isPaid && (
+                {isPaid && (
                   <button
                     onClick={handleBuyWhatsApp}
                     className="flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 bg-green-600 text-white text-xs sm:text-sm font-semibold rounded-xl hover:bg-green-700 transition-colors"
@@ -712,85 +677,91 @@ export default function BookDetailClient({ id }: { id: string }) {
             )}
           </div>
 
-          <div className="flex-1 flex flex-col relative overflow-hidden">
-            <div ref={viewerRef} className="flex-1 overflow-auto bg-[#f0f0f0] dark:bg-surface-dark">
-              {pdfError ? (
-                <div className="flex flex-col items-center justify-center h-full text-center px-6 py-20">
-                  <FileText className="w-12 h-12 text-muted mb-3" />
-                  <p className="text-sm text-muted">Gagal memuat PDF. Coba buka melalui Google Drive.</p>
-                  <a
-                    href={getEmbedUrl(selectedVolume?.file_url || book?.file_url || "")}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-3 inline-flex items-center gap-2 px-4 py-2 bg-primary text-white text-sm font-medium rounded-xl hover:bg-primary-dark transition-colors"
-                  >
-                    <BookOpen className="w-4 h-4" />
-                    Buka di Google Drive
-                  </a>
-                </div>
-              ) : numPages === 0 ? (
-                <div className="flex items-center justify-center py-20">
-                  <Loader2 className="w-8 h-8 text-primary animate-spin" />
-                </div>
-              ) : (
-                <Document
-                  file={`/api/pdf-proxy?url=${encodeURIComponent(selectedVolume?.file_url || book?.file_url || "")}`}
-                  onLoadSuccess={({ numPages: pages }) => setNumPages(pages)}
-                  onLoadError={() => setPdfError(true)}
-                  className="py-4 space-y-4"
+          <div className="flex-1 relative overflow-hidden bg-[#f0f0f0] dark:bg-surface-dark">
+            {pdfError ? (
+              <div className="flex flex-col items-center justify-center h-full text-center px-6 py-20">
+                <FileText className="w-12 h-12 text-muted mb-3" />
+                <p className="text-sm text-muted">Gagal memuat PDF. Coba buka melalui Google Drive.</p>
+                <a
+                  href={getEmbedUrl(selectedVolume?.file_url || book?.file_url || "")}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-3 inline-flex items-center gap-2 px-4 py-2 bg-primary text-white text-sm font-medium rounded-xl hover:bg-primary-dark transition-colors"
                 >
-                  {Array.from({ length: isPaid ? Math.min(numPages, MAX_FREE_PAGES) : numPages }, (_, i) => (
-                    <div
-                      key={i}
-                      data-page={i + 1}
-                      ref={(el) => { pageRefs.current[i] = el; }}
-                      className="flex justify-center"
-                    >
+                  <BookOpen className="w-4 h-4" />
+                  Buka di Google Drive
+                </a>
+              </div>
+            ) : isPaid ? (
+              <div className="h-full flex flex-col">
+                <div className="flex-1 overflow-auto flex flex-col items-center py-4">
+                  {pdfLoading && (
+                    <div className="flex items-center justify-center py-20">
+                      <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                    </div>
+                  )}
+                  <Document
+                    file={`/api/pdf-proxy?url=${encodeURIComponent(selectedVolume?.file_url || book?.file_url || "")}`}
+                    onLoadSuccess={({ numPages: pages }) => { setNumPages(pages); setPdfLoading(false); }}
+                    onLoadError={() => { setPdfError(true); setPdfLoading(false); }}
+                    loading={null}
+                  >
+                    <div className="flex justify-center px-4">
                       <Page
-                        pageNumber={i + 1}
-                        width={typeof window !== "undefined" ? Math.min(window.innerWidth - 64, 900) : 800}
+                        pageNumber={currentPage}
+                        width={typeof window !== "undefined" ? Math.min(window.innerWidth - 48, 900) : 800}
                         renderTextLayer={false}
                         renderAnnotationLayer={false}
                       />
                     </div>
-                  ))}
-                </Document>
-              )}
-            </div>
-
-            {!pdfError && numPages > 0 && (
-              <div className="flex-shrink-0 flex items-center justify-between px-4 py-2 border-t border-border bg-background/95 backdrop-blur-sm">
-                <span className="text-xs text-muted">
-                  Halaman {currentPage} / {isPaid ? Math.min(numPages, MAX_FREE_PAGES) : numPages}
-                </span>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => { persistPage(currentPage); setSaveFeedback(true); setTimeout(() => setSaveFeedback(false), 1500); }}
-                    className={`flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-lg transition-colors ${saveFeedback ? "bg-accent/20 text-accent" : "bg-surface-dark text-muted hover:text-accent hover:bg-accent/10"}`}
-                  >
-                    <BookmarkCheck className="w-3.5 h-3.5" />
-                    {saveFeedback ? "Tersimpan" : "Simpan"}
-                  </button>
-                  {isPaid && currentPage >= MAX_FREE_PAGES && (
-                    <button
-                      onClick={handleBuyWhatsApp}
-                      className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors"
-                    >
-                      <ShoppingCart className="w-3.5 h-3.5" />
-                      Beli Rp {priceFormatted}
-                    </button>
-                  )}
-                  {!isPaid && (
-                    <button
-                      onClick={() => handleDownload(selectedVolume || undefined)}
-                      className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-foreground glass rounded-lg hover:bg-surface-dark transition-colors"
-                    >
-                      <Download className="w-3.5 h-3.5" />
-                      Download
-                    </button>
-                  )}
+                  </Document>
                 </div>
+                {!pdfLoading && numPages > 0 && (
+                  <div className="flex-shrink-0 flex items-center justify-between px-4 py-2 border-t border-border bg-background/95 backdrop-blur-sm">
+                    <button
+                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                      disabled={currentPage <= 1}
+                      className="px-3 py-1.5 text-xs font-medium rounded-lg bg-surface-dark text-muted hover:bg-border disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                    >
+                      Sebelumnya
+                    </button>
+                    <span className="text-xs text-muted">
+                      {currentPage} / {Math.min(numPages, MAX_FREE_PAGES)}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => { persistPage(currentPage); setSaveFeedback(true); setTimeout(() => setSaveFeedback(false), 1500); }}
+                        className={`flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-lg transition-colors ${saveFeedback ? "bg-accent/20 text-accent" : "bg-surface-dark text-muted hover:text-accent hover:bg-accent/10"}`}
+                      >
+                        <BookmarkCheck className="w-3.5 h-3.5" />
+                        {saveFeedback ? "Tersimpan" : "Simpan"}
+                      </button>
+                      {currentPage >= MAX_FREE_PAGES && (
+                        <button
+                          onClick={handleBuyWhatsApp}
+                          className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors"
+                        >
+                          <ShoppingCart className="w-3.5 h-3.5" />
+                          Beli
+                        </button>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => setCurrentPage(p => Math.min(numPages, p + 1))}
+                      disabled={currentPage >= MAX_FREE_PAGES || currentPage >= numPages}
+                      className="px-3 py-1.5 text-xs font-medium rounded-lg bg-surface-dark text-muted hover:bg-border disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                    >
+                      Selanjutnya
+                    </button>
+                  </div>
+                )}
               </div>
+            ) : (
+              <iframe
+                src={getEmbedUrl(selectedVolume?.file_url || book?.file_url || "")}
+                className="w-full h-full"
+                allow="autoplay"
+              />
             )}
           </div>
         </div>
