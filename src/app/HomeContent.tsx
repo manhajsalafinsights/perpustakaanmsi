@@ -69,16 +69,16 @@ function MiniStats({ totalBooks, totalVisitors, totalCategories, totalFree }: { 
   ];
 
   return (
-    <div className="grid grid-cols-2 sm:flex sm:flex-wrap sm:items-center sm:justify-center gap-2 sm:gap-x-6">
+    <div className="flex items-center justify-center gap-3 sm:gap-x-6">
       {stats.map((stat, i) => (
-        <div key={stat.label} className="flex items-center gap-1.5 bg-surface/50 sm:bg-transparent rounded-lg px-2.5 py-1.5 sm:p-0">
-          <div className={`w-5 h-5 rounded-md bg-gradient-to-br ${stat.color} flex items-center justify-center shadow-sm flex-shrink-0`}>
-            <stat.icon className="w-3 h-3 text-white" />
+        <div key={stat.label} className="flex items-center gap-1">
+          <div className={`w-4 h-4 sm:w-5 sm:h-5 rounded sm:rounded-md bg-gradient-to-br ${stat.color} flex items-center justify-center shadow-sm flex-shrink-0`}>
+            <stat.icon className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-white" />
           </div>
-          <span className="text-sm font-semibold text-foreground">
+          <span className="text-xs sm:text-sm font-semibold text-foreground">
             <AnimatedCounter value={stat.value} />
           </span>
-          <span className="text-[10px] sm:text-xs text-muted whitespace-nowrap">{stat.label}</span>
+          <span className="hidden sm:inline text-xs text-muted whitespace-nowrap">{stat.label}</span>
         </div>
       ))}
     </div>
