@@ -70,13 +70,20 @@ export async function POST(request: NextRequest) {
   const body = await request.json();
   const { volumes, ...bookData } = body;
 
+  let cover = bookData.cover_url || "";
+  if (!cover && volumes?.[0]?.file_url) {
+    const m = String(volumes[0].file_url).match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/)
+      || String(volumes[0].file_url).match(/drive\.google\.com\/uc\?id=([a-zA-Z0-9_-]+)/);
+    if (m) cover = `https://drive.google.com/thumbnail?id=${m[1]}&sz=w800`;
+  }
+
   const { data, error } = await db()
     .from("books")
     .insert([
       {
         title: bookData.title,
         description: bookData.description || "",
-        cover_url: bookData.cover_url || "",
+        cover_url: cover,
         file_url: bookData.file_url || "",
         category: bookData.category || "Umum",
         author: bookData.author || "",
@@ -130,6 +137,12 @@ export async function PUT(request: NextRequest) {
 
   if (!id) {
     return NextResponse.json({ error: "ID is required" }, { status: 400 });
+  }
+
+  if (!updates.cover_url && volumes?.[0]?.file_url) {
+    const m = String(volumes[0].file_url).match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/)
+      || String(volumes[0].file_url).match(/drive\.google\.com\/uc\?id=([a-zA-Z0-9_-]+)/);
+    if (m) updates.cover_url = `https://drive.google.com/thumbnail?id=${m[1]}&sz=w800`;
   }
 
   const { data, error } = await db()

@@ -197,61 +197,15 @@ export default function RecommendationForm() {
       </div>
 
       <div>
-        <div className="flex items-center justify-between mb-1.5">
-          <label className="block text-sm font-medium text-foreground">Cover Ebook</label>
-          <button
-            type="button"
-            onClick={() => { setUseUrlInput(!useUrlInput); setCoverFile(null); setCoverPreview(""); }}
-            className="text-xs text-primary hover:text-primary-light transition-colors flex items-center gap-1"
-          >
-            {useUrlInput ? <Upload className="w-3 h-3" /> : <LinkIcon className="w-3 h-3" />}
-            {useUrlInput ? "Upload gambar" : "Pakai link"}
-          </button>
-        </div>
-
-        {useUrlInput ? (
-          <input
-            type="url"
-            value={form.cover_url}
-            onChange={(e) => setForm({ ...form, cover_url: e.target.value })}
-            className="w-full px-4 py-3 bg-surface border border-border rounded-2xl text-sm text-foreground placeholder:text-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/60 transition-all"
-            placeholder="https://drive.google.com/..."
-          />
-        ) : (
-          <div>
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              onChange={handleFileChange}
-              className="hidden"
-            />
-            <button
-              type="button"
-              onClick={() => fileRef.current?.click()}
-              className="w-full px-4 py-8 bg-surface border border-dashed border-border rounded-2xl text-sm text-muted hover:text-primary hover:border-primary/40 transition-all flex flex-col items-center gap-2"
-            >
-              {coverPreview ? (
-                <div className="relative w-24 h-32">
-                  <img src={coverPreview} alt="Preview" className="w-full h-full object-cover rounded-lg" />
-                  <button
-                    type="button"
-                    onClick={(e) => { e.stopPropagation(); setCoverFile(null); setCoverPreview(""); }}
-                    className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
-              ) : (
-                <>
-                  <ImageIcon className="w-8 h-8 opacity-50" />
-                  <span>Klik untuk upload cover</span>
-                  <span className="text-[11px] opacity-50">JPEG, PNG, WebP. Maks 5MB</span>
-                </>
-              )}
-            </button>
-          </div>
-        )}
+        <label className="block text-sm font-medium text-foreground mb-1.5">Cover Ebook (opsional)</label>
+        <p className="text-xs text-muted mb-2">Kosongkan saja, nanti cover otomatis diambil dari Google Drive link.</p>
+        <input
+          type="url"
+          value={form.cover_url}
+          onChange={(e) => setForm({ ...form, cover_url: e.target.value })}
+          className="w-full px-4 py-3 bg-surface border border-border rounded-2xl text-sm text-foreground placeholder:text-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/60 transition-all"
+          placeholder="https://drive.google.com/... (opsional)"
+        />
       </div>
 
       <div className="grid sm:grid-cols-2 gap-5">

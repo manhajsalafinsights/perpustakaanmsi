@@ -111,13 +111,20 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: "Rekomendasi tidak ditemukan" }, { status: 404 });
     }
 
+    let recCover = rec.cover_url || "";
+    if (!recCover && rec.file_url) {
+      const m = rec.file_url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/)
+        || rec.file_url.match(/drive\.google\.com\/uc\?id=([a-zA-Z0-9_-]+)/);
+      if (m) recCover = `https://drive.google.com/thumbnail?id=${m[1]}&sz=w800`;
+    }
+
     const { data: book, error: bookError } = await db()
       .from("books")
       .insert([
         {
           title: rec.title,
           description: rec.description || "",
-          cover_url: rec.cover_url || "",
+          cover_url: recCover,
           file_url: rec.file_url,
           category: rec.category || "Umum",
           author: rec.author || "",

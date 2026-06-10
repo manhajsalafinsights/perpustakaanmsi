@@ -301,11 +301,19 @@ export default function AdminPage() {
       return;
     }
 
+    let cover = form.cover_url;
+    if (!cover && validVolumes[0]?.file_url) {
+      const m = validVolumes[0].file_url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/)
+        || validVolumes[0].file_url.match(/drive\.google\.com\/uc\?id=([a-zA-Z0-9_-]+)/);
+      if (m) cover = `https://drive.google.com/thumbnail?id=${m[1]}&sz=w800`;
+    }
+
     try {
       const url = "/api/books";
       const method = editingBook ? "PUT" : "POST";
       const body: Record<string, unknown> = {
         ...form,
+        cover_url: cover,
         volumes: validVolumes,
       };
       if (editingBook) body.id = editingBook.id;
@@ -812,24 +820,6 @@ export default function AdminPage() {
                     rows={3}
                     className="w-full px-4 py-3 bg-surface border border-border rounded-2xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary resize-none"
                     placeholder="Deskripsi singkat tentang buku"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-1.5">
-                    <div className="flex items-center gap-1.5">
-                      <Image className="w-4 h-4" />
-                      Link Cover (Google Drive)
-                    </div>
-                  </label>
-                  <input
-                    type="url"
-                    value={form.cover_url}
-                    onChange={(e) =>
-                      setForm({ ...form, cover_url: e.target.value })
-                    }
-                    className="w-full px-4 py-3 bg-surface border border-border rounded-2xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
-                    placeholder="https://drive.google.com/..."
                   />
                 </div>
 
