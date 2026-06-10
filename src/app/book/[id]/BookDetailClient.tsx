@@ -681,7 +681,7 @@ export default function BookDetailClient({ id }: { id: string }) {
                 )}
               </div>
             </div>
-            {isPaid && !previewExpired && numPages > 0 && (
+            {!previewExpired && numPages > 0 && (
               <div className="flex items-center justify-center gap-2">
                 <button
                   onClick={() => goToPage(currentPage - 1)}
@@ -691,11 +691,11 @@ export default function BookDetailClient({ id }: { id: string }) {
                   <ChevronLeft className="w-4 h-4 text-foreground" />
                 </button>
                 <span className="text-[11px] sm:text-xs font-medium text-accent bg-accent/10 px-2.5 py-1 rounded-full">
-                  {currentPage} / {numPages > 0 ? Math.min(numPages, MAX_FREE_PAGES) : "..."}
+                  {currentPage} / {numPages > 0 ? (isPaid ? Math.min(numPages, MAX_FREE_PAGES) : numPages) : "..."}
                 </span>
                 <button
                   onClick={() => goToPage(currentPage + 1)}
-                  disabled={currentPage >= MAX_FREE_PAGES || currentPage >= (numPages || 9999)}
+                  disabled={isPaid ? currentPage >= MAX_FREE_PAGES : currentPage >= (numPages || 9999)}
                   className="w-7 h-7 flex items-center justify-center rounded-lg bg-surface-dark hover:bg-border disabled:opacity-30 transition-colors"
                 >
                   <ChevronRight className="w-4 h-4 text-foreground" />
@@ -748,51 +748,42 @@ export default function BookDetailClient({ id }: { id: string }) {
               </div>
             ) : null}
 
-            {isPaid ? (
-              <div className="h-full overflow-auto bg-[#f0f0f0] dark:bg-surface-dark">
-                {pdfError ? (
-                  <div className="flex flex-col items-center justify-center h-full text-center px-6">
-                    <FileText className="w-12 h-12 text-muted mb-3" />
-                    <p className="text-sm text-muted">Gagal memuat PDF. Coba buka melalui Google Drive.</p>
-                    <a
-                      href={getEmbedUrl(selectedVolume?.file_url || book?.file_url || "")}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-3 inline-flex items-center gap-2 px-4 py-2 bg-primary text-white text-sm font-medium rounded-xl hover:bg-primary-dark transition-colors"
-                    >
-                      <BookOpen className="w-4 h-4" />
-                      Buka di Google Drive
-                    </a>
-                  </div>
-                ) : (
-                  <Document
-                    file={`/api/pdf-proxy?url=${encodeURIComponent(selectedVolume?.file_url || book?.file_url || "")}`}
-                    onLoadSuccess={({ numPages: pages }) => setNumPages(pages)}
-                    onLoadError={() => setPdfError(true)}
-                    loading={
-                      <div className="flex items-center justify-center py-20">
-                        <Loader2 className="w-8 h-8 text-primary animate-spin" />
-                      </div>
-                    }
-                    className="flex justify-center py-4"
+            <div className="h-full overflow-auto bg-[#f0f0f0] dark:bg-surface-dark">
+              {pdfError ? (
+                <div className="flex flex-col items-center justify-center h-full text-center px-6">
+                  <FileText className="w-12 h-12 text-muted mb-3" />
+                  <p className="text-sm text-muted">Gagal memuat PDF. Coba buka melalui Google Drive.</p>
+                  <a
+                    href={getEmbedUrl(selectedVolume?.file_url || book?.file_url || "")}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-3 inline-flex items-center gap-2 px-4 py-2 bg-primary text-white text-sm font-medium rounded-xl hover:bg-primary-dark transition-colors"
                   >
-                    <Page
-                      pageNumber={currentPage}
-                      width={typeof window !== "undefined" ? Math.min(window.innerWidth - 64, 900) : 800}
-                      renderTextLayer={false}
-                      renderAnnotationLayer={false}
-                    />
-                  </Document>
-                )}
-              </div>
-            ) : (
-              <iframe
-                src={getEmbedUrl(selectedVolume?.file_url || book?.file_url || "")}
-                className="w-full h-full border-0"
-                title={book?.title || "Buku"}
-                allow="autoplay"
-              />
-            )}
+                    <BookOpen className="w-4 h-4" />
+                    Buka di Google Drive
+                  </a>
+                </div>
+              ) : (
+                <Document
+                  file={`/api/pdf-proxy?url=${encodeURIComponent(selectedVolume?.file_url || book?.file_url || "")}`}
+                  onLoadSuccess={({ numPages: pages }) => setNumPages(pages)}
+                  onLoadError={() => setPdfError(true)}
+                  loading={
+                    <div className="flex items-center justify-center py-20">
+                      <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                    </div>
+                  }
+                  className="flex justify-center py-4"
+                >
+                  <Page
+                    pageNumber={currentPage}
+                    width={typeof window !== "undefined" ? Math.min(window.innerWidth - 64, 900) : 800}
+                    renderTextLayer={false}
+                    renderAnnotationLayer={false}
+                  />
+                </Document>
+              )}
+            </div>
           </div>
         </div>
       )}
