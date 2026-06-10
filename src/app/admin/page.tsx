@@ -121,6 +121,7 @@ export default function AdminPage() {
   const [bookRequestLoading, setBookRequestLoading] = useState(false);
   const [recommendations, setRecommendations] = useState<BookRecommendation[]>([]);
   const [recommendationLoading, setRecommendationLoading] = useState(false);
+  const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set());
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -387,6 +388,15 @@ export default function AdminPage() {
     } catch {
       // ignore
     }
+  };
+
+  const toggleComment = (id: string) => {
+    setExpandedComments((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
   };
 
   const handleDeleteComment = async (id: string) => {
@@ -1287,32 +1297,38 @@ export default function AdminPage() {
               <p className="text-sm">Belum ada komentar</p>
             </div>
           ) : (
-            comments.map((comment) => (
-              <div key={comment.id} className="px-6 py-4 flex items-start justify-between hover:bg-surface/50 transition-colors">
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-sm font-medium text-foreground">{comment.name}</span>
-                    <span className="text-xs text-muted">
-                      {new Date(comment.created_at).toLocaleDateString("id-ID", {
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                      })}
-                    </span>
+            comments.map((comment) => {
+              const isExpanded = expandedComments.has(comment.id);
+              const preview = comment.message.length > 80 ? comment.message.slice(0, 80) + "..." : comment.message;
+              return (
+                <div key={comment.id} className="px-6 py-3 flex items-start justify-between hover:bg-surface/50 transition-colors cursor-pointer" onClick={() => toggleComment(comment.id)}>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <span className="text-sm font-medium text-foreground">{comment.name}</span>
+                      <span className="text-xs text-muted">
+                        {new Date(comment.created_at).toLocaleDateString("id-ID", {
+                          day: "numeric",
+                          month: "short",
+                          year: "numeric",
+                        })}
+                      </span>
+                    </div>
+                    <p className={`text-sm text-muted ${isExpanded ? "" : "line-clamp-1"}`}>
+                      {isExpanded ? comment.message : preview}
+                    </p>
+                    {comment.books && (
+                      <p className="text-xs text-primary/70 mt-0.5">pada: {comment.books.title}</p>
+                    )}
                   </div>
-                  <p className="text-sm text-muted">{comment.message}</p>
-                  {comment.books && (
-                    <p className="text-xs text-primary mt-1">pada: {comment.books.title}</p>
-                  )}
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleDeleteComment(comment.id); }}
+                    className="p-2 text-muted hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all flex-shrink-0 ml-3"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
-                <button
-                  onClick={() => handleDeleteComment(comment.id)}
-                  className="p-2 text-muted hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all flex-shrink-0 ml-3"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
       </div>
