@@ -60,7 +60,7 @@ function AnimatedCounter({ value, suffix = "" }: { value: number; suffix?: strin
   return <span ref={ref}>{count.toLocaleString("id-ID")}{suffix}</span>;
 }
 
-function StatsSection({ totalBooks, totalVisitors, totalCategories, totalFree }: { totalBooks: number; totalVisitors: number; totalCategories: number; totalFree: number }) {
+function MiniStats({ totalBooks, totalVisitors, totalCategories, totalFree }: { totalBooks: number; totalVisitors: number; totalCategories: number; totalFree: number }) {
   const stats = [
     { label: "Buku Tersedia", value: totalBooks, icon: Library, color: "from-emerald-500 to-emerald-600" },
     { label: "Pengunjung", value: totalVisitors, icon: Users, color: "from-blue-500 to-blue-600" },
@@ -69,24 +69,17 @@ function StatsSection({ totalBooks, totalVisitors, totalCategories, totalFree }:
   ];
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+    <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
       {stats.map((stat, i) => (
-        <motion.div
-          key={stat.label}
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: i * 0.1 }}
-          className="glass rounded-2xl p-4 sm:p-5 border border-border/40 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-0.5 transition-all duration-300"
-        >
-          <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center mb-3 shadow-sm`}>
-            <stat.icon className="w-5 h-5 text-white" />
+        <div key={stat.label} className="flex items-center gap-1.5">
+          <div className={`w-5 h-5 rounded-md bg-gradient-to-br ${stat.color} flex items-center justify-center shadow-sm`}>
+            <stat.icon className="w-3 h-3 text-white" />
           </div>
-          <p className="text-2xl sm:text-3xl font-bold text-foreground">
+          <span className="text-sm font-semibold text-foreground">
             <AnimatedCounter value={stat.value} />
-          </p>
-          <p className="text-xs text-muted mt-0.5">{stat.label}</p>
-        </motion.div>
+          </span>
+          <span className="text-xs text-muted">{stat.label}</span>
+        </div>
       ))}
     </div>
   );
@@ -288,6 +281,8 @@ export default function HomeContent() {
       <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 pb-8 sm:pb-12">
         <div className="space-y-8 sm:space-y-12">
 
+          <MiniStats totalBooks={books.length} totalVisitors={visitorCount} totalCategories={categories.length} totalFree={freeBooks.length} />
+
           {/* ── Ebook Gratis ── */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
@@ -454,17 +449,6 @@ export default function HomeContent() {
               ) : null}
             </div>
           </motion.div>
-
-          {/* ── Stats ── */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-          >
-            <StatsSection totalBooks={books.length} totalVisitors={visitorCount} totalCategories={categories.length} totalFree={freeBooks.length} />
-          </motion.div>
-
         </div>
       </div>
     </>
