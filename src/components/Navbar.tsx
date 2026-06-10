@@ -146,6 +146,12 @@ export default function Navbar() {
             <div className="hidden sm:flex items-center gap-2">
               <ThemeToggle />
               <Link
+                href="/rekomendasi"
+                className="px-3 py-2 text-sm text-muted hover:text-foreground rounded-xl hover:bg-surface-dark transition-all duration-200"
+              >
+                Rekomendasi
+              </Link>
+              <Link
                 href="/profile"
                 className="px-3 py-2 text-sm text-muted hover:text-foreground rounded-xl hover:bg-surface-dark transition-all duration-200"
               >
@@ -179,6 +185,13 @@ export default function Navbar() {
               className="sm:hidden glass border-t border-border"
             >
               <div className="px-4 py-4 space-y-3">
+                <Link
+                  href="/rekomendasi"
+                  onClick={() => setMobileOpen(false)}
+                  className="block px-4 py-2.5 text-sm text-muted hover:text-primary rounded-xl hover:bg-surface-dark transition-all duration-200"
+                >
+                  Rekomendasi
+                </Link>
                 <Link
                   href="/profile"
                   onClick={() => setMobileOpen(false)}
@@ -227,11 +240,11 @@ export default function Navbar() {
             <span className="text-[10px] font-medium">Cari</span>
           </button>
           <Link
-            href="/#trending"
+            href="/rekomendasi"
             className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl text-muted hover:text-foreground transition-all duration-200"
           >
-            <LayoutGrid className="w-5 h-5" />
-            <span className="text-[10px] font-medium">Jelajahi</span>
+            <BookOpen className="w-5 h-5" />
+            <span className="text-[10px] font-medium">Rekomendasi</span>
           </Link>
           <Link
             href="/profile"

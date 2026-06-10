@@ -60,6 +60,20 @@ interface BookRequest {
   created_at: string;
 }
 
+interface BookRecommendation {
+  id: string;
+  title: string;
+  author: string | null;
+  description: string | null;
+  category: string | null;
+  cover_url: string | null;
+  file_url: string;
+  name: string | null;
+  email: string | null;
+  status: "pending" | "approved" | "rejected";
+  created_at: string;
+}
+
 export default function AdminPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isSuper, setIsSuper] = useState(false);
@@ -105,6 +119,8 @@ export default function AdminPage() {
   const [comments, setComments] = useState<Comment[]>([]);
   const [bookRequests, setBookRequests] = useState<BookRequest[]>([]);
   const [bookRequestLoading, setBookRequestLoading] = useState(false);
+  const [recommendations, setRecommendations] = useState<BookRecommendation[]>([]);
+  const [recommendationLoading, setRecommendationLoading] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -199,7 +215,25 @@ export default function AdminPage() {
     };
     fetchData();
     fetchBookRequests();
+    fetchBookRecommendations();
   }, [isLoggedIn]);
+
+  const fetchBookRecommendations = async () => {
+    setRecommendationLoading(true);
+    try {
+      const token = sessionStorage.getItem("admin_token");
+      const res = await fetch("/api/book-recommendations", {
+        headers: { authorization: token || "" },
+      });
+      if (res.ok) {
+        setRecommendations(await res.json());
+      }
+    } catch {
+      // ignore
+    } finally {
+      setRecommendationLoading(false);
+    }
+  };
 
   const handleLogout = () => {
     sessionStorage.removeItem("admin_token");
@@ -394,6 +428,45 @@ export default function AdminPage() {
       });
       if (res.ok) {
         setBookRequests((prev) => prev.filter((r) => r.id !== id));
+      }
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleUpdateRecommendation = async (id: string, status: string) => {
+    try {
+      const token = sessionStorage.getItem("admin_token");
+      const res = await fetch("/api/book-recommendations", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", authorization: token || "" },
+        body: JSON.stringify({ id, status }),
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setRecommendations((prev) => prev.map((r) => (r.id === id ? updated : r)));
+        if (status === "approved") {
+          fetchBookRecommendations();
+        }
+      } else {
+        const data = await res.json();
+        alert(data.error || "Gagal memproses rekomendasi");
+      }
+    } catch {
+      alert("Terjadi kesalahan");
+    }
+  };
+
+  const handleDeleteRecommendation = async (id: string) => {
+    if (!confirm("Yakin ingin menghapus rekomendasi ini?")) return;
+    try {
+      const token = sessionStorage.getItem("admin_token");
+      const res = await fetch(`/api/book-recommendations?id=${id}`, {
+        method: "DELETE",
+        headers: { authorization: token || "" },
+      });
+      if (res.ok) {
+        setRecommendations((prev) => prev.filter((r) => r.id !== id));
       }
     } catch {
       // ignore
@@ -1336,6 +1409,108 @@ export default function AdminPage() {
                         <Trash2 className="w-4 h-4" />
                       </button>
                     )}
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+
+      {/* ── Rekomendasi Ebook ── */}
+      <div className="glass rounded-2xl shadow-sm overflow-hidden">
+        <div className="p-6 border-b border-border/50 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
+              <BookOpen className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-foreground">Rekomendasi Ebook</h2>
+              <p className="text-xs text-muted">{recommendations.length} rekomendasi</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="divide-y divide-border/50">
+          {recommendationLoading ? (
+            <div className="px-6 py-12 flex items-center justify-center text-muted">
+              <Loader2 className="w-5 h-5 animate-spin mr-2" />
+              <p className="text-sm">Memuat rekomendasi...</p>
+            </div>
+          ) : recommendations.length === 0 ? (
+            <div className="px-6 py-12 text-center text-muted">
+              <BookOpen className="w-8 h-8 mx-auto mb-2 opacity-50" />
+              <p className="text-sm">Belum ada rekomendasi ebook</p>
+            </div>
+          ) : (
+            recommendations.map((rec) => (
+              <div key={rec.id} className="px-6 py-4 hover:bg-surface/50 transition-colors">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-sm font-medium text-foreground">{rec.title}</span>
+                      {rec.author && (
+                        <span className="text-xs text-muted">— {rec.author}</span>
+                      )}
+                    </div>
+                    {rec.description && (
+                      <p className="text-xs text-muted mb-1.5 line-clamp-2">{rec.description}</p>
+                    )}
+                    <div className="flex items-center gap-2 text-xs text-muted">
+                      {rec.category && (
+                        <span className="text-[10px] font-medium text-primary bg-primary/10 px-1.5 py-0.5 rounded-full">
+                          {rec.category}
+                        </span>
+                      )}
+                      {rec.name && <span>{rec.name}</span>}
+                      <span>•</span>
+                      <span>
+                        {new Date(rec.created_at).toLocaleDateString("id-ID", {
+                          day: "numeric",
+                          month: "short",
+                          year: "numeric",
+                        })}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    {rec.status === "pending" && (
+                      <>
+                        <button
+                          onClick={() => handleUpdateRecommendation(rec.id, "approved")}
+                          className="p-2 text-emerald-400 hover:bg-emerald-500/10 rounded-lg transition-all"
+                          title="Setujui & Publikasikan"
+                        >
+                          <CheckCircle2 className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleUpdateRecommendation(rec.id, "rejected")}
+                          className="p-2 text-red-400 hover:bg-red-500/10 rounded-lg transition-all"
+                          title="Tolak"
+                        >
+                          <XCircle className="w-4 h-4" />
+                        </button>
+                      </>
+                    )}
+                    {rec.status === "approved" && (
+                      <span className="flex items-center gap-1 text-xs font-medium text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full">
+                        <CheckCircle2 className="w-3 h-3" />
+                        Disetujui
+                      </span>
+                    )}
+                    {rec.status === "rejected" && (
+                      <span className="flex items-center gap-1 text-xs font-medium text-red-400 bg-red-500/10 px-2.5 py-1 rounded-full">
+                        <XCircle className="w-3 h-3" />
+                        Ditolak
+                      </span>
+                    )}
+                    <button
+                      onClick={() => handleDeleteRecommendation(rec.id)}
+                      className="p-2 text-muted hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all"
+                      title="Hapus"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
               </div>
