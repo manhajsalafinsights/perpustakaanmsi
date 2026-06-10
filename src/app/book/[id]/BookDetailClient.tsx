@@ -78,6 +78,20 @@ export default function BookDetailClient({ id }: { id: string }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [numPages, setNumPages] = useState(0);
   const [pdfError, setPdfError] = useState(false);
+  const [savedPage, setSavedPage] = useState(0);
+
+  const PROGRESS_KEY = `book_progress_${id}`;
+
+  const loadProgress = () => {
+    try {
+      const saved = localStorage.getItem(PROGRESS_KEY);
+      return saved ? parseInt(saved, 10) : 0;
+    } catch { return 0; }
+  };
+
+  const persistPage = (page: number) => {
+    try { localStorage.setItem(PROGRESS_KEY, String(page)); } catch {}
+  };
 
   const fetchComments = useCallback(async (bookId: string) => {
     try {
@@ -120,6 +134,7 @@ export default function BookDetailClient({ id }: { id: string }) {
         }
       } catch {
         // ignore
+        setSavedPage(loadProgress());
       } finally {
         setLoading(false);
       }
@@ -173,13 +188,17 @@ export default function BookDetailClient({ id }: { id: string }) {
     );
   };
 
-  const handleOpenViewer = (vol?: BookVolume) => {
+  const handleOpenViewer = (vol?: BookVolume, startPage?: number) => {
     setSelectedVolume(vol || null);
     setShowViewer(true);
     setPreviewExpired(false);
-    setCurrentPage(1);
+    setCurrentPage(startPage || 1);
     setPdfError(false);
   };
+
+  useEffect(() => {
+    if (showViewer && currentPage > 0) persistPage(currentPage);
+  }, [currentPage, showViewer]);
 
   const goToPage = (page: number) => {
     if (page < 1 || page > (numPages || 1)) return;
@@ -423,6 +442,15 @@ export default function BookDetailClient({ id }: { id: string }) {
                           </p>
                         </div>
                         <div className="flex items-center gap-2 flex-shrink-0">
+                          {savedPage > 0 ? (
+                            <button
+                              onClick={() => handleOpenViewer(vol, savedPage)}
+                              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-accent rounded-xl hover:bg-accent/90 transition-colors"
+                            >
+                              <BookOpen className="w-3.5 h-3.5" />
+                              Lanjut (hlm {savedPage})
+                            </button>
+                          ) : null}
                           {isPaid ? (
                             <button
                               onClick={() => handleOpenViewer(vol)}
