@@ -697,7 +697,7 @@ export default function BookDetailClient({ id }: { id: string }) {
                   Buka di Google Drive
                 </a>
               </div>
-            ) : isPaid ? (
+            ) : (
               <div className="h-full flex flex-col">
                 <div className="flex-1 overflow-auto flex flex-col items-center py-4">
                   {pdfLoading && (
@@ -732,7 +732,7 @@ export default function BookDetailClient({ id }: { id: string }) {
                   </button>
                   <div className="justify-self-center flex items-center gap-1.5">
                     <span className="text-xs text-muted">
-                      {currentPage} / {numPages > 0 ? Math.min(numPages, MAX_FREE_PAGES) : "?"}
+                      {currentPage} / {numPages > 0 ? (isPaid ? Math.min(numPages, MAX_FREE_PAGES) : numPages) : "?"}
                     </span>
                     <button
                       onClick={() => { persistPage(currentPage); setSaveFeedback(true); setTimeout(() => setSaveFeedback(false), 1500); }}
@@ -743,7 +743,7 @@ export default function BookDetailClient({ id }: { id: string }) {
                     </button>
                   </div>
                   <div className="justify-self-end flex items-center gap-1">
-                    {currentPage >= MAX_FREE_PAGES && numPages > 0 && (
+                    {isPaid && currentPage >= MAX_FREE_PAGES && numPages > 0 && (
                       <button
                         onClick={handleBuyWhatsApp}
                         className="flex items-center gap-0.5 px-2 py-1.5 text-xs font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors"
@@ -752,9 +752,18 @@ export default function BookDetailClient({ id }: { id: string }) {
                         <span className="hidden sm:inline">Beli</span>
                       </button>
                     )}
+                    {!isPaid && (
+                      <button
+                        onClick={() => handleDownload(selectedVolume || undefined)}
+                        className="flex items-center gap-0.5 px-2 py-1.5 text-xs font-medium text-foreground bg-surface-dark rounded-lg hover:bg-border transition-colors"
+                      >
+                        <Download className="w-3 w-3" />
+                        <span className="hidden sm:inline">Download</span>
+                      </button>
+                    )}
                     <button
                       onClick={() => setCurrentPage(p => Math.min(numPages, p + 1))}
-                      disabled={numPages === 0 || currentPage >= MAX_FREE_PAGES || currentPage >= numPages}
+                      disabled={numPages === 0 || (isPaid ? currentPage >= Math.min(numPages, MAX_FREE_PAGES) : currentPage >= numPages)}
                       className="flex items-center gap-0.5 px-2 py-1.5 text-xs font-medium rounded-lg bg-surface-dark text-muted hover:bg-border disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                     >
                       <span className="hidden sm:inline">Selanjutnya</span>
@@ -763,12 +772,6 @@ export default function BookDetailClient({ id }: { id: string }) {
                   </div>
                 </div>
               </div>
-            ) : (
-              <iframe
-                src={getEmbedUrl(selectedVolume?.file_url || book?.file_url || "")}
-                className="w-full h-full"
-                allow="autoplay"
-              />
             )}
           </div>
         </div>
