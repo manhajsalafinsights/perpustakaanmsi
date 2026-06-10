@@ -31,6 +31,7 @@ import {
   X,
   FileText,
   Loader2,
+  BookmarkCheck,
 } from "lucide-react";
 
 function formatNumber(n: number): string {
@@ -79,6 +80,7 @@ export default function BookDetailClient({ id }: { id: string }) {
   const [numPages, setNumPages] = useState(0);
   const [pdfError, setPdfError] = useState(false);
   const [savedPage, setSavedPage] = useState(0);
+  const [saveFeedback, setSaveFeedback] = useState(false);
 
   const PROGRESS_KEY = `book_progress_${id}`;
 
@@ -644,7 +646,7 @@ export default function BookDetailClient({ id }: { id: string }) {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 min-w-0">
                 <button
-                  onClick={() => setShowViewer(false)}
+                  onClick={() => { persistPage(currentPage); setShowViewer(false); }}
                   className="w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0 flex items-center justify-center rounded-xl hover:bg-surface-dark transition-colors"
                 >
                   <X className="w-4 h-4 sm:w-5 sm:h-5 text-foreground" />
@@ -680,7 +682,7 @@ export default function BookDetailClient({ id }: { id: string }) {
               </div>
             </div>
             {isPaid && !previewExpired && numPages > 0 && (
-              <div className="flex items-center justify-center gap-3">
+              <div className="flex items-center justify-center gap-2">
                 <button
                   onClick={() => goToPage(currentPage - 1)}
                   disabled={currentPage <= 1}
@@ -698,6 +700,18 @@ export default function BookDetailClient({ id }: { id: string }) {
                 >
                   <ChevronRight className="w-4 h-4 text-foreground" />
                 </button>
+                <button
+                  onClick={() => { persistPage(currentPage); setSaveFeedback(true); setTimeout(() => setSaveFeedback(false), 1500); }}
+                  className={`w-7 h-7 flex items-center justify-center rounded-lg transition-colors ${saveFeedback ? "bg-accent/20 text-accent" : "bg-surface-dark hover:bg-border text-muted hover:text-accent"}`}
+                  title="Simpan halaman"
+                >
+                  <BookmarkCheck className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
+            {saveFeedback && (
+              <div className="flex justify-center">
+                <span className="text-[10px] text-accent">Halaman {currentPage} tersimpan</span>
               </div>
             )}
           </div>
