@@ -721,49 +721,47 @@ export default function BookDetailClient({ id }: { id: string }) {
                     </div>
                   </Document>
                 </div>
-                {!pdfLoading && numPages > 0 && (
-                  <div className="flex-shrink-0 grid grid-cols-3 items-center px-2 py-1.5 border-t border-border bg-background/95 backdrop-blur-sm">
+                <div className="flex-shrink-0 grid grid-cols-3 items-center px-2 py-1.5 border-t border-border bg-background/95 backdrop-blur-sm">
+                  <button
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage <= 1}
+                    className="justify-self-start flex items-center gap-0.5 px-2 py-1.5 text-xs font-medium rounded-lg bg-surface-dark text-muted hover:bg-border disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <ChevronLeft className="w-3.5 h-3.5" />
+                    <span className="hidden sm:inline">Sebelumnya</span>
+                  </button>
+                  <div className="justify-self-center flex items-center gap-1.5">
+                    <span className="text-xs text-muted">
+                      {currentPage} / {numPages > 0 ? Math.min(numPages, MAX_FREE_PAGES) : "?"}
+                    </span>
                     <button
-                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                      disabled={currentPage <= 1}
-                      className="justify-self-start flex items-center gap-0.5 px-2 py-1.5 text-xs font-medium rounded-lg bg-surface-dark text-muted hover:bg-border disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                      onClick={() => { persistPage(currentPage); setSaveFeedback(true); setTimeout(() => setSaveFeedback(false), 1500); }}
+                      className={`flex items-center gap-0.5 px-2 py-1.5 text-xs font-medium rounded-lg transition-colors ${saveFeedback ? "bg-accent/20 text-accent" : "bg-surface-dark text-muted hover:text-accent hover:bg-accent/10"}`}
                     >
-                      <ChevronLeft className="w-3.5 h-3.5" />
-                      <span className="hidden sm:inline">Sebelumnya</span>
+                      <BookmarkCheck className={`w-3.5 h-3.5 ${saveFeedback ? "fill-current" : ""}`} />
+                      <span className="hidden sm:inline">{saveFeedback ? "Tersimpan" : "Simpan"}</span>
                     </button>
-                    <div className="justify-self-center flex items-center gap-1.5">
-                      <span className="text-xs text-muted">
-                        {currentPage} / {Math.min(numPages, MAX_FREE_PAGES)}
-                      </span>
-                      <button
-                        onClick={() => { persistPage(currentPage); setSaveFeedback(true); setTimeout(() => setSaveFeedback(false), 1500); }}
-                        className={`flex items-center gap-0.5 px-2 py-1.5 text-xs font-medium rounded-lg transition-colors ${saveFeedback ? "bg-accent/20 text-accent" : "bg-surface-dark text-muted hover:text-accent hover:bg-accent/10"}`}
-                      >
-                        <BookmarkCheck className={`w-3.5 h-3.5 ${saveFeedback ? "fill-current" : ""}`} />
-                        <span className="hidden sm:inline">{saveFeedback ? "Tersimpan" : "Simpan"}</span>
-                      </button>
-                    </div>
-                    <div className="justify-self-end flex items-center gap-1">
-                      {currentPage >= MAX_FREE_PAGES && (
-                        <button
-                          onClick={handleBuyWhatsApp}
-                          className="flex items-center gap-0.5 px-2 py-1.5 text-xs font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors"
-                        >
-                          <ShoppingCart className="w-3 w-3" />
-                          <span className="hidden sm:inline">Beli</span>
-                        </button>
-                      )}
-                      <button
-                        onClick={() => setCurrentPage(p => Math.min(numPages, p + 1))}
-                        disabled={currentPage >= MAX_FREE_PAGES || currentPage >= numPages}
-                        className="flex items-center gap-0.5 px-2 py-1.5 text-xs font-medium rounded-lg bg-surface-dark text-muted hover:bg-border disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                      >
-                        <span className="hidden sm:inline">Selanjutnya</span>
-                        <ChevronRight className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
                   </div>
-                )}
+                  <div className="justify-self-end flex items-center gap-1">
+                    {currentPage >= MAX_FREE_PAGES && numPages > 0 && (
+                      <button
+                        onClick={handleBuyWhatsApp}
+                        className="flex items-center gap-0.5 px-2 py-1.5 text-xs font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors"
+                      >
+                        <ShoppingCart className="w-3 w-3" />
+                        <span className="hidden sm:inline">Beli</span>
+                      </button>
+                    )}
+                    <button
+                      onClick={() => setCurrentPage(p => Math.min(numPages, p + 1))}
+                      disabled={numPages === 0 || currentPage >= MAX_FREE_PAGES || currentPage >= numPages}
+                      className="flex items-center gap-0.5 px-2 py-1.5 text-xs font-medium rounded-lg bg-surface-dark text-muted hover:bg-border disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                    >
+                      <span className="hidden sm:inline">Selanjutnya</span>
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
               </div>
             ) : (
               <iframe
