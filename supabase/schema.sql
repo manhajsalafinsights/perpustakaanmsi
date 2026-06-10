@@ -86,6 +86,32 @@ CREATE POLICY "Public can read visitors" ON visitors
   FOR SELECT USING (true);
 
 -- ============================================
+-- Tabel Rekomendasi Ebook (dari user)
+-- ============================================
+CREATE TABLE IF NOT EXISTS book_recommendations (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  title TEXT NOT NULL,
+  author TEXT DEFAULT '',
+  description TEXT DEFAULT '',
+  category TEXT DEFAULT '',
+  cover_url TEXT DEFAULT '',
+  file_url TEXT NOT NULL,
+  status TEXT DEFAULT 'pending',
+  name TEXT DEFAULT '',
+  email TEXT DEFAULT '',
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE book_recommendations ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Public can insert book_recommendations" ON book_recommendations
+  FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Public can read book_recommendations" ON book_recommendations
+  FOR SELECT USING (true);
+
+-- ============================================
 -- MIGRATION: Tambah kolom views & purchased
 -- Jalankan SQL berikut di Supabase SQL Editor:
 -- ============================================
