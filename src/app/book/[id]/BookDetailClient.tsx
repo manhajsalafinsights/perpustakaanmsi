@@ -134,8 +134,8 @@ export default function BookDetailClient({ id }: { id: string }) {
         }
       } catch {
         // ignore
-        setSavedPage(loadProgress());
       } finally {
+        setSavedPage(loadProgress());
         setLoading(false);
       }
     }
