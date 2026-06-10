@@ -33,7 +33,7 @@ export default function RekomendasiPage() {
           <div className="text-xs text-muted bg-surface-dark rounded-2xl p-4 mb-6 border border-border/50 leading-relaxed">
             <p className="font-medium text-foreground mb-1">Ketentuan:</p>
             <ul className="list-disc list-inside space-y-0.5 opacity-80">
-              <li>Pastikan ebook yang direkomendasikan sesuai dengan tema islami</li>
+              <li>Pastikan ebook yang direkomendasikan bermanhaj salaf</li>
               <li>Link Google Drive harus bisa diakses publik</li>
               <li>Tim kami akan mereview dan menyetujui dalam 1x24 jam</li>
               <li>Jika disetujui, ebook akan langsung online di perpustakaan</li>
