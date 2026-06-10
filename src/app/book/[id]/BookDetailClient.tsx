@@ -196,17 +196,14 @@ export default function BookDetailClient({ id }: { id: string }) {
     setPdfError(false);
   };
 
-  useEffect(() => {
-    if (showViewer && currentPage > 0) persistPage(currentPage);
-  }, [currentPage, showViewer]);
-
   const goToPage = (page: number) => {
-    if (page < 1 || page > (numPages || 1)) return;
+    if (page < 1 || page > (numPages || 9999)) return;
     if (isPaid && page > MAX_FREE_PAGES) {
       setPreviewExpired(true);
       return;
     }
     setCurrentPage(page);
+    persistPage(page);
   };
 
   const handleSubmitComment = async (e: React.FormEvent) => {
@@ -692,11 +689,11 @@ export default function BookDetailClient({ id }: { id: string }) {
                   <ChevronLeft className="w-4 h-4 text-foreground" />
                 </button>
                 <span className="text-[11px] sm:text-xs font-medium text-accent bg-accent/10 px-2.5 py-1 rounded-full">
-                  {currentPage} / {Math.min(numPages, MAX_FREE_PAGES)}
+                  {currentPage} / {numPages > 0 ? Math.min(numPages, MAX_FREE_PAGES) : "..."}
                 </span>
                 <button
                   onClick={() => goToPage(currentPage + 1)}
-                  disabled={currentPage >= MAX_FREE_PAGES || currentPage >= numPages}
+                  disabled={currentPage >= MAX_FREE_PAGES || currentPage >= (numPages || 9999)}
                   className="w-7 h-7 flex items-center justify-center rounded-lg bg-surface-dark hover:bg-border disabled:opacity-30 transition-colors"
                 >
                   <ChevronRight className="w-4 h-4 text-foreground" />
