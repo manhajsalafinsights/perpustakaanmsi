@@ -21,6 +21,7 @@ import {
   MessageCircle,
   Send,
   User,
+  ChevronLeft,
   ChevronRight,
   Calendar,
   Eye,
@@ -196,6 +197,10 @@ export default function BookDetailClient({ id }: { id: string }) {
     setPdfError(false);
     setPdfLoading(true);
   };
+
+  useEffect(() => {
+    if (showViewer) persistPage(currentPage);
+  }, [currentPage, showViewer]);
 
   const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -717,42 +722,46 @@ export default function BookDetailClient({ id }: { id: string }) {
                   </Document>
                 </div>
                 {!pdfLoading && numPages > 0 && (
-                  <div className="flex-shrink-0 flex items-center justify-between px-4 py-2 border-t border-border bg-background/95 backdrop-blur-sm">
+                  <div className="flex-shrink-0 grid grid-cols-3 items-center px-2 py-1.5 border-t border-border bg-background/95 backdrop-blur-sm">
                     <button
                       onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                       disabled={currentPage <= 1}
-                      className="px-3 py-1.5 text-xs font-medium rounded-lg bg-surface-dark text-muted hover:bg-border disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                      className="justify-self-start flex items-center gap-0.5 px-2 py-1.5 text-xs font-medium rounded-lg bg-surface-dark text-muted hover:bg-border disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                     >
-                      Sebelumnya
+                      <ChevronLeft className="w-3.5 h-3.5" />
+                      <span className="hidden sm:inline">Sebelumnya</span>
                     </button>
-                    <span className="text-xs text-muted">
-                      {currentPage} / {Math.min(numPages, MAX_FREE_PAGES)}
-                    </span>
-                    <div className="flex items-center gap-2">
+                    <div className="justify-self-center flex items-center gap-1.5">
+                      <span className="text-xs text-muted">
+                        {currentPage} / {Math.min(numPages, MAX_FREE_PAGES)}
+                      </span>
                       <button
                         onClick={() => { persistPage(currentPage); setSaveFeedback(true); setTimeout(() => setSaveFeedback(false), 1500); }}
-                        className={`flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-lg transition-colors ${saveFeedback ? "bg-accent/20 text-accent" : "bg-surface-dark text-muted hover:text-accent hover:bg-accent/10"}`}
+                        className={`flex items-center gap-0.5 px-2 py-1.5 text-xs font-medium rounded-lg transition-colors ${saveFeedback ? "bg-accent/20 text-accent" : "bg-surface-dark text-muted hover:text-accent hover:bg-accent/10"}`}
                       >
-                        <BookmarkCheck className="w-3.5 h-3.5" />
-                        {saveFeedback ? "Tersimpan" : "Simpan"}
+                        <BookmarkCheck className={`w-3.5 h-3.5 ${saveFeedback ? "fill-current" : ""}`} />
+                        <span className="hidden sm:inline">{saveFeedback ? "Tersimpan" : "Simpan"}</span>
                       </button>
+                    </div>
+                    <div className="justify-self-end flex items-center gap-1">
                       {currentPage >= MAX_FREE_PAGES && (
                         <button
                           onClick={handleBuyWhatsApp}
-                          className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors"
+                          className="flex items-center gap-0.5 px-2 py-1.5 text-xs font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors"
                         >
-                          <ShoppingCart className="w-3.5 h-3.5" />
-                          Beli
+                          <ShoppingCart className="w-3 w-3" />
+                          <span className="hidden sm:inline">Beli</span>
                         </button>
                       )}
+                      <button
+                        onClick={() => setCurrentPage(p => Math.min(numPages, p + 1))}
+                        disabled={currentPage >= MAX_FREE_PAGES || currentPage >= numPages}
+                        className="flex items-center gap-0.5 px-2 py-1.5 text-xs font-medium rounded-lg bg-surface-dark text-muted hover:bg-border disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                      >
+                        <span className="hidden sm:inline">Selanjutnya</span>
+                        <ChevronRight className="w-3.5 h-3.5" />
+                      </button>
                     </div>
-                    <button
-                      onClick={() => setCurrentPage(p => Math.min(numPages, p + 1))}
-                      disabled={currentPage >= MAX_FREE_PAGES || currentPage >= numPages}
-                      className="px-3 py-1.5 text-xs font-medium rounded-lg bg-surface-dark text-muted hover:bg-border disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                    >
-                      Selanjutnya
-                    </button>
                   </div>
                 )}
               </div>
