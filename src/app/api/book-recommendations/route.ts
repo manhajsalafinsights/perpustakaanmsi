@@ -121,7 +121,6 @@ export async function PUT(request: NextRequest) {
           file_url: rec.file_url,
           category: rec.category || "Umum",
           author: rec.author || "",
-          is_paid: false,
           price: 25000,
           promo_price: null,
           promo_text: "",
@@ -148,7 +147,7 @@ export async function PUT(request: NextRequest) {
       ])
       .then(() => {});
 
-    const { data: updated, error: updateError } = await supabase
+    const { data: updated, error: updateError } = await db()
       .from("book_recommendations")
       .update({ status: "approved" })
       .eq("id", id)
@@ -162,9 +161,9 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json(updated);
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db()
     .from("book_recommendations")
-    .update({ status, updated_by: admin.id })
+    .update({ status })
     .eq("id", id)
     .select()
     .single();
@@ -189,7 +188,7 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: "ID is required" }, { status: 400 });
   }
 
-  const { error } = await supabase.from("book_recommendations").delete().eq("id", id);
+  const { error } = await db().from("book_recommendations").delete().eq("id", id);
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
