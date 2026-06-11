@@ -834,7 +834,7 @@ export default function AdminPage() {
                       setForm({ ...form, author: e.target.value })
                     }
                     className="w-full px-4 py-3 bg-surface border border-border rounded-2xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
-                    placeholder="Nama penulis"
+                    placeholder="Nama penulis (pisahkan dengan koma)"
                   />
                 </div>
 
