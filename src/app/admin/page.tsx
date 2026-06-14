@@ -291,7 +291,7 @@ export default function AdminPage() {
             let line = arr[0].text;
             for (let j = 1; j < arr.length; j++) {
               const gap = arr[j].x - (arr[j - 1].x + arr[j - 1].w);
-              line += gap > 3 ? " " + arr[j].text : arr[j].text;
+              line += gap > 8 ? " " + arr[j].text : arr[j].text;
             }
             return line;
           }).join("\n");
