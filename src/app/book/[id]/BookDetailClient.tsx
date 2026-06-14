@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, Fragment } from "react";
 import { Book, BookVolume } from "@/lib/types";
 import Image from "next/image";
 import Link from "next/link";
@@ -81,6 +81,7 @@ export default function BookDetailClient({ id }: { id: string }) {
   const [pdfLoading, setPdfLoading] = useState(false);
   const [savedPage, setSavedPage] = useState(0);
   const [saveFeedback, setSaveFeedback] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   const PROGRESS_KEY = `book_progress_${id}`;
 
@@ -170,20 +171,24 @@ export default function BookDetailClient({ id }: { id: string }) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id: book.id, type: "purchased" }),
     }).catch(() => {});
+    setShowPaymentModal(true);
+  };
+
+  const handlePaymentConfirm = () => {
+    if (!book) return;
     const price = activePrice.toLocaleString("id-ID");
     const promoLine = hasPromo
       ? "\nHarga Normal: ~~Rp " + bookPrice.toLocaleString("id-ID") + "~~"
       : "";
     const msg = [
-      "Assalamu'alaikum, saya ingin membeli buku:",
+      "Assalamu'alaikum, saya sudah transfer untuk pembelian buku:",
       "",
-      "*",
-      book.title,
-      "*",
+      "*" + book.title + "*",
       "Harga: Rp " + price + promoLine,
       "",
-      "Mohon info cara pembayarannya. Jazakallahu khairan.",
+      "Berikut bukti transfernya.",
     ].join("\n");
+    setShowPaymentModal(false);
     window.open(
       "https://wa.me/" + WA_NUMBER + "?text=" + encodeURIComponent(msg),
       "_blank"
@@ -786,6 +791,52 @@ export default function BookDetailClient({ id }: { id: string }) {
                 </div>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Payment Modal */}
+      {showPaymentModal && book && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="glass rounded-2xl p-6 sm:p-8 max-w-md w-full border border-accent/20 shadow-2xl">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-semibold text-foreground">Info Pembayaran</h3>
+              <button
+                onClick={() => setShowPaymentModal(false)}
+                className="p-1.5 rounded-xl text-muted hover:text-foreground hover:bg-surface-dark transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div className="bg-surface-dark rounded-xl p-4 text-center">
+                <p className="text-sm text-muted mb-1">Transfer ke</p>
+                <p className="font-bold text-lg text-foreground">Bank BSI</p>
+                <p className="text-2xl font-bold text-accent tracking-wider mt-1">
+                  9700707005
+                </p>
+                <p className="text-sm text-muted mt-1">a.n. YUVI ADS INDONESIA</p>
+              </div>
+
+              <div className="flex items-center justify-between text-sm px-1">
+                <span className="text-muted">Total Pembayaran</span>
+                <span className="font-semibold text-foreground">
+                  Rp {priceFormatted}
+                </span>
+              </div>
+
+              <button
+                onClick={handlePaymentConfirm}
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-green-600 text-white font-semibold rounded-xl hover:bg-green-700 transition-colors"
+              >
+                Konfirmasi via WhatsApp
+              </button>
+
+              <p className="text-xs text-muted text-center">
+                Klik konfirmasi setelah transfer, lalu kirim bukti transfer via WhatsApp.
+              </p>
+            </div>
           </div>
         </div>
       )}
