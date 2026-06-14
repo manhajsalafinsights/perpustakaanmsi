@@ -70,8 +70,8 @@ export async function POST(request: NextRequest) {
       const doc = await PDFDocument.load(pdfBytes, { ignoreEncryption: true });
       title = doc.getTitle() || "";
       author = doc.getAuthor() || "";
-    } catch {
-      // pdf-lib failed
+    } catch (e) {
+      console.error("pdf-lib failed:", e);
     }
 
     let description = "";
@@ -81,8 +81,15 @@ export async function POST(request: NextRequest) {
       description = firstSentence
         ? firstSentence[0] + " Baca selanjutnya..."
         : rawText.slice(0, 200) + (rawText.length > 200 ? " Baca selanjutnya..." : "");
-    } catch {
-      // text extraction failed
+    } catch (e) {
+      console.error("text extraction failed:", e);
+    }
+
+    if (!title && !author && !description) {
+      return NextResponse.json(
+        { error: "Tidak bisa mengekstrak metadata dari PDF ini. Kemungkinan file tidak dapat diakses atau bukan PDF." },
+        { status: 422 }
+      );
     }
 
     return NextResponse.json({ title, author, description });

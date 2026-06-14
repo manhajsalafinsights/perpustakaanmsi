@@ -258,21 +258,19 @@ export default function AdminPage() {
       });
       const data = await res.json();
       if (res.ok) {
-        setForm((prev) => {
-          const updates: Record<string, string> = {};
-          if (data.title && !prev.title) updates.title = data.title;
-          if (data.author && !prev.author) updates.author = data.author;
-          if (data.description && !prev.description) updates.description = data.description;
-          if (!data.title && data.description && !prev.title) {
-            updates.title = data.description.replace(/ Baca selanjutnya\.\.\.$/, "").slice(0, 60);
-          }
-          if (Object.keys(updates).length > 0) {
-            setExtractMsg({ type: "success", text: Object.keys(updates).join(", ") });
-            return { ...prev, ...updates };
-          }
-          setExtractMsg({ type: "success", text: "semua sudah terisi" });
-          return prev;
-        });
+        const updates: Record<string, string> = {};
+        if (data.title) updates.title = data.title;
+        if (data.author) updates.author = data.author;
+        if (data.description) updates.description = data.description;
+        if (!data.title && data.description) {
+          updates.title = data.description.replace(/ Baca selanjutnya\.\.\.$/, "").slice(0, 60);
+        }
+        if (Object.keys(updates).length > 0) {
+          setForm((prev) => ({ ...prev, ...updates }));
+          setExtractMsg({ type: "success", text: Object.keys(updates).join(", ") });
+        } else {
+          setExtractMsg({ type: "error", text: "Gagal mengekstrak data dari PDF" });
+        }
       } else {
         setExtractMsg({ type: "error", text: data.error || "Gagal extract" });
       }
