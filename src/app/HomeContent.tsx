@@ -62,14 +62,14 @@ function AnimatedCounter({ value, suffix = "" }: { value: number; suffix?: strin
 }
 
 function OnlineReaderCount() {
-  const [count, setCount] = useState(24000);
+  const [count, setCount] = useState(24300);
 
   useEffect(() => {
     const next = () => {
       const delay = 2000 + Math.random() * 8000;
       return setTimeout(() => {
         setCount((prev) => {
-          const delta = Math.floor(Math.random() * 400) - 200;
+          const delta = Math.floor(Math.random() * 2000) - 1000;
           return Math.max(20000, Math.min(3000000, prev + delta));
         });
       }, delay);
@@ -79,8 +79,8 @@ function OnlineReaderCount() {
   }, [count]);
 
   const fmt = (n: number) => {
-    if (n >= 1000000) return (n / 1000000).toFixed(n % 1000000 === 0 ? 0 : 1).replace(".", ",") + "jt";
-    return Math.round(n / 1000) + "rb";
+    if (n >= 1000000) return (n / 1000000).toFixed(1).replace(".", ",") + "jt";
+    return (n / 1000).toFixed(1).replace(".", ",") + "rb";
   };
 
   return <>{fmt(count)} membaca</>;
