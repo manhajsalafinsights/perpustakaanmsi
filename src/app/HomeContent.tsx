@@ -340,11 +340,11 @@ export default function HomeContent() {
                 onToggle={() => {}}
               />
               <div className={GRID_CLASSES}>
-                {upcomingBooks.slice(0, 6).map((book, i) => (
+                {upcomingBooks.slice(0, 10).map((book, i) => (
                   <Link
                     key={book.id}
                     href={`/book/${book.id}`}
-                    className="group"
+                    className={`group ${i >= 4 ? "hidden md:block" : ""}`}
                   >
                     <div className="relative bg-surface-dark rounded-2xl overflow-hidden border border-border/50 hover:border-primary/30 transition-all duration-300">
                       <div className="aspect-[3/4] relative">
