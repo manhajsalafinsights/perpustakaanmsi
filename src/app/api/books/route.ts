@@ -49,9 +49,7 @@ export async function GET(request: NextRequest) {
     .order("created_at", { ascending: false });
 
   if (!isAdmin) {
-    query = query.or(
-      `and(status.eq.published),and(status.eq.scheduled,scheduled_at.lte.now)`
-    );
+    query = query.neq("status", "draft");
   }
 
   if (search) {
