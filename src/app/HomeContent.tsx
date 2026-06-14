@@ -25,6 +25,7 @@ import {
   Hash,
   ArrowRight,
   Clock,
+  Eye,
 } from "lucide-react";
 
 const GRID_CLASSES = "grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10 gap-3 sm:gap-4";
@@ -85,11 +86,12 @@ function OnlineReaderCount() {
   return <>{fmt(count)} orang sedang membaca</>;
 }
 
-function MiniStats({ totalBooks, totalVisitors, totalCategories }: { totalBooks: number; totalVisitors: number; totalCategories: number }) {
+function MiniStats({ totalBooks, totalVisitors, totalCategories, totalFree }: { totalBooks: number; totalVisitors: number; totalCategories: number; totalFree: number }) {
   const stats = [
     { label: "Buku Tersedia", value: totalBooks, icon: Library, color: "from-emerald-500 to-emerald-600" },
     { label: "Pengunjung", value: totalVisitors, icon: Users, color: "from-blue-500 to-blue-600" },
     { label: "Kategori", value: totalCategories, icon: Hash, color: "from-amber-500 to-amber-600" },
+    { label: "Gratis", value: totalFree, icon: Gift, color: "from-violet-500 to-violet-600" },
   ];
 
   return (
@@ -105,6 +107,14 @@ function MiniStats({ totalBooks, totalVisitors, totalCategories }: { totalBooks:
           <span className="hidden sm:inline text-xs text-muted whitespace-nowrap">{stat.label}</span>
         </div>
       ))}
+      <div className="flex items-center gap-1">
+        <div className="w-4 h-4 sm:w-5 sm:h-5 rounded sm:rounded-md bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-sm flex-shrink-0">
+          <Eye className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-white" />
+        </div>
+        <span className="text-xs sm:text-sm font-semibold text-foreground">
+          <OnlineReaderCount />
+        </span>
+      </div>
     </div>
   );
 }
@@ -305,7 +315,7 @@ export default function HomeContent() {
       <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 pb-8 sm:pb-12">
         <div className="space-y-8 sm:space-y-12">
 
-          <MiniStats totalBooks={books.length} totalVisitors={visitorCount} totalCategories={categories.length} />
+          <MiniStats totalBooks={books.length} totalVisitors={visitorCount} totalCategories={categories.length} totalFree={freeBooks.length} />
 
           {/* ── Ebook Gratis ── */}
           <motion.div
@@ -315,27 +325,13 @@ export default function HomeContent() {
             transition={{ duration: 0.5 }}
           >
             <div className="space-y-5">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
-                    <Gift className="w-5 h-5 text-primary" />
-                  </div>
-                  <h2 className="text-xl sm:text-2xl font-bold text-foreground">Ebook Gratis</h2>
-                  <span className="flex items-center gap-1 text-xs sm:text-sm text-muted">
-                    <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                    <OnlineReaderCount />
-                  </span>
-                </div>
-                {freeBooks.length > freeLimit && (
-                  <button
-                    onClick={() => toggleExpand("free")}
-                    className="flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary-light transition-colors group"
-                  >
-                    {expanded.free ? "Tutup" : "Lihat Semua"}
-                    <ArrowRight className={`w-4 h-4 transition-all ${expanded.free ? "rotate-90" : "group-hover:translate-x-0.5"}`} />
-                  </button>
-                )}
-              </div>
+              <SectionHeader
+                icon={Gift}
+                title="Ebook Gratis"
+                showAll={freeBooks.length > freeLimit}
+                isExpanded={!!expanded.free}
+                onToggle={() => toggleExpand("free")}
+              />
               {loading ? (
                 <SectionSkeleton count={freeLimit} />
               ) : freeBooks.length > 0 ? (
