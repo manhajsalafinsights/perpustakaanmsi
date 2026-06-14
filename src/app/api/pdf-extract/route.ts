@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { PDFDocument } from "pdf-lib";
 
 async function getPdfBytes(url: string) {
   let fileId = "";
@@ -66,7 +67,6 @@ export async function POST(request: NextRequest) {
     let author = "";
 
     try {
-      const { PDFDocument } = await import("pdf-lib");
       const doc = await PDFDocument.load(pdfBytes, { ignoreEncryption: true });
       title = doc.getTitle() || "";
       author = doc.getAuthor() || "";
