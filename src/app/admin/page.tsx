@@ -289,10 +289,16 @@ export default function AdminPage() {
           const sorted = [...rows.entries()].sort((a, b) => b[0] - a[0]);
           const pageText = sorted.map(([, items]) => {
             const arr = items.sort((a, b) => a.x - b.x);
-            let line = arr[0]?.text || "";
+            if (arr.length === 0) return "";
+            const gaps: number[] = [];
+            for (let j = 1; j < arr.length; j++) gaps.push(arr[j].x - arr[j - 1].x);
+            gaps.sort((a, b) => a - b);
+            const median = gaps.length > 0 ? gaps[Math.floor(gaps.length / 2)] : 0;
+            const threshold = Math.max(median * 3, 12);
+            let line = arr[0].text;
             for (let j = 1; j < arr.length; j++) {
               const gap = arr[j].x - arr[j - 1].x;
-              line += gap > 25 ? " " + arr[j].text : arr[j].text;
+              line += gap > threshold ? " " + arr[j].text : arr[j].text;
             }
             return line;
           }).join("\n");
