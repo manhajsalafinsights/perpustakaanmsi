@@ -275,7 +275,7 @@ export default function AdminPage() {
           /(?:ditulis\s*oleh|dikarang\s*oleh|karangan)\s*[:=]?\s*(.+?)(?:[.\n]|$)/i,
         ];
 
-        for (let i = 1; i <= Math.min(pageCount, 5); i++) {
+        for (let i = 2; i <= Math.min(pageCount, 7); i++) {
           const page = await pdfDoc.getPage(i);
           const content = await page.getTextContent();
           const text = content.items
