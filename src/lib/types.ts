@@ -14,6 +14,7 @@ export interface Book {
   file_url: string;
   category: string;
   author: string;
+  translator: string;
   is_paid: boolean;
   views: number;
   purchased: number;

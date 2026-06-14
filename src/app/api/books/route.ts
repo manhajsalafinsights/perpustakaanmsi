@@ -87,6 +87,7 @@ export async function POST(request: NextRequest) {
         file_url: bookData.file_url || "",
         category: bookData.category || "Umum",
         author: bookData.author || "",
+        translator: bookData.translator || "",
         is_paid: bookData.is_paid || false,
         price: bookData.price || 25000,
         promo_price: bookData.promo_price || null,

@@ -112,6 +112,9 @@ CREATE POLICY "Public can read book_recommendations" ON book_recommendations
   FOR SELECT USING (true);
 
 -- ============================================
+-- MIGRATION: Tambah kolom translator
+-- ALTER TABLE books ADD COLUMN IF NOT EXISTS translator VARCHAR(255) DEFAULT '';
+
 -- MIGRATION: Tambah kolom views & purchased
 -- Jalankan SQL berikut di Supabase SQL Editor:
 -- ============================================

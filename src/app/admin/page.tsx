@@ -95,6 +95,7 @@ export default function AdminPage() {
     cover_url: "",
     category: "",
     author: "",
+    translator: "",
     is_paid: false,
     views: 0,
     purchased: 0,
@@ -245,7 +246,7 @@ export default function AdminPage() {
 
   const openAddModal = () => {
     setEditingBook(null);
-    setForm({ title: "", description: "", cover_url: "", category: "", author: "", is_paid: false, views: 0, purchased: 0, downloads: 0, price: 25000, promo_price: 0, promo_text: "" });
+    setForm({ title: "", description: "", cover_url: "", category: "", author: "", translator: "", is_paid: false, views: 0, purchased: 0, downloads: 0, price: 25000, promo_price: 0, promo_text: "" });
     setVolumes([{ title: "Jilid 1", file_url: "" }]);
     setCustomCategory("");
     setUseCustomCategory(false);
@@ -260,6 +261,7 @@ export default function AdminPage() {
       cover_url: book.cover_url,
       category: book.category,
       author: book.author || "",
+      translator: book.translator || "",
       is_paid: book.is_paid || false,
       views: book.views || 0,
       purchased: book.purchased || 0,
@@ -823,19 +825,35 @@ export default function AdminPage() {
                   />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-1.5">
-                    Penulis
-                  </label>
-                  <input
-                    type="text"
-                    value={form.author}
-                    onChange={(e) =>
-                      setForm({ ...form, author: e.target.value })
-                    }
-                    className="w-full px-4 py-3 bg-surface border border-border rounded-2xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
-                    placeholder="Nama penulis (pisahkan dengan koma)"
-                  />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-1.5">
+                      Penulis
+                    </label>
+                    <input
+                      type="text"
+                      value={form.author}
+                      onChange={(e) =>
+                        setForm({ ...form, author: e.target.value })
+                      }
+                      className="w-full px-4 py-3 bg-surface border border-border rounded-2xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                      placeholder="Nama penulis (pisahkan dengan koma)"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-1.5">
+                      Penerjemah
+                    </label>
+                    <input
+                      type="text"
+                      value={form.translator}
+                      onChange={(e) =>
+                        setForm({ ...form, translator: e.target.value })
+                      }
+                      className="w-full px-4 py-3 bg-surface border border-border rounded-2xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                      placeholder="Nama penerjemah"
+                    />
+                  </div>
                 </div>
 
                 <div>
