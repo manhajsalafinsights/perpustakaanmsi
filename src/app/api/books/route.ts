@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
     .order("created_at", { ascending: false });
 
   if (!isAdmin) {
-    query = query.neq("status", "draft");
+    query = query.in("status", ["published", "scheduled"]);
   }
 
   if (search) {
