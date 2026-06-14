@@ -264,8 +264,6 @@ export default function AdminPage() {
         if (meta.info) {
           const info = meta.info as Record<string, unknown>;
           if (info.Author && typeof info.Author === "string") author = info.Author.trim();
-          if (!author && info.Creator && typeof info.Creator === "string") author = info.Creator.trim();
-          if (!author && info.Producer && typeof info.Producer === "string") author = info.Producer.trim();
         }
       } catch (e) { console.error("getMetadata error:", e); }
 
@@ -278,6 +276,8 @@ export default function AdminPage() {
           .replace(/\s+/g, " ")
           .trim();
 
+        console.log("[extractClientSide] fullText:", fullText);
+
         if (fullText) {
           const match = fullText.match(/^.*?[.!?]/);
           description = match
@@ -285,10 +285,14 @@ export default function AdminPage() {
             : fullText.slice(0, 200) + (fullText.length > 200 ? " Baca selanjutnya..." : "");
 
           if (!author) {
-            const authorMatch = fullText.match(
-              /(?:Pengarang|Penulis|Karya|Oleh|Karangan|Disusun\s*oleh|Author|By)\s*:\s*([^\n,;.(]+)/i
-            );
-            if (authorMatch) author = authorMatch[1].trim();
+            const patterns = [
+              /(?:Pengarang|Penulis|Karya|Oleh|Karangan|Disusun\s*oleh|Author|By)\s*[:=]\s*([^\n,;.(]+)/i,
+              /(?:ditulis\s*oleh|dikarang\s*oleh|karangan)\s*[:=]?\s*([^\n,;.(]+)/i,
+            ];
+            for (const re of patterns) {
+              const am = fullText.match(re);
+              if (am) { author = am[1].trim(); break; }
+            }
           }
         }
       } catch (e) { console.error("text extract error:", e); }

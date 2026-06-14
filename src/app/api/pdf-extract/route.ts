@@ -87,13 +87,25 @@ export async function POST(request: NextRequest) {
     try {
       const doc = await PDFDocument.load(pdfBytes, { ignoreEncryption: true });
       title = doc.getTitle() || "";
-      author = doc.getAuthor() || doc.getCreator() || doc.getSubject() || "";
+      author = doc.getAuthor() || "";
     } catch (e) {
       console.error("pdf-lib failed:", e);
     }
 
     if (!title && filename) {
-      title = filename;
+      const dashMatch = filename.match(/^(.+?)\s*[-–—]\s*(.+)$/);
+      if (dashMatch) {
+        const maybeAuthor = dashMatch[1].trim();
+        const maybeTitle = dashMatch[2].trim();
+        if (!author && maybeTitle.length > maybeAuthor.length) {
+          title = maybeTitle;
+          author = maybeAuthor;
+        } else {
+          title = filename;
+        }
+      } else {
+        title = filename;
+      }
     }
 
     let description = "";
@@ -114,7 +126,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({ title, author, description });
+    return NextResponse.json({ title, author, description, filename });
   } catch (e) {
     return NextResponse.json(
       { error: e instanceof Error ? e.message : "Gagal mengekstrak PDF" },
