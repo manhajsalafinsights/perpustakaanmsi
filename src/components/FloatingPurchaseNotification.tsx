@@ -57,7 +57,7 @@ export default function FloatingPurchaseNotification() {
           animate={{ opacity: 1, y: 0, x: 0 }}
           exit={{ opacity: 0, y: -20, x: 100 }}
           transition={{ type: "spring", damping: 20, stiffness: 200 }}
-          className="fixed bottom-24 sm:bottom-8 right-4 sm:right-8 z-[100] max-w-sm pointer-events-none"
+          className="fixed top-24 sm:bottom-8 sm:top-auto right-4 sm:right-8 z-[100] max-w-sm pointer-events-none"
         >
           <div className="glass rounded-2xl p-4 border border-accent/20 shadow-xl">
             <div className="flex items-start gap-3">

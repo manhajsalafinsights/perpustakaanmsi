@@ -17,7 +17,7 @@ export default function Navbar() {
   const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "");
   const searchRef = useRef<HTMLInputElement>(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [onlineCount, setOnlineCount] = useState(800 + Math.floor(Math.random() * 1201));
+  const [onlineCount, setOnlineCount] = useState(20000 + Math.floor(Math.random() * 5001));
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -30,8 +30,8 @@ export default function Navbar() {
       const delay = 5000 + Math.random() * 5000;
       return setTimeout(() => {
         setOnlineCount((prev) => {
-          const delta = Math.floor(Math.random() * 60) - 30;
-          return Math.max(500, Math.min(3000, prev + delta));
+          const delta = Math.floor(Math.random() * 1000) - 500;
+          return Math.max(15000, Math.min(30000, prev + delta));
         });
       }, delay);
     };
@@ -162,7 +162,7 @@ export default function Navbar() {
               <ThemeToggle />
               <div className="flex items-center gap-1.5 text-xs text-muted bg-surface-dark px-2.5 py-1 rounded-full">
                 <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                {onlineCount} online
+                {Math.round(onlineCount / 1000)}rb orang sedang membaca
               </div>
               <Link
                 href="/rekomendasi"
