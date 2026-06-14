@@ -272,33 +272,26 @@ export default function AdminPage() {
           const page = await pdfDoc.getPage(i);
           const content = await page.getTextContent();
 
-          const pageLines: { y: number; x: number; text: string }[] = [];
+          interface ItemEx { x: number; w: number; text: string }
+          const pageItems: { y: number; items: ItemEx[] }[] = [];
+
           for (const item of content.items) {
-            const it = item as { str?: string; transform?: number[] };
-            if (!it.str || !it.str.trim()) continue;
-            const t = it.transform;
-            if (!t) continue;
-            pageLines.push({ y: Math.round(t[5]), x: Math.round(t[4]), text: it.str.trim() });
+            const it = item as { str?: string; transform?: number[]; width?: number };
+            if (!it.str || !it.str.trim() || !it.transform || it.width === undefined) continue;
+            const x = Math.round(it.transform[4]);
+            const y = Math.round(it.transform[5]);
+            let row = pageItems.find((r) => Math.abs(r.y - y) < 3);
+            if (!row) { row = { y, items: [] }; pageItems.push(row); }
+            row.items.push({ x, w: Math.round(it.width), text: it.str });
           }
 
-          const rows = new Map<number, { x: number; text: string }[]>();
-          for (const l of pageLines) {
-            if (!rows.has(l.y)) rows.set(l.y, []);
-            rows.get(l.y)!.push({ x: l.x, text: l.text });
-          }
-          const sorted = [...rows.entries()].sort((a, b) => b[0] - a[0]);
-          const pageText = sorted.map(([, items]) => {
-            const arr = items.sort((a, b) => a.x - b.x);
-            if (arr.length === 0) return "";
-            const gaps: number[] = [];
-            for (let j = 1; j < arr.length; j++) gaps.push(arr[j].x - arr[j - 1].x);
-            gaps.sort((a, b) => a - b);
-            const median = gaps.length > 0 ? gaps[Math.floor(gaps.length / 2)] : 0;
-            const threshold = Math.max(median * 3, 12);
+          pageItems.sort((a, b) => b.y - a.y);
+          const pageText = pageItems.map((row) => {
+            const arr = row.items.sort((a, b) => a.x - b.x);
             let line = arr[0].text;
             for (let j = 1; j < arr.length; j++) {
-              const gap = arr[j].x - arr[j - 1].x;
-              line += gap > threshold ? " " + arr[j].text : arr[j].text;
+              const gap = arr[j].x - (arr[j - 1].x + arr[j - 1].w);
+              line += gap > 3 ? " " + arr[j].text : arr[j].text;
             }
             return line;
           }).join("\n");
