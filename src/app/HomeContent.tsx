@@ -158,6 +158,26 @@ export default function HomeContent() {
   const [visitorCount, setVisitorCount] = useState(5000000);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [requestModalOpen, setRequestModalOpen] = useState(false);
+  const [onlineReaders, setOnlineReaders] = useState(24000);
+
+  useEffect(() => {
+    const next = () => {
+      const delay = 5000 + Math.random() * 5000;
+      return setTimeout(() => {
+        setOnlineReaders((prev) => {
+          const delta = Math.floor(Math.random() * 400) - 200;
+          return Math.max(20000, Math.min(3000000, prev + delta));
+        });
+      }, delay);
+    };
+    const timer = next();
+    return () => clearTimeout(timer);
+  }, [onlineReaders]);
+
+  function fmtCount(n: number): string {
+    if (n >= 1000000) return (n / 1000000).toFixed(n % 1000000 === 0 ? 0 : 1).replace(".", ",") + "jt";
+    return Math.round(n / 1000) + "rb";
+  }
 
   const toggleExpand = (key: string) => {
     setExpanded((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -298,6 +318,10 @@ export default function HomeContent() {
                 isExpanded={!!expanded.free}
                 onToggle={() => toggleExpand("free")}
               />
+              <div className="flex items-center gap-1.5 text-xs sm:text-sm text-muted mt-2">
+                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                {fmtCount(onlineReaders)} orang sedang membaca
+              </div>
               {loading ? (
                 <SectionSkeleton count={freeLimit} />
               ) : freeBooks.length > 0 ? (
