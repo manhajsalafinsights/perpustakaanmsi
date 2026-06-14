@@ -332,12 +332,6 @@ export default function AdminPage() {
     e.preventDefault();
     setFormSubmitting(true);
 
-    if (!form.title.trim()) {
-      alert("Judul buku harus diisi!");
-      setFormSubmitting(false);
-      return;
-    }
-
     const validVolumes = volumes.filter((v) => v.file_url.trim());
     if (validVolumes.length === 0) {
       alert("Minimal satu jilid harus memiliki link download!");
