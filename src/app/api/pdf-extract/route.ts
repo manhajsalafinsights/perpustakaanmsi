@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createRequire } from "module";
+
+const require = createRequire(import.meta.url);
 
 async function ensurePolyfills() {
   if (typeof globalThis.DOMMatrix === "undefined") {
@@ -49,6 +52,14 @@ export async function POST(request: NextRequest) {
 
     await ensurePolyfills();
     const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
+
+    try {
+      const workerPath = require.resolve("pdfjs-dist/legacy/build/pdf.worker.mjs");
+      pdfjs.GlobalWorkerOptions.workerSrc = workerPath;
+    } catch {
+      pdfjs.GlobalWorkerOptions.workerSrc = "";
+    }
+
     const loadingTask = pdfjs.getDocument({ data: pdfBytes });
     const pdfDoc = await loadingTask.promise;
 
@@ -62,8 +73,7 @@ export async function POST(request: NextRequest) {
       const page = await pdfDoc.getPage(1);
       const textContent = await page.getTextContent();
       const fullText = textContent.items
-        .filter((item) => "str" in item)
-        .map((item) => (item as { str: string }).str)
+        .map((item: unknown) => (item as { str?: string }).str || "")
         .join(" ")
         .replace(/\s+/g, " ")
         .trim();
