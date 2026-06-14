@@ -326,70 +326,74 @@ export default function BookDetailClient({ id }: { id: string }) {
                 </div>
 
                 <div className="mt-4 space-y-2.5 border-t border-border pt-4">
-                  <div className="flex items-center gap-2.5">
-                    <span className="text-xs font-semibold text-muted">Kategori:</span>
-                    <span className="text-xs font-medium text-primary bg-primary/10 px-2.5 py-0.5 rounded-full">
-                      {book.category}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2.5">
-                    <span className="text-xs font-semibold text-muted">Status:</span>
-                    {isPaid ? (
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-accent/10 text-accent">
-                          Rp {priceFormatted}
-                        </span>
-                        {hasPromo && (
-                          <>
-                            <span className="text-[10px] text-muted line-through">
-                              Rp {bookPrice.toLocaleString("id-ID")}
-                            </span>
-                            {bookPromoText && (
-                              <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
-                                {bookPromoText}
-                              </span>
-                            )}
-                          </>
-                        )}
-                      </div>
-                    ) : (
-                      <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-primary/10 text-primary">
-                        Gratis
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <div className="flex items-center gap-2.5">
+                      <span className="text-xs font-semibold text-muted">Kategori:</span>
+                      <span className="text-xs font-medium text-primary bg-primary/10 px-2.5 py-0.5 rounded-full">
+                        {book.category}
                       </span>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2.5">
-                    <Calendar className="w-3.5 h-3.5 text-muted flex-shrink-0" />
-                    <span className="text-xs text-muted">
-                      {new Date(book.created_at).toLocaleDateString("id-ID", {
-                        day: "numeric",
-                        month: "long",
-                        year: "numeric",
-                      })}
-                    </span>
-                  </div>
-                  {(book.views > 0 || book.downloads > 0 || book.purchased > 0) && (
-                    <div className="flex items-center gap-4 mt-1 pt-2.5 border-t border-border/50">
-                      {book.views > 0 && (
-                        <div className="flex items-center gap-1 text-[11px] text-muted">
-                          <Eye className="w-3.5 h-3.5" />
-                          <span>{formatNumber(book.views)}</span>
+                    </div>
+                    <div className="flex items-center gap-2.5">
+                      <span className="text-xs font-semibold text-muted">Status:</span>
+                      {isPaid ? (
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-accent/10 text-accent">
+                            Rp {priceFormatted}
+                          </span>
+                          {hasPromo && (
+                            <>
+                              <span className="text-[10px] text-muted line-through">
+                                Rp {bookPrice.toLocaleString("id-ID")}
+                              </span>
+                              {bookPromoText && (
+                                <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                                  {bookPromoText}
+                                </span>
+                              )}
+                            </>
+                          )}
                         </div>
-                      )}
-                      {book.downloads > 0 && (
-                        <div className="flex items-center gap-1 text-[11px] text-muted">
-                          <Download className="w-3.5 h-3.5" />
-                          <span>{formatNumber(book.downloads)}</span>
-                        </div>
-                      )}
-                      {book.purchased > 0 && (
-                        <div className="flex items-center gap-1 text-[11px] text-muted">
-                          <ShoppingCart className="w-3.5 h-3.5" />
-                          <span>{formatNumber(book.purchased)}</span>
-                        </div>
+                      ) : (
+                        <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-primary/10 text-primary">
+                          Gratis
+                        </span>
                       )}
                     </div>
-                  )}
+                  </div>
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <div className="flex items-center gap-2.5">
+                      <Calendar className="w-3.5 h-3.5 text-muted flex-shrink-0" />
+                      <span className="text-xs text-muted">
+                        {new Date(book.created_at).toLocaleDateString("id-ID", {
+                          day: "numeric",
+                          month: "long",
+                          year: "numeric",
+                        })}
+                      </span>
+                    </div>
+                    {(book.views > 0 || book.downloads > 0 || book.purchased > 0) && (
+                      <div className="flex items-center gap-3">
+                        {book.views > 0 && (
+                          <div className="flex items-center gap-1 text-[11px] text-muted">
+                            <Eye className="w-3.5 h-3.5" />
+                            <span>{formatNumber(book.views)}</span>
+                          </div>
+                        )}
+                        {book.downloads > 0 && (
+                          <div className="flex items-center gap-1 text-[11px] text-muted">
+                            <Download className="w-3.5 h-3.5" />
+                            <span>{formatNumber(book.downloads)}</span>
+                          </div>
+                        )}
+                        {book.purchased > 0 && (
+                          <div className="flex items-center gap-1 text-[11px] text-muted">
+                            <ShoppingCart className="w-3.5 h-3.5" />
+                            <span>{formatNumber(book.purchased)}</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
