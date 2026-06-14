@@ -103,12 +103,6 @@ function MiniStats({ totalBooks, totalVisitors, totalCategories }: { totalBooks:
             <AnimatedCounter value={stat.value} />
           </span>
           <span className="hidden sm:inline text-xs text-muted whitespace-nowrap">{stat.label}</span>
-          {stat.label === "Buku Tersedia" && (
-            <span className="flex items-center gap-1 ml-1 text-xs text-muted bg-surface-dark px-1.5 py-0.5 rounded-full">
-              <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-              <OnlineReaderCount />
-            </span>
-          )}
         </div>
       ))}
     </div>
@@ -229,6 +223,7 @@ export default function HomeContent() {
       new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
   );
   const newestIds = new Set(newBooks.slice(0, 10).map((b) => b.id));
+  const freeBooks = newBooks.filter((b) => !b.is_paid && !newestIds.has(b.id));
   const paidBooks = newBooks.filter((b) => b.is_paid);
   const categoryPicks: Book[] = [];
   const categorySeen = new Set<string>();
@@ -301,6 +296,7 @@ export default function HomeContent() {
   }
 
   const defaultLimit = 10;
+  const freeLimit = 20;
 
   return (
     <>
@@ -310,6 +306,47 @@ export default function HomeContent() {
         <div className="space-y-8 sm:space-y-12">
 
           <MiniStats totalBooks={books.length} totalVisitors={visitorCount} totalCategories={categories.length} />
+
+          {/* ── Ebook Gratis ── */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+          >
+            <div className="space-y-5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
+                    <Gift className="w-5 h-5 text-primary" />
+                  </div>
+                  <h2 className="text-xl sm:text-2xl font-bold text-foreground">Ebook Gratis</h2>
+                  <span className="flex items-center gap-1 text-xs sm:text-sm text-muted">
+                    <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                    <OnlineReaderCount />
+                  </span>
+                </div>
+                {freeBooks.length > freeLimit && (
+                  <button
+                    onClick={() => toggleExpand("free")}
+                    className="flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary-light transition-colors group"
+                  >
+                    {expanded.free ? "Tutup" : "Lihat Semua"}
+                    <ArrowRight className={`w-4 h-4 transition-all ${expanded.free ? "rotate-90" : "group-hover:translate-x-0.5"}`} />
+                  </button>
+                )}
+              </div>
+              {loading ? (
+                <SectionSkeleton count={freeLimit} />
+              ) : freeBooks.length > 0 ? (
+                <div className={GRID_CLASSES}>
+                  {(expanded.free ? freeBooks : freeBooks.slice(0, freeLimit)).map((book, i) => (
+                    <BookCard key={book.id} book={book} index={i} />
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          </motion.div>
 
           {/* ── Kategori Buku ── */}
           <motion.div
