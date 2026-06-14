@@ -292,7 +292,7 @@ export default function AdminPage() {
             let line = arr[0]?.text || "";
             for (let j = 1; j < arr.length; j++) {
               const gap = arr[j].x - arr[j - 1].x;
-              line += gap > 15 ? " " + arr[j].text : arr[j].text;
+              line += gap > 25 ? " " + arr[j].text : arr[j].text;
             }
             return line;
           }).join("\n");
