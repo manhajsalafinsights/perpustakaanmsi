@@ -340,14 +340,6 @@ export default function AdminPage() {
               : rawDesc.slice(0, 200) + (rawDesc.length > 200 ? " Baca selanjutnya..." : "");
           }
         }
-
-        if (!description && allText) {
-          const body = allText.replace(/[\s\S]*?(?:Muqoddimah|Pendahuluan|Bab|Pasal)/i, "");
-          const ds = body.match(/^.*?[.!?]/);
-          description = ds
-            ? ds[0] + " Baca selanjutnya..."
-            : body.slice(0, 200) + (body.length > 200 ? " Baca selanjutnya..." : "");
-        }
       } catch (e) { console.error("text extract error:", e); }
 
       await pdfDoc.destroy();
