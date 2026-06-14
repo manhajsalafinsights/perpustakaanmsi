@@ -109,7 +109,7 @@ export default function AdminPage() {
   ]);
   const [formSubmitting, setFormSubmitting] = useState(false);
   const [extracting, setExtracting] = useState(false);
-  const [extractSuccess, setExtractSuccess] = useState<string | null>(null);
+  const [extractMsg, setExtractMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [categories, setCategories] = useState<string[]>([]);
   const [customCategory, setCustomCategory] = useState("");
   const [useCustomCategory, setUseCustomCategory] = useState(false);
@@ -249,7 +249,7 @@ export default function AdminPage() {
   const autoExtractMetadata = async (url: string) => {
     if (!url.match(/drive\.google\.com/) || extracting) return;
     setExtracting(true);
-    setExtractSuccess(null);
+    setExtractMsg(null);
     try {
       const res = await fetch("/api/pdf-extract", {
         method: "POST",
@@ -258,22 +258,27 @@ export default function AdminPage() {
       });
       const data = await res.json();
       if (res.ok) {
-        const updates: Record<string, string> = {};
-        if (data.title && !form.title) updates.title = data.title;
-        if (data.author && !form.author) updates.author = data.author;
-        if (data.description && !form.description) updates.description = data.description;
-        if (!data.title && data.description && !form.title) {
-          updates.title = data.description.replace(/ Baca selanjutnya\.\.\.$/, "").slice(0, 60);
-        }
-        if (Object.keys(updates).length > 0) {
-          setForm((prev) => ({ ...prev, ...updates }));
-          setExtractSuccess(Object.keys(updates).join(", "));
-        } else {
-          setExtractSuccess("semua sudah terisi");
-        }
+        setForm((prev) => {
+          const updates: Record<string, string> = {};
+          if (data.title && !prev.title) updates.title = data.title;
+          if (data.author && !prev.author) updates.author = data.author;
+          if (data.description && !prev.description) updates.description = data.description;
+          if (!data.title && data.description && !prev.title) {
+            updates.title = data.description.replace(/ Baca selanjutnya\.\.\.$/, "").slice(0, 60);
+          }
+          if (Object.keys(updates).length > 0) {
+            setExtractMsg({ type: "success", text: Object.keys(updates).join(", ") });
+            return { ...prev, ...updates };
+          }
+          setExtractMsg({ type: "success", text: "semua sudah terisi" });
+          return prev;
+        });
+      } else {
+        setExtractMsg({ type: "error", text: data.error || "Gagal extract" });
       }
-    } catch {
-      // silent
+    } catch (e) {
+      setExtractMsg({ type: "error", text: "Gagal menghubungi server" });
+      console.error("autoExtractMetadata error:", e);
     } finally {
       setExtracting(false);
     }
@@ -281,7 +286,7 @@ export default function AdminPage() {
 
   const openAddModal = () => {
     setEditingBook(null);
-    setExtractSuccess(null);
+    setExtractMsg(null);
     setForm({ title: "", description: "", cover_url: "", category: "", author: "", translator: "", is_paid: false, views: 0, purchased: 0, downloads: 0, price: 25000, promo_price: 0, promo_text: "" });
     setVolumes([{ title: "Jilid 1", file_url: "" }]);
     setCustomCategory("");
@@ -1006,29 +1011,58 @@ export default function AdminPage() {
                             className="w-full px-3 py-2 bg-surface border border-border rounded-xl text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
                             placeholder="Nama jilid (mis: Jilid 1)"
                           />
-                          <div className="flex items-center gap-1.5">
-                            <FileText className="w-3.5 h-3.5 text-muted flex-shrink-0" />
-                            <input
-                              type="url"
-                              value={vol.file_url}
-                              onChange={(e) => {
-                                const val = e.target.value;
-                                const next = [...volumes];
-                                next[idx] = { ...next[idx], file_url: val };
-                                setVolumes(next);
-                                if (idx === 0 && val.match(/drive\.google\.com/)) {
-                                  setTimeout(() => autoExtractMetadata(val), 500);
-                                }
-                              }}
-                              required
-                              className="w-full px-3 py-2 bg-surface border border-border rounded-xl text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
-                              placeholder="Link PDF (Google Drive)..."
-                            />
-                            {idx === 0 && extracting && (
-                              <Loader2 className="w-4 h-4 text-primary animate-spin flex-shrink-0" />
-                            )}
-                            {idx === 0 && extractSuccess && !extracting && (
-                              <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" />
+                          <div className="flex flex-col gap-1.5">
+                            <div className="flex items-center gap-1.5">
+                              <FileText className="w-3.5 h-3.5 text-muted flex-shrink-0" />
+                              <input
+                                type="url"
+                                value={vol.file_url}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  const next = [...volumes];
+                                  next[idx] = { ...next[idx], file_url: val };
+                                  setVolumes(next);
+                                }}
+                                onPaste={(e) => {
+                                  const pasted = e.clipboardData.getData("text");
+                                  if (idx === 0 && pasted.match(/drive\.google\.com/)) {
+                                    setTimeout(() => autoExtractMetadata(pasted), 100);
+                                  }
+                                }}
+                                onBlur={(e) => {
+                                  if (idx === 0) autoExtractMetadata(e.target.value);
+                                }}
+                                required
+                                className="w-full px-3 py-2 bg-surface border border-border rounded-xl text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                                placeholder="Link PDF (Google Drive)..."
+                              />
+                              {idx === 0 && (
+                                <button
+                                  type="button"
+                                  onClick={() => autoExtractMetadata(vol.file_url)}
+                                  disabled={extracting || !vol.file_url}
+                                  className="px-2.5 py-2 text-xs font-medium text-primary bg-primary/10 rounded-xl hover:bg-primary/20 disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex-shrink-0"
+                                >
+                                  {extracting ? (
+                                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                  ) : (
+                                    "Extract"
+                                  )}
+                                </button>
+                              )}
+                            </div>
+                            {idx === 0 && extractMsg && (
+                              <p
+                                className={`text-[11px] ${
+                                  extractMsg.type === "success"
+                                    ? "text-green-500"
+                                    : "text-red-400"
+                                }`}
+                              >
+                                {extractMsg.type === "success"
+                                  ? `✓ ${extractMsg.text}`
+                                  : `✗ ${extractMsg.text}`}
+                              </p>
                             )}
                           </div>
                         </div>
