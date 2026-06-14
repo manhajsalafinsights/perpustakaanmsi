@@ -333,7 +333,7 @@ export default function AdminPage() {
           }
 
           const rawDesc = findValue(["deskripsi"], lines);
-          if (rawDesc) {
+          if (rawDesc && rawDesc.replace(/[^a-zA-Z0-9\s]/g, "").length > rawDesc.length * 0.5) {
             const ds = rawDesc.match(/^.*?[.!?]/);
             description = ds
               ? ds[0] + " Baca selanjutnya..."
