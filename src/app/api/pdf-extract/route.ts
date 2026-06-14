@@ -49,13 +49,17 @@ export async function POST(request: NextRequest) {
     try {
       const page = await pdfDoc.getPage(1);
       const textContent = await page.getTextContent();
-      description = textContent.items
+      const fullText = textContent.items
         .filter((item) => "str" in item)
         .map((item) => (item as { str: string }).str)
         .join(" ")
         .replace(/\s+/g, " ")
-        .trim()
-        .slice(0, 500);
+        .trim();
+
+      const firstSentence = fullText.match(/^.*?[.!?]/);
+      description = firstSentence
+        ? firstSentence[0] + " Baca selanjutnya..."
+        : fullText.slice(0, 200) + (fullText.length > 200 ? " Baca selanjutnya..." : "");
     } catch {
       // text extraction failed
     }
