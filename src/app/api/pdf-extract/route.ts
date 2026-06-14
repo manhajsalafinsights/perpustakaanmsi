@@ -1,18 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createRequire } from "module";
-
-const require = createRequire(import.meta.url);
-
-async function ensurePolyfills() {
-  if (typeof globalThis.DOMMatrix === "undefined") {
-    try {
-      const mod = await import("dommatrix");
-      globalThis.DOMMatrix = mod.default as unknown as typeof DOMMatrix;
-    } catch {
-      // dommatrix not available
-    }
-  }
-}
 
 async function getPdfBytes(url: string) {
   let fileId = "";
@@ -41,6 +27,32 @@ async function getPdfBytes(url: string) {
   return new Uint8Array(await directResponse.arrayBuffer());
 }
 
+function extractTextFromRaw(bytes: Uint8Array): string {
+  const raw = new TextDecoder("utf-8", { fatal: false }).decode(bytes);
+
+  const texts: string[] = [];
+
+  // Tj operator: (text) Tj
+  const tj = /\(((?:[^()\\]|\\.)*)\)\s*Tj/gi;
+  let m;
+  while ((m = tj.exec(raw)) !== null) {
+    const t = m[1].replace(/\\(.)/g, "$1").replace(/\s+/g, " ").trim();
+    if (t && t.length > 3) texts.push(t);
+  }
+
+  if (texts.length > 0) return texts.join(" ");
+
+  // TJ operator: [(text) num (text)] TJ
+  const tjArr = /\[((?:\s*\([^)]*\)\s*(?:-?\d+\.?\d*)?\s*)*)\]\s*TJ/gi;
+  while ((m = tjArr.exec(raw)) !== null) {
+    const parts = [...m[1].matchAll(/\(([^)]*)\)/g)];
+    const t = parts.map((p) => p[1].replace(/\\(.)/g, "$1")).join("");
+    if (t.trim().length > 3) texts.push(t.trim());
+  }
+
+  return texts.join(" ").replace(/\s+/g, " ").trim().slice(0, 500);
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { url } = await request.json();
@@ -50,43 +62,28 @@ export async function POST(request: NextRequest) {
 
     const pdfBytes = await getPdfBytes(url);
 
-    await ensurePolyfills();
-    const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
+    let title = "";
+    let author = "";
 
     try {
-      const workerPath = require.resolve("pdfjs-dist/legacy/build/pdf.worker.mjs");
-      pdfjs.GlobalWorkerOptions.workerSrc = workerPath;
+      const { PDFDocument } = await import("pdf-lib");
+      const doc = await PDFDocument.load(pdfBytes, { ignoreEncryption: true });
+      title = doc.getTitle() || "";
+      author = doc.getAuthor() || "";
     } catch {
-      pdfjs.GlobalWorkerOptions.workerSrc = "";
+      // pdf-lib failed
     }
-
-    const loadingTask = pdfjs.getDocument({ data: pdfBytes });
-    const pdfDoc = await loadingTask.promise;
-
-    const metadata = await pdfDoc.getMetadata();
-    const info = metadata.info as Record<string, unknown>;
-    const title = typeof info.Title === "string" && info.Title.trim() ? info.Title.trim() : "";
-    const author = typeof info.Author === "string" && info.Author.trim() ? info.Author.trim() : "";
 
     let description = "";
     try {
-      const page = await pdfDoc.getPage(1);
-      const textContent = await page.getTextContent();
-      const fullText = textContent.items
-        .map((item: unknown) => (item as { str?: string }).str || "")
-        .join(" ")
-        .replace(/\s+/g, " ")
-        .trim();
-
-      const firstSentence = fullText.match(/^.*?[.!?]/);
+      const rawText = extractTextFromRaw(pdfBytes);
+      const firstSentence = rawText.match(/^.*?[.!?]/);
       description = firstSentence
         ? firstSentence[0] + " Baca selanjutnya..."
-        : fullText.slice(0, 200) + (fullText.length > 200 ? " Baca selanjutnya..." : "");
+        : rawText.slice(0, 200) + (rawText.length > 200 ? " Baca selanjutnya..." : "");
     } catch {
       // text extraction failed
     }
-
-    await pdfDoc.destroy();
 
     return NextResponse.json({ title, author, description });
   } catch (e) {
