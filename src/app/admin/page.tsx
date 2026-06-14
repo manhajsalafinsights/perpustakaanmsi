@@ -262,6 +262,7 @@ export default function AdminPage() {
       let description = "";
       let author = "";
       let title = "";
+      let titleFromLabel = false;
 
       try {
         const pageCount = pdfDoc.numPages;
@@ -317,8 +318,14 @@ export default function AdminPage() {
             if (jm) rawTitle = jm[1].trim();
           }
           if (rawTitle) {
-            rawTitle = rawTitle.replace(/^[""']|[""']$/g, "").trim();
-            if (rawTitle.length > 3 && rawTitle.length < 150) title = normalizeTitle(rawTitle.toLowerCase());
+            rawTitle = rawTitle
+              .replace(/^[""']|[""']$/g, "")
+              .replace(/\[[^\]]*\]/g, "")
+              .trim();
+            if (rawTitle.length > 3 && rawTitle.length < 150) {
+              title = normalizeTitle(rawTitle.toLowerCase());
+              titleFromLabel = true;
+            }
           }
 
           let rawAuthor = extractAfter("Penulis", allText) || extractAfter("Pengarang", allText);
@@ -353,10 +360,10 @@ export default function AdminPage() {
       } catch (e) { console.error("text extract error:", e); }
 
       await pdfDoc.destroy();
-      return { title, description, author };
+      return { title, description, author, _titleFromLabel: titleFromLabel };
     } catch (e) {
       console.error("extractClientSide error:", e);
-      return { title: "", description: "", author: "" };
+      return { title: "", description: "", author: "", _titleFromLabel: false };
     }
   };
 
@@ -366,6 +373,9 @@ export default function AdminPage() {
     setExtractMsg(null);
 
     let filledFields: string[] = [];
+    let serverTitle = "";
+    let serverDesc = "";
+    let serverAuthor = "";
 
     try {
       const res = await fetch("/api/pdf-extract", {
@@ -373,8 +383,11 @@ export default function AdminPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url }),
       });
-      const data = await res.json();
       if (res.ok) {
+        const data = await res.json();
+        serverTitle = data.title || "";
+        serverAuthor = data.author || "";
+        serverDesc = data.description || "";
         const updates: Record<string, string> = {};
         if (data.title) { updates.title = data.title; filledFields.push("title"); }
         if (data.author) { updates.author = data.author; filledFields.push("author"); }
@@ -390,16 +403,24 @@ export default function AdminPage() {
       console.error("server extract error:", e);
     }
 
-    // Try client-side extraction (text) — overrides server values
+    // Try client-side extraction (text) for missing fields
     const clientResult = await extractClientSide(url);
-    filledFields = filledFields.filter(
-      (f) => !(f === "title" && clientResult.title) &&
-             !(f === "description" && clientResult.description) &&
-             !(f === "author" && clientResult.author)
-    );
-    if (clientResult.title) { filledFields.push("title"); setForm((prev) => ({ ...prev, title: clientResult.title })); }
-    if (clientResult.description) { filledFields.push("description"); setForm((prev) => ({ ...prev, description: clientResult.description })); }
-    if (clientResult.author) { filledFields.push("author"); setForm((prev) => ({ ...prev, author: clientResult.author })); }
+
+    if (clientResult._titleFromLabel) {
+      filledFields.push("title");
+      setForm((prev) => ({ ...prev, title: clientResult.title }));
+    } else if (clientResult.title && !serverTitle) {
+      filledFields.push("title");
+      setForm((prev) => ({ ...prev, title: clientResult.title }));
+    }
+    if (clientResult.description && !serverDesc) {
+      filledFields.push("description");
+      setForm((prev) => ({ ...prev, description: clientResult.description }));
+    }
+    if (clientResult.author && !serverAuthor) {
+      filledFields.push("author");
+      setForm((prev) => ({ ...prev, author: clientResult.author }));
+    }
 
     setExtracting(false);
     if (filledFields.length > 0) {
