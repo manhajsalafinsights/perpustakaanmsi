@@ -287,10 +287,16 @@ export default function AdminPage() {
             rows.get(l.y)!.push({ x: l.x, text: l.text });
           }
           const sorted = [...rows.entries()].sort((a, b) => b[0] - a[0]);
-          const pageText = sorted.map(([, items]) =>
-            items.sort((a, b) => a.x - b.x).map((i) => i.text).join(" ")
-          ).join("\n");
-          if (pageText.trim()) pageTexts.push(pageText);
+          const pageText = sorted.map(([, items]) => {
+            const arr = items.sort((a, b) => a.x - b.x);
+            let line = arr[0]?.text || "";
+            for (let j = 1; j < arr.length; j++) {
+              const gap = arr[j].x - arr[j - 1].x;
+              line += gap > 15 ? " " + arr[j].text : arr[j].text;
+            }
+            return line;
+          }).join("\n");
+          if (pageText.trim() && !/daftar\s*isi/i.test(pageText)) pageTexts.push(pageText);
         }
 
         const allText = pageTexts.join("\n\n");
