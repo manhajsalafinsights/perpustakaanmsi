@@ -246,10 +246,42 @@ export default function AdminPage() {
     setIsSuper(false);
   };
 
+  const extractClientSideText = async (url: string) => {
+    try {
+      const pdfjs = await import("pdfjs-dist");
+      pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+        "pdfjs-dist/build/pdf.worker.min.mjs",
+        import.meta.url,
+      ).href;
+      const proxyUrl = `/api/pdf-proxy?url=${encodeURIComponent(url)}`;
+      const pdfDoc = await pdfjs.getDocument(proxyUrl).promise;
+      const page = await pdfDoc.getPage(1);
+      const content = await page.getTextContent();
+      const fullText = content.items
+        .map((item: unknown) => (item as { str?: string }).str || "")
+        .join(" ")
+        .replace(/\s+/g, " ")
+        .trim();
+      await pdfDoc.destroy();
+
+      if (!fullText) return "";
+
+      const match = fullText.match(/^.*?[.!?]/);
+      return match
+        ? match[0] + " Baca selanjutnya..."
+        : fullText.slice(0, 200) + (fullText.length > 200 ? " Baca selanjutnya..." : "");
+    } catch {
+      return "";
+    }
+  };
+
   const autoExtractMetadata = async (url: string) => {
     if (!url.match(/drive\.google\.com/) || extracting) return;
     setExtracting(true);
     setExtractMsg(null);
+
+    let filledFields: string[] = [];
+
     try {
       const res = await fetch("/api/pdf-extract", {
         method: "POST",
@@ -259,26 +291,36 @@ export default function AdminPage() {
       const data = await res.json();
       if (res.ok) {
         const updates: Record<string, string> = {};
-        if (data.title) updates.title = data.title;
-        if (data.author) updates.author = data.author;
-        if (data.description) updates.description = data.description;
+        if (data.title) { updates.title = data.title; filledFields.push("title"); }
+        if (data.author) { updates.author = data.author; filledFields.push("author"); }
+        if (data.description) { updates.description = data.description; filledFields.push("description"); }
         if (!data.title && data.description) {
           updates.title = data.description.replace(/ Baca selanjutnya\.\.\.$/, "").slice(0, 60);
         }
         if (Object.keys(updates).length > 0) {
           setForm((prev) => ({ ...prev, ...updates }));
-          setExtractMsg({ type: "success", text: Object.keys(updates).join(", ") });
-        } else {
-          setExtractMsg({ type: "error", text: "Gagal mengekstrak data dari PDF" });
         }
-      } else {
-        setExtractMsg({ type: "error", text: data.error || "Gagal extract" });
       }
     } catch (e) {
-      setExtractMsg({ type: "error", text: "Gagal menghubungi server" });
-      console.error("autoExtractMetadata error:", e);
-    } finally {
-      setExtracting(false);
+      console.error("server extract error:", e);
+    }
+
+    // Try client-side text extraction for description
+    if (!filledFields.includes("description")) {
+      try {
+        const desc = await extractClientSideText(url);
+        if (desc) {
+          filledFields.push("description");
+          setForm((prev) => (prev.description ? prev : { ...prev, description: desc }));
+        }
+      } catch {}
+    }
+
+    setExtracting(false);
+    if (filledFields.length > 0) {
+      setExtractMsg({ type: "success", text: filledFields.join(", ") });
+    } else {
+      setExtractMsg({ type: "error", text: "Gagal mengekstrak data dari PDF" });
     }
   };
 
