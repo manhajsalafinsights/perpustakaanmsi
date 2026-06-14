@@ -92,8 +92,12 @@ export async function POST(request: NextRequest) {
       console.error("pdf-lib failed:", e);
     }
 
+    const cleanName = (s: string) =>
+      s.replace(/\[[^\]]*\]\s*/g, "").replace(/\s+/g, " ").trim();
+
     if (!title && filename) {
-      const dashMatch = filename.match(/^(.+?)\s*[-–—]\s*(.+)$/);
+      const cleaned = cleanName(filename);
+      const dashMatch = cleaned.match(/^(.+?)\s*[-–—]\s*(.+)$/);
       if (dashMatch) {
         const maybeAuthor = dashMatch[1].trim();
         const maybeTitle = dashMatch[2].trim();
@@ -101,10 +105,10 @@ export async function POST(request: NextRequest) {
           title = maybeTitle;
           author = maybeAuthor;
         } else {
-          title = filename;
+          title = cleaned;
         }
       } else {
-        title = filename;
+        title = cleaned;
       }
     }
 
