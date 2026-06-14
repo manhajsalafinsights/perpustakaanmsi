@@ -83,7 +83,7 @@ function OnlineReaderCount() {
     return Math.round(n / 1000) + "rb";
   };
 
-  return <>{fmt(count)} orang sedang membaca</>;
+  return <>{fmt(count)} membaca</>;
 }
 
 function MiniStats({ totalBooks, totalVisitors, totalCategories, totalFree }: { totalBooks: number; totalVisitors: number; totalCategories: number; totalFree: number }) {
