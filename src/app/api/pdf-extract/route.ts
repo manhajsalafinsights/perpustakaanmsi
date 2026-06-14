@@ -1,6 +1,38 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PDFDocument } from "pdf-lib";
 
+function parseFilename(disposition: string | null): string {
+  if (!disposition) return "";
+  const match = disposition.match(/filename\*?=(?:UTF-8'')?["']?([^"'\n;]+)["']?/i);
+  if (match) {
+    let name = match[1].trim();
+    name = decodeURIComponent(name.replace(/\+/g, " "));
+    return name.replace(/\.pdf$/i, "").trim();
+  }
+  return "";
+}
+
+async function fetchWithFilename(url: string): Promise<{ bytes: Uint8Array; filename: string }> {
+  const response = await fetch(url);
+  const bytes = new Uint8Array(await response.arrayBuffer());
+  const filename = parseFilename(response.headers.get("content-disposition"));
+
+  if (bytes.length < 1000 && response.headers.get("content-type")?.includes("text/html")) {
+    const html = new TextDecoder().decode(bytes);
+    const confirmMatch = html.match(/confirm=([^&\s"']+)/);
+    if (confirmMatch) {
+      const confirmUrl = `${url}&confirm=${confirmMatch[1]}`;
+      const confirmResponse = await fetch(confirmUrl);
+      return {
+        bytes: new Uint8Array(await confirmResponse.arrayBuffer()),
+        filename: parseFilename(confirmResponse.headers.get("content-disposition")),
+      };
+    }
+  }
+
+  return { bytes, filename };
+}
+
 async function getPdfBytes(url: string) {
   let fileId = "";
   const driveMatch = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
@@ -10,22 +42,10 @@ async function getPdfBytes(url: string) {
 
   if (fileId) {
     const downloadUrl = `https://drive.google.com/uc?export=download&id=${fileId}`;
-    const response = await fetch(downloadUrl);
-
-    if (response.headers.get("content-type")?.includes("text/html")) {
-      const html = await response.text();
-      const confirmMatch = html.match(/confirm=([^&\s"']+)/);
-      if (confirmMatch) {
-        const confirmUrl = `https://drive.google.com/uc?export=download&confirm=${confirmMatch[1]}&id=${fileId}`;
-        const confirmResponse = await fetch(confirmUrl);
-        return new Uint8Array(await confirmResponse.arrayBuffer());
-      }
-    }
-    return new Uint8Array(await response.arrayBuffer());
+    return fetchWithFilename(downloadUrl);
   }
 
-  const directResponse = await fetch(url);
-  return new Uint8Array(await directResponse.arrayBuffer());
+  return fetchWithFilename(url);
 }
 
 function extractTextFromRaw(bytes: Uint8Array): string {
@@ -33,7 +53,6 @@ function extractTextFromRaw(bytes: Uint8Array): string {
 
   const texts: string[] = [];
 
-  // Tj operator: (text) Tj
   const tj = /\(((?:[^()\\]|\\.)*)\)\s*Tj/gi;
   let m;
   while ((m = tj.exec(raw)) !== null) {
@@ -43,7 +62,6 @@ function extractTextFromRaw(bytes: Uint8Array): string {
 
   if (texts.length > 0) return texts.join(" ");
 
-  // TJ operator: [(text) num (text)] TJ
   const tjArr = /\[((?:\s*\([^)]*\)\s*(?:-?\d+\.?\d*)?\s*)*)\]\s*TJ/gi;
   while ((m = tjArr.exec(raw)) !== null) {
     const parts = [...m[1].matchAll(/\(([^)]*)\)/g)];
@@ -61,7 +79,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "URL diperlukan" }, { status: 400 });
     }
 
-    const pdfBytes = await getPdfBytes(url);
+    const { bytes: pdfBytes, filename } = await getPdfBytes(url);
 
     let title = "";
     let author = "";
@@ -72,6 +90,10 @@ export async function POST(request: NextRequest) {
       author = doc.getAuthor() || "";
     } catch (e) {
       console.error("pdf-lib failed:", e);
+    }
+
+    if (!title && filename) {
+      title = filename;
     }
 
     let description = "";
