@@ -301,7 +301,8 @@ export default function AdminPage() {
 
         const lines = allText.split("\n").map((l) => l.trim()).filter(Boolean);
         const knownLabels = new Set([
-          "judul", "judul buku", "judul asli", "penulis", "pengarang",
+          "judul", "judul buku", "judul asli", "judul kitab",
+          "penulis", "pengarang", "penyusun",
           "penerjemah", "deskripsi", "tata letak", "tata letak & layout",
           "ukuran buku", "edisi", "diterbitkan oleh", "desain & layout",
           "materi", "editor", "cover", "halaman",
@@ -321,7 +322,7 @@ export default function AdminPage() {
         };
 
         if (lines.length > 0) {
-          const rawTitle = findValue(["judul", "judul asli", "judul kitab"], lines);
+          const rawTitle = findValue(["judul", "judul buku", "judul asli", "judul kitab"], lines);
           if (rawTitle) {
             title = normalizeTitle(rawTitle.toLowerCase())
               .replace(/\[[^\]]*\]/g, "")
@@ -330,7 +331,7 @@ export default function AdminPage() {
             else title = "";
           }
 
-          const rawAuthor = findValue(["penulis", "pengarang"], lines);
+          const rawAuthor = findValue(["penulis", "pengarang", "penyusun"], lines);
           if (rawAuthor) {
             author = rawAuthor.replace(/\[[^\]]*\]/g, "").trim();
             if (author.length > 0) authorFound = true;
