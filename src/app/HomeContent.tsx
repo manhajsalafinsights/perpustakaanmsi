@@ -66,7 +66,7 @@ function OnlineReaderCount() {
 
   useEffect(() => {
     const next = () => {
-      const delay = 5000 + Math.random() * 5000;
+      const delay = 2000 + Math.random() * 8000;
       return setTimeout(() => {
         setCount((prev) => {
           const delta = Math.floor(Math.random() * 400) - 200;
