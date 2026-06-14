@@ -60,12 +60,36 @@ function AnimatedCounter({ value, suffix = "" }: { value: number; suffix?: strin
   return <span ref={ref}>{count.toLocaleString("id-ID")}{suffix}</span>;
 }
 
-function MiniStats({ totalBooks, totalVisitors, totalCategories, totalFree }: { totalBooks: number; totalVisitors: number; totalCategories: number; totalFree: number }) {
+function OnlineReaderCount() {
+  const [count, setCount] = useState(24000);
+
+  useEffect(() => {
+    const next = () => {
+      const delay = 5000 + Math.random() * 5000;
+      return setTimeout(() => {
+        setCount((prev) => {
+          const delta = Math.floor(Math.random() * 400) - 200;
+          return Math.max(20000, Math.min(3000000, prev + delta));
+        });
+      }, delay);
+    };
+    const timer = next();
+    return () => clearTimeout(timer);
+  }, [count]);
+
+  const fmt = (n: number) => {
+    if (n >= 1000000) return (n / 1000000).toFixed(n % 1000000 === 0 ? 0 : 1).replace(".", ",") + "jt";
+    return Math.round(n / 1000) + "rb";
+  };
+
+  return <>{fmt(count)} orang sedang membaca</>;
+}
+
+function MiniStats({ totalBooks, totalVisitors, totalCategories }: { totalBooks: number; totalVisitors: number; totalCategories: number }) {
   const stats = [
     { label: "Buku Tersedia", value: totalBooks, icon: Library, color: "from-emerald-500 to-emerald-600" },
     { label: "Pengunjung", value: totalVisitors, icon: Users, color: "from-blue-500 to-blue-600" },
     { label: "Kategori", value: totalCategories, icon: Hash, color: "from-amber-500 to-amber-600" },
-    { label: "Gratis", value: totalFree, icon: Gift, color: "from-violet-500 to-violet-600" },
   ];
 
   return (
@@ -79,6 +103,12 @@ function MiniStats({ totalBooks, totalVisitors, totalCategories, totalFree }: { 
             <AnimatedCounter value={stat.value} />
           </span>
           <span className="hidden sm:inline text-xs text-muted whitespace-nowrap">{stat.label}</span>
+          {stat.label === "Buku Tersedia" && (
+            <span className="flex items-center gap-1 ml-1 text-xs text-muted bg-surface-dark px-1.5 py-0.5 rounded-full">
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+              <OnlineReaderCount />
+            </span>
+          )}
         </div>
       ))}
     </div>
@@ -158,26 +188,6 @@ export default function HomeContent() {
   const [visitorCount, setVisitorCount] = useState(5000000);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [requestModalOpen, setRequestModalOpen] = useState(false);
-  const [onlineReaders, setOnlineReaders] = useState(24000);
-
-  useEffect(() => {
-    const next = () => {
-      const delay = 5000 + Math.random() * 5000;
-      return setTimeout(() => {
-        setOnlineReaders((prev) => {
-          const delta = Math.floor(Math.random() * 400) - 200;
-          return Math.max(20000, Math.min(3000000, prev + delta));
-        });
-      }, delay);
-    };
-    const timer = next();
-    return () => clearTimeout(timer);
-  }, [onlineReaders]);
-
-  function fmtCount(n: number): string {
-    if (n >= 1000000) return (n / 1000000).toFixed(n % 1000000 === 0 ? 0 : 1).replace(".", ",") + "jt";
-    return Math.round(n / 1000) + "rb";
-  }
 
   const toggleExpand = (key: string) => {
     setExpanded((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -219,7 +229,6 @@ export default function HomeContent() {
       new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
   );
   const newestIds = new Set(newBooks.slice(0, 10).map((b) => b.id));
-  const freeBooks = newBooks.filter((b) => !b.is_paid && !newestIds.has(b.id));
   const paidBooks = newBooks.filter((b) => b.is_paid);
   const categoryPicks: Book[] = [];
   const categorySeen = new Set<string>();
@@ -292,7 +301,6 @@ export default function HomeContent() {
   }
 
   const defaultLimit = 10;
-  const freeLimit = 20;
 
   return (
     <>
@@ -301,38 +309,7 @@ export default function HomeContent() {
       <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 pb-8 sm:pb-12">
         <div className="space-y-8 sm:space-y-12">
 
-          <MiniStats totalBooks={books.length} totalVisitors={visitorCount} totalCategories={categories.length} totalFree={freeBooks.length} />
-
-          {/* ── Ebook Gratis ── */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-          >
-            <div className="space-y-5">
-              <SectionHeader
-                icon={Gift}
-                title="Ebook Gratis"
-                showAll={freeBooks.length > freeLimit}
-                isExpanded={!!expanded.free}
-                onToggle={() => toggleExpand("free")}
-              />
-              <div className="flex items-center gap-1.5 text-xs sm:text-sm text-muted mt-2">
-                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                {fmtCount(onlineReaders)} orang sedang membaca
-              </div>
-              {loading ? (
-                <SectionSkeleton count={freeLimit} />
-              ) : freeBooks.length > 0 ? (
-                <div className={GRID_CLASSES}>
-                  {(expanded.free ? freeBooks : freeBooks.slice(0, freeLimit)).map((book, i) => (
-                    <BookCard key={book.id} book={book} index={i} />
-                  ))}
-                </div>
-              ) : null}
-            </div>
-          </motion.div>
+          <MiniStats totalBooks={books.length} totalVisitors={visitorCount} totalCategories={categories.length} />
 
           {/* ── Kategori Buku ── */}
           <motion.div
