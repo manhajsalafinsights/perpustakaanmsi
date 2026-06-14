@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
     try {
       const doc = await PDFDocument.load(pdfBytes, { ignoreEncryption: true });
       title = doc.getTitle() || "";
-      author = doc.getAuthor() || "";
+      author = doc.getAuthor() || doc.getCreator() || doc.getSubject() || "";
     } catch (e) {
       console.error("pdf-lib failed:", e);
     }

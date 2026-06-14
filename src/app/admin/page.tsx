@@ -246,32 +246,58 @@ export default function AdminPage() {
     setIsSuper(false);
   };
 
-  const extractClientSideText = async (url: string) => {
+  const extractClientSide = async (url: string) => {
     try {
       const pdfjs = await import("pdfjs-dist");
       pdfjs.GlobalWorkerOptions.workerSrc = new URL(
         "pdfjs-dist/build/pdf.worker.min.mjs",
         import.meta.url,
-      ).href;
+      ).toString();
       const proxyUrl = `/api/pdf-proxy?url=${encodeURIComponent(url)}`;
       const pdfDoc = await pdfjs.getDocument(proxyUrl).promise;
-      const page = await pdfDoc.getPage(1);
-      const content = await page.getTextContent();
-      const fullText = content.items
-        .map((item: unknown) => (item as { str?: string }).str || "")
-        .join(" ")
-        .replace(/\s+/g, " ")
-        .trim();
+
+      let description = "";
+      let author = "";
+
+      try {
+        const meta = await pdfDoc.getMetadata();
+        if (meta.info) {
+          const info = meta.info as Record<string, unknown>;
+          if (info.Author && typeof info.Author === "string") author = info.Author.trim();
+          if (!author && info.Creator && typeof info.Creator === "string") author = info.Creator.trim();
+          if (!author && info.Producer && typeof info.Producer === "string") author = info.Producer.trim();
+        }
+      } catch (e) { console.error("getMetadata error:", e); }
+
+      try {
+        const page = await pdfDoc.getPage(1);
+        const content = await page.getTextContent();
+        const fullText = content.items
+          .map((item: unknown) => (item as { str?: string }).str || "")
+          .join(" ")
+          .replace(/\s+/g, " ")
+          .trim();
+
+        if (fullText) {
+          const match = fullText.match(/^.*?[.!?]/);
+          description = match
+            ? match[0] + " Baca selanjutnya..."
+            : fullText.slice(0, 200) + (fullText.length > 200 ? " Baca selanjutnya..." : "");
+
+          if (!author) {
+            const authorMatch = fullText.match(
+              /(?:Pengarang|Penulis|Karya|Oleh|Karangan|Disusun\s*oleh|Author|By)\s*:\s*([^\n,;.(]+)/i
+            );
+            if (authorMatch) author = authorMatch[1].trim();
+          }
+        }
+      } catch (e) { console.error("text extract error:", e); }
+
       await pdfDoc.destroy();
-
-      if (!fullText) return "";
-
-      const match = fullText.match(/^.*?[.!?]/);
-      return match
-        ? match[0] + " Baca selanjutnya..."
-        : fullText.slice(0, 200) + (fullText.length > 200 ? " Baca selanjutnya..." : "");
-    } catch {
-      return "";
+      return { description, author };
+    } catch (e) {
+      console.error("extractClientSide error:", e);
+      return { description: "", author: "" };
     }
   };
 
@@ -305,15 +331,15 @@ export default function AdminPage() {
       console.error("server extract error:", e);
     }
 
-    // Try client-side text extraction for description
-    if (!filledFields.includes("description")) {
-      try {
-        const desc = await extractClientSideText(url);
-        if (desc) {
-          filledFields.push("description");
-          setForm((prev) => (prev.description ? prev : { ...prev, description: desc }));
-        }
-      } catch {}
+    // Try client-side extraction (metadata + text) for missing fields
+    const clientResult = await extractClientSide(url);
+    if (clientResult.description && !filledFields.includes("description")) {
+      filledFields.push("description");
+      setForm((prev) => (prev.description ? prev : { ...prev, description: clientResult.description }));
+    }
+    if (clientResult.author && !filledFields.includes("author")) {
+      filledFields.push("author");
+      setForm((prev) => (prev.author ? prev : { ...prev, author: clientResult.author }));
     }
 
     setExtracting(false);
