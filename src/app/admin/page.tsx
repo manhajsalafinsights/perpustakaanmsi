@@ -108,6 +108,8 @@ export default function AdminPage() {
     { title: "Jilid 1", file_url: "" },
   ]);
   const [formSubmitting, setFormSubmitting] = useState(false);
+  const [extracting, setExtracting] = useState(false);
+  const [extractSuccess, setExtractSuccess] = useState<string | null>(null);
   const [categories, setCategories] = useState<string[]>([]);
   const [customCategory, setCustomCategory] = useState("");
   const [useCustomCategory, setUseCustomCategory] = useState(false);
@@ -244,8 +246,39 @@ export default function AdminPage() {
     setIsSuper(false);
   };
 
+  const autoExtractMetadata = async (url: string) => {
+    if (!url.match(/drive\.google\.com/) || extracting) return;
+    setExtracting(true);
+    setExtractSuccess(null);
+    try {
+      const res = await fetch("/api/pdf-extract", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        const updates: Record<string, string> = {};
+        if (data.title && !form.title) updates.title = data.title;
+        if (data.author && !form.author) updates.author = data.author;
+        if (data.description && !form.description) updates.description = data.description;
+        if (Object.keys(updates).length > 0) {
+          setForm((prev) => ({ ...prev, ...updates }));
+          setExtractSuccess(Object.keys(updates).join(", "));
+        } else {
+          setExtractSuccess("semua sudah terisi");
+        }
+      }
+    } catch {
+      // silent
+    } finally {
+      setExtracting(false);
+    }
+  };
+
   const openAddModal = () => {
     setEditingBook(null);
+    setExtractSuccess(null);
     setForm({ title: "", description: "", cover_url: "", category: "", author: "", translator: "", is_paid: false, views: 0, purchased: 0, downloads: 0, price: 25000, promo_price: 0, promo_text: "" });
     setVolumes([{ title: "Jilid 1", file_url: "" }]);
     setCustomCategory("");
@@ -977,14 +1010,24 @@ export default function AdminPage() {
                               type="url"
                               value={vol.file_url}
                               onChange={(e) => {
+                                const val = e.target.value;
                                 const next = [...volumes];
-                                next[idx] = { ...next[idx], file_url: e.target.value };
+                                next[idx] = { ...next[idx], file_url: val };
                                 setVolumes(next);
+                                if (idx === 0 && val.match(/drive\.google\.com/)) {
+                                  setTimeout(() => autoExtractMetadata(val), 500);
+                                }
                               }}
                               required
                               className="w-full px-3 py-2 bg-surface border border-border rounded-xl text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
                               placeholder="Link PDF (Google Drive)..."
                             />
+                            {idx === 0 && extracting && (
+                              <Loader2 className="w-4 h-4 text-primary animate-spin flex-shrink-0" />
+                            )}
+                            {idx === 0 && extractSuccess && !extracting && (
+                              <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" />
+                            )}
                           </div>
                         </div>
                       </motion.div>
