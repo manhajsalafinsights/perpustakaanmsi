@@ -97,6 +97,8 @@ export default function AdminPage() {
     author: "",
     translator: "",
     is_paid: false,
+    status: "published",
+    scheduled_at: "",
     views: 0,
     purchased: 0,
     downloads: 0,
@@ -170,7 +172,7 @@ export default function AdminPage() {
       setStatsLoading(true);
       try {
         const [booksRes, visitorRes, adminsRes, commentsRes] = await Promise.all([
-          fetch("/api/books"),
+          fetch("/api/books?admin=true"),
           fetch("/api/visitor"),
           fetch("/api/auth"),
           fetch("/api/comments?book_id=all"),
@@ -398,7 +400,7 @@ export default function AdminPage() {
   const openAddModal = () => {
     setEditingBook(null);
     setExtractMsg(null);
-    setForm({ title: "", description: "", cover_url: "", category: "", author: "", translator: "", is_paid: false, views: 0, purchased: 0, downloads: 0, price: 25000, promo_price: 0, promo_text: "" });
+    setForm({ title: "", description: "", cover_url: "", category: "", author: "", translator: "", is_paid: false, status: "published", scheduled_at: "", views: 0, purchased: 0, downloads: 0, price: 25000, promo_price: 0, promo_text: "" });
     setVolumes([{ title: "Jilid 1", file_url: "" }]);
     setCustomCategory("");
     setUseCustomCategory(false);
@@ -415,6 +417,8 @@ export default function AdminPage() {
       author: book.author || "",
       translator: book.translator || "",
       is_paid: book.is_paid || false,
+      status: book.status || "published",
+      scheduled_at: book.scheduled_at ? book.scheduled_at.slice(0, 10) : "",
       views: book.views || 0,
       purchased: book.purchased || 0,
       downloads: book.downloads || 0,
@@ -480,7 +484,7 @@ export default function AdminPage() {
 
       if (res.ok) {
         setShowModal(false);
-        const booksRes = await fetch("/api/books");
+        const booksRes = await fetch("/api/books?admin=true");
         if (booksRes.ok) {
           const booksData = await booksRes.json();
           setBooks(booksData);
@@ -812,6 +816,9 @@ export default function AdminPage() {
                 <th className="text-left text-xs font-semibold text-muted uppercase tracking-wider px-6 py-3 hidden sm:table-cell">
                   Kategori
                 </th>
+                <th className="text-left text-xs font-semibold text-muted uppercase tracking-wider px-6 py-3 hidden md:table-cell">
+                  Status
+                </th>
                 <th className="text-center text-xs font-semibold text-muted uppercase tracking-wider px-6 py-3 hidden md:table-cell">
                   Jilid
                 </th>
@@ -865,6 +872,22 @@ export default function AdminPage() {
                         {book.is_paid ? "Berbayar" : "Gratis"}
                       </span>
                     </div>
+                  </td>
+                  <td className="px-6 py-4 hidden md:table-cell">
+                    {book.status === "scheduled" ? (
+                      <span className="inline-flex items-center gap-1 text-xs font-semibold text-amber-600 bg-amber-500/10 px-2.5 py-1 rounded-full">
+                        <Clock className="w-3 h-3" />
+                        Scheduled
+                      </span>
+                    ) : book.status === "draft" ? (
+                      <span className="inline-flex items-center gap-1 text-xs font-semibold text-muted bg-surface-dark px-2.5 py-1 rounded-full">
+                        Draft
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-xs font-semibold text-green-600 bg-green-500/10 px-2.5 py-1 rounded-full">
+                        Live
+                      </span>
+                    )}
                   </td>
                   <td className="px-6 py-4 hidden md:table-cell text-center">
                     {volCount > 0 ? (
@@ -1182,6 +1205,43 @@ export default function AdminPage() {
                   </div>
                   {volumes.filter((v) => v.file_url.trim()).length === 0 && (
                     <p className="text-xs text-red-400 mt-1">Minimal satu jilid harus memiliki link download</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-1.5">
+                    Status Publikasi
+                  </label>
+                  <div className="flex gap-2 mb-3">
+                    {(["published", "draft", "scheduled"] as const).map((s) => (
+                      <button
+                        key={s}
+                        type="button"
+                        onClick={() => setForm({ ...form, status: s })}
+                        className={`flex-1 py-2.5 text-sm font-medium rounded-xl transition-colors ${
+                          form.status === s
+                            ? s === "published"
+                              ? "bg-green-600 text-white"
+                              : s === "draft"
+                              ? "bg-surface-dark text-foreground border border-border"
+                              : "bg-amber-600 text-white"
+                            : "bg-surface text-muted border border-border"
+                        }`}
+                      >
+                        {s === "published" ? "Published" : s === "draft" ? "Draft" : "Scheduled"}
+                      </button>
+                    ))}
+                  </div>
+                  {form.status === "scheduled" && (
+                    <div>
+                      <label className="block text-xs text-muted mb-1">Tanggal Launching</label>
+                      <input
+                        type="date"
+                        value={form.scheduled_at}
+                        onChange={(e) => setForm({ ...form, scheduled_at: e.target.value })}
+                        className="w-full px-4 py-3 bg-surface border border-border rounded-2xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                      />
+                    </div>
                   )}
                 </div>
 

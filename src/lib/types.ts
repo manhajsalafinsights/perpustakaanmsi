@@ -16,6 +16,9 @@ export interface Book {
   author: string;
   translator: string;
   is_paid: boolean;
+  status: string;
+  scheduled_at: string | null;
+  published_at: string | null;
   views: number;
   purchased: number;
   downloads: number;

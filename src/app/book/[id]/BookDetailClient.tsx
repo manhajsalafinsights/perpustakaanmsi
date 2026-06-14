@@ -32,6 +32,7 @@ import {
   FileText,
   Loader2,
   BookmarkCheck,
+  Clock,
 } from "lucide-react";
 
 function formatNumber(n: number): string {
@@ -152,6 +153,7 @@ export default function BookDetailClient({ id }: { id: string }) {
   const activePrice = hasPromo ? bookPromoPrice : bookPrice;
   const priceFormatted = activePrice.toLocaleString("id-ID");
   const isPaid = book?.is_paid || false;
+  const isScheduled = book?.status === "scheduled" && book?.scheduled_at && new Date(book.scheduled_at) > new Date();
 
   const handleDownload = (vol?: BookVolume) => {
     const url = vol?.file_url || book?.file_url;
@@ -436,7 +438,20 @@ export default function BookDetailClient({ id }: { id: string }) {
               )}
 
               {/* Volume List */}
-              {volumes.length > 0 && (
+              {isScheduled ? (
+                <div className="glass rounded-2xl p-6 mb-4 sm:mb-6 border border-amber-500/30 bg-amber-500/5 text-center">
+                  <Clock className="w-8 h-8 mx-auto mb-2 text-amber-600" />
+                  <h3 className="text-sm font-semibold text-foreground mb-1">Segera Terbit</h3>
+                  <p className="text-xs text-muted">
+                    Buku ini akan tersedia pada{" "}
+                    {new Date(book!.scheduled_at!).toLocaleDateString("id-ID", {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                    })}
+                  </p>
+                </div>
+              ) : volumes.length > 0 && (
                 <div className="glass rounded-2xl overflow-hidden mb-4 sm:mb-6 border border-border/50">
                   <div className="px-4 sm:px-5 py-3 border-b border-border/50 bg-surface/30">
                     <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">

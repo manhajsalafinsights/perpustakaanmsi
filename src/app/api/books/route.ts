@@ -12,6 +12,7 @@ export async function GET(request: NextRequest) {
   const category = searchParams.get("category") || "";
   const id = searchParams.get("id") || "";
   const includeVolumes = searchParams.get("include_volumes") === "true";
+  const isAdmin = searchParams.get("admin") === "true";
 
   let selectQuery = "*, comments(count)";
   if (includeVolumes) {
@@ -46,6 +47,12 @@ export async function GET(request: NextRequest) {
     .from("books")
     .select(selectQuery)
     .order("created_at", { ascending: false });
+
+  if (!isAdmin) {
+    query = query.or(
+      `and(status.eq.published),and(status.eq.scheduled,scheduled_at.lte.now)`
+    );
+  }
 
   if (search) {
     query = query.or(
@@ -89,6 +96,9 @@ export async function POST(request: NextRequest) {
         author: bookData.author || "",
         translator: bookData.translator || "",
         is_paid: bookData.is_paid || false,
+        status: bookData.status || "published",
+        scheduled_at: bookData.scheduled_at || null,
+        published_at: bookData.status === "published" ? new Date().toISOString() : null,
         price: bookData.price || 25000,
         promo_price: bookData.promo_price || null,
         promo_text: bookData.promo_text || "",
@@ -144,6 +154,10 @@ export async function PUT(request: NextRequest) {
     const m = String(volumes[0].file_url).match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/)
       || String(volumes[0].file_url).match(/drive\.google\.com\/uc\?id=([a-zA-Z0-9_-]+)/);
     if (m) updates.cover_url = `https://drive.google.com/thumbnail?id=${m[1]}&sz=w800`;
+  }
+
+  if (updates.status === "published" && !updates.published_at) {
+    updates.published_at = new Date().toISOString();
   }
 
   const { data, error } = await db()

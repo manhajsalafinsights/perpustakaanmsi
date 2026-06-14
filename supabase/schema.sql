@@ -1,3 +1,7 @@
+-- ALTER TABLE books ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'published';
+-- ALTER TABLE books ADD COLUMN IF NOT EXISTS scheduled_at TIMESTAMPTZ;
+-- ALTER TABLE books ADD COLUMN IF NOT EXISTS published_at TIMESTAMPTZ; 
+
 -- ============================================
 -- Catatan Penting: Tabel Admins
 -- ============================================

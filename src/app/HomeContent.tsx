@@ -228,8 +228,14 @@ export default function HomeContent() {
       .catch(() => {});
   }, [fetchBooks]);
 
-  const trendingBooks = [...books].sort((a, b) => (b.views || 0) - (a.views || 0));
-  const newBooks = [...books].sort(
+  const liveBooks = books.filter(
+    (b) => b.status !== "scheduled" || !b.scheduled_at || new Date(b.scheduled_at) <= new Date()
+  );
+  const upcomingBooks = books.filter(
+    (b) => b.status === "scheduled" && b.scheduled_at && new Date(b.scheduled_at) > new Date()
+  );
+  const trendingBooks = [...liveBooks].sort((a, b) => (b.views || 0) - (a.views || 0));
+  const newBooks = [...liveBooks].sort(
     (a, b) =>
       new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
   );
@@ -238,7 +244,7 @@ export default function HomeContent() {
   const paidBooks = newBooks.filter((b) => b.is_paid);
   const categoryPicks: Book[] = [];
   const categorySeen = new Set<string>();
-  for (const book of newBooks) {
+  for (const book of liveBooks) {
     if (!categorySeen.has(book.category)) {
       categorySeen.add(book.category);
       categoryPicks.push(book);
@@ -317,6 +323,71 @@ export default function HomeContent() {
         <div className="space-y-8 sm:space-y-12">
 
           <MiniStats totalBooks={books.length} totalVisitors={visitorCount} totalCategories={categories.length} totalFree={freeBooks.length} />
+
+          {upcomingBooks.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+          >
+            <div className="space-y-5">
+              <SectionHeader
+                icon={Clock}
+                title="Segera Launching"
+                showAll={false}
+                isExpanded={false}
+                onToggle={() => {}}
+              />
+              <div className={GRID_CLASSES}>
+                {upcomingBooks.slice(0, 6).map((book, i) => (
+                  <Link
+                    key={book.id}
+                    href={`/book/${book.id}`}
+                    className="group"
+                  >
+                    <div className="relative bg-surface-dark rounded-2xl overflow-hidden border border-border/50 hover:border-primary/30 transition-all duration-300">
+                      <div className="aspect-[3/4] relative">
+                        {book.cover_url ? (
+                          <img
+                            src={book.cover_url}
+                            alt={book.title}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-primary/10">
+                            <BookOpen className="w-8 h-8 text-primary" />
+                          </div>
+                        )}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                        {book.scheduled_at && (
+                          <div className="absolute top-2 left-2">
+                            <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-white bg-amber-600/90 px-2 py-1 rounded-lg backdrop-blur-sm">
+                              <Clock className="w-3 h-3" />
+                              Segera Terbit{" "}
+                              {new Date(book.scheduled_at).toLocaleDateString("id-ID", {
+                                day: "numeric",
+                                month: "short",
+                              })}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="p-3">
+                        <p className="text-xs font-medium text-foreground line-clamp-2 leading-relaxed">
+                          {book.title}
+                        </p>
+                        <p className="text-[10px] text-muted mt-1">
+                          {book.author}
+                        </p>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+          )}
 
           {/* ── Ebook Gratis ── */}
           <motion.div
