@@ -259,10 +259,8 @@ export default function AdminPage() {
       const proxyUrl = `/api/pdf-proxy?url=${encodeURIComponent(url)}`;
       const pdfDoc = await pdfjs.getDocument(proxyUrl).promise;
 
-      let description = "";
-      let author = "";
-      let title = "";
-      let titleFromLabel = false;
+      let title = "", author = "", translator = "", description = "";
+      let titleFound = false, authorFound = false, translatorFound = false, descFound = false;
 
       try {
         const pageCount = pdfDoc.numPages;
@@ -328,13 +326,20 @@ export default function AdminPage() {
             title = normalizeTitle(rawTitle.toLowerCase())
               .replace(/\[[^\]]*\]/g, "")
               .trim();
-            if (title.length > 3 && title.length < 150) titleFromLabel = true;
+            if (title.length > 3 && title.length < 150) titleFound = true;
             else title = "";
           }
 
           const rawAuthor = findValue(["penulis", "pengarang"], lines);
           if (rawAuthor) {
             author = rawAuthor.replace(/\[[^\]]*\]/g, "").trim();
+            if (author.length > 0) authorFound = true;
+          }
+
+          const rawTranslator = findValue(["penerjemah"], lines);
+          if (rawTranslator) {
+            translator = rawTranslator.replace(/\[[^\]]*\]/g, "").trim();
+            if (translator.length > 0) translatorFound = true;
           }
 
           const rawDesc = findValue(["deskripsi"], lines);
@@ -343,15 +348,16 @@ export default function AdminPage() {
             description = ds
               ? ds[0] + " Baca selanjutnya..."
               : rawDesc.slice(0, 200) + (rawDesc.length > 200 ? " Baca selanjutnya..." : "");
+            if (description.length > 0) descFound = true;
           }
         }
       } catch (e) { console.error("text extract error:", e); }
 
       await pdfDoc.destroy();
-      return { title, description, author, _titleFromLabel: titleFromLabel };
+      return { title, author, translator, description, titleFound, authorFound, translatorFound, descFound };
     } catch (e) {
       console.error("extractClientSide error:", e);
-      return { title: "", description: "", author: "", _titleFromLabel: false };
+      return { title: "", author: "", translator: "", description: "", titleFound: false, authorFound: false, translatorFound: false, descFound: false };
     }
   };
 
@@ -360,54 +366,24 @@ export default function AdminPage() {
     setExtracting(true);
     setExtractMsg(null);
 
-    let filledFields: string[] = [];
-    let serverTitle = "";
-    let serverDesc = "";
-    let serverAuthor = "";
+    const client = await extractClientSide(url);
+    const filledFields: string[] = [];
 
-    try {
-      const res = await fetch("/api/pdf-extract", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        serverTitle = data.title || "";
-        serverAuthor = data.author || "";
-        serverDesc = data.description || "";
-        const updates: Record<string, string> = {};
-        if (data.title) { updates.title = data.title; filledFields.push("title"); }
-        if (data.author) { updates.author = data.author; filledFields.push("author"); }
-        if (data.description) { updates.description = data.description; filledFields.push("description"); }
-        if (!data.title && data.description) {
-          updates.title = data.description.replace(/ Baca selanjutnya\.\.\.$/, "").slice(0, 60);
-        }
-        if (Object.keys(updates).length > 0) {
-          setForm((prev) => ({ ...prev, ...updates }));
-        }
-      }
-    } catch (e) {
-      console.error("server extract error:", e);
+    if (client.titleFound) {
+      filledFields.push("judul");
+      setForm((prev) => ({ ...prev, title: client.title }));
     }
-
-    // Try client-side extraction (text) for missing fields
-    const clientResult = await extractClientSide(url);
-
-    if (clientResult._titleFromLabel) {
-      filledFields.push("title");
-      setForm((prev) => ({ ...prev, title: clientResult.title }));
-    } else if (clientResult.title && !serverTitle) {
-      filledFields.push("title");
-      setForm((prev) => ({ ...prev, title: clientResult.title }));
+    if (client.authorFound) {
+      filledFields.push("penulis");
+      setForm((prev) => ({ ...prev, author: client.author }));
     }
-    if (clientResult.description && !serverDesc) {
-      filledFields.push("description");
-      setForm((prev) => ({ ...prev, description: clientResult.description }));
+    if (client.translatorFound) {
+      filledFields.push("penerjemah");
+      setForm((prev) => ({ ...prev, translator: client.translator }));
     }
-    if (clientResult.author && !serverAuthor) {
-      filledFields.push("author");
-      setForm((prev) => ({ ...prev, author: clientResult.author }));
+    if (client.descFound) {
+      filledFields.push("deskripsi");
+      setForm((prev) => ({ ...prev, description: client.description }));
     }
 
     setExtracting(false);
