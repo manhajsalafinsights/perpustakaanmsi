@@ -262,6 +262,9 @@ export default function AdminPage() {
         if (data.title && !form.title) updates.title = data.title;
         if (data.author && !form.author) updates.author = data.author;
         if (data.description && !form.description) updates.description = data.description;
+        if (!data.title && data.description && !form.title) {
+          updates.title = data.description.replace(/ Baca selanjutnya\.\.\.$/, "").slice(0, 60);
+        }
         if (Object.keys(updates).length > 0) {
           setForm((prev) => ({ ...prev, ...updates }));
           setExtractSuccess(Object.keys(updates).join(", "));
@@ -328,6 +331,12 @@ export default function AdminPage() {
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormSubmitting(true);
+
+    if (!form.title.trim()) {
+      alert("Judul buku harus diisi!");
+      setFormSubmitting(false);
+      return;
+    }
 
     const validVolumes = volumes.filter((v) => v.file_url.trim());
     if (validVolumes.length === 0) {
@@ -837,7 +846,6 @@ export default function AdminPage() {
                     onChange={(e) =>
                       setForm({ ...form, title: e.target.value })
                     }
-                    required
                     className="w-full px-4 py-3 bg-surface border border-border rounded-2xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
                     placeholder="Masukkan judul buku"
                   />
