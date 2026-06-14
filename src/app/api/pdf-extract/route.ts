@@ -1,5 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 
+async function ensurePolyfills() {
+  if (typeof globalThis.DOMMatrix === "undefined") {
+    try {
+      const mod = await import("dommatrix");
+      globalThis.DOMMatrix = mod.default as unknown as typeof DOMMatrix;
+    } catch {
+      // dommatrix not available
+    }
+  }
+}
+
 async function getPdfBytes(url: string) {
   let fileId = "";
   const driveMatch = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
@@ -36,6 +47,7 @@ export async function POST(request: NextRequest) {
 
     const pdfBytes = await getPdfBytes(url);
 
+    await ensurePolyfills();
     const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
     const loadingTask = pdfjs.getDocument({ data: pdfBytes });
     const pdfDoc = await loadingTask.promise;
