@@ -111,7 +111,8 @@ function MiniStats({ totalBooks, totalVisitors, totalCategories, totalFree }: { 
         <div className="w-4 h-4 sm:w-5 sm:h-5 rounded sm:rounded-md bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-sm flex-shrink-0">
           <Eye className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-white" />
         </div>
-        <span className="text-xs sm:text-sm font-semibold text-foreground">
+        <span className="text-xs sm:text-sm font-semibold text-foreground flex items-center gap-1">
+          <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
           <OnlineReaderCount />
         </span>
       </div>
