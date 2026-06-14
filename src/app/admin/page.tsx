@@ -246,6 +246,9 @@ export default function AdminPage() {
     setIsSuper(false);
   };
 
+  const normalizeTitle = (s: string) =>
+    s.replace(/\b\w/g, (c) => c.toUpperCase());
+
   const extractClientSide = async (url: string) => {
     try {
       const pdfjs = await import("pdfjs-dist");
@@ -261,79 +264,93 @@ export default function AdminPage() {
       let title = "";
 
       try {
-        const meta = await pdfDoc.getMetadata();
-        if (meta.info) {
-          const info = meta.info as Record<string, unknown>;
-          if (info.Author && typeof info.Author === "string") author = info.Author.trim();
-        }
-      } catch (e) { console.error("getMetadata error:", e); }
-
-      try {
         const pageCount = pdfDoc.numPages;
-        let allText = "";
-        const labelPatterns = [
-          /(?:Pengarang|Penulis|Karya|Oleh|Karangan|Disusun\s*oleh|Author|By)\s*[:=]\s*(.+?)(?:[.\n]|$)/i,
-          /(?:ditulis\s*oleh|dikarang\s*oleh|karangan)\s*[:=]?\s*(.+?)(?:[.\n]|$)/i,
-          /(?:Judul|Kitab|Judul\s*Kitab|Materi)\s*[:=]\s*(.+?)(?:[.\n]|$)/i,
-        ];
+        const lines: { y: number; x: number; text: string }[] = [];
+
+        const isLabel = (s: string) =>
+          /^(?:Deskripsi|Penerjemah|Judul\s*Asli|Judul|Penulis|Pengarang|Karya|Oleh|Karangan|Tata\s*letak|Ukuran\s*Buku|Materi|Editor|Cover|Halaman)/i.test(s);
 
         for (let i = 2; i <= Math.min(pageCount, 7); i++) {
           const page = await pdfDoc.getPage(i);
           const content = await page.getTextContent();
-          const text = content.items
-            .map((item: unknown) => (item as { str?: string }).str || "")
-            .join(" ")
-            .replace(/\s+/g, " ")
-            .trim();
-          if (text) allText += (allText ? " " : "") + text;
 
-          if (!author) {
-            for (const re of labelPatterns.slice(0, 2)) {
-              const am = text.match(re);
-              if (am) {
-                author = am[1].trim();
-                break;
-              }
-            }
-          }
-          if (!title) {
-            for (const re of labelPatterns.slice(2)) {
-              const tm = text.match(re);
-              if (tm) {
-                title = tm[1].trim();
-                break;
-              }
-            }
+          for (const item of content.items) {
+            const it = item as { str?: string; transform?: number[] };
+            if (!it.str || !it.str.trim()) continue;
+            const t = it.transform;
+            const y = t ? Math.round(t[5]) : 0;
+            const x = t ? Math.round(t[4]) : 0;
+            lines.push({ y, text: it.str.trim(), x });
           }
         }
 
+        const rows = new Map<number, { x: number; text: string }[]>();
+        for (const l of lines) {
+          if (!rows.has(l.y)) rows.set(l.y, []);
+          rows.get(l.y)!.push({ x: l.x, text: l.text });
+        }
+        const sortedRows = [...rows.entries()].sort((a, b) => b[0] - a[0]);
+        const rowTexts = sortedRows.map(([, items]) =>
+          items.sort((a, b) => a.x - b.x).map((i) => i.text).join(" ")
+        );
+        const allText = rowTexts.join("\n");
+        console.log("[extractClientSide] rows:", rowTexts);
         console.log("[extractClientSide] allText:", allText);
 
+        const labels = /(Deskripsi|Penerjemah|Judul\s*Asli|Judul|Penulis|Pengarang|Tata\s*letak|Ukuran\s*Buku|Materi|Editor|Cover|Halaman)\s*/gi;
+
+        const extractAfter = (label: string, text: string) => {
+          const re = new RegExp(
+            `${label}\\s+(.+?)(?=\\s+(?:${[
+              "Deskripsi", "Penerjemah", "Judul\\s*Asli", "Judul",
+              "Penulis", "Pengarang", "Tata\\s*letak", "Ukuran\\s*Buku",
+              "Materi", "Editor", "Cover", "Halaman",
+            ].join("|")})|$)`,
+            "i"
+          );
+          const m = text.match(re);
+          return m ? m[1].trim() : "";
+        };
+
         if (allText) {
-          if (!author) {
-            const gelar = ["syaikh", "syekh", "ustadz", "dr\\.", "al-ustadz", "al-\\w+"];
-            const namePattern = new RegExp(
-              `(?:${gelar.join("|")})\\s+([A-Z][a-z]+(?:\\s+(?:bin\\s+)?[A-Z][a-z]+){1,4})`,
-              "i"
-            );
-            const nm = allText.match(namePattern);
-            if (nm) author = nm[0].trim();
+          let rawTitle = extractAfter("Judul", allText);
+          if (!rawTitle) {
+            const jm = allText.match(/Judul\s+(.+?)(?=\s+(?:Penulis|Pengarang|Penerjemah|Deskripsi))/i);
+            if (jm) rawTitle = jm[1].trim();
+          }
+          if (rawTitle) {
+            rawTitle = rawTitle.replace(/^[""']|[""']$/g, "").trim();
+            if (rawTitle.length > 3 && rawTitle.length < 150) title = normalizeTitle(rawTitle.toLowerCase());
           }
 
-          if (!title) {
-            const titleMatch = allText.match(/^(.+?)[.!]/);
-            if (titleMatch) {
-              const t = titleMatch[1].trim();
-              if (t.length > 10 && t.length < 120) title = t;
-            }
+          let rawAuthor = extractAfter("Penulis", allText) || extractAfter("Pengarang", allText);
+          if (!rawAuthor) {
+            const am = allText.match(/(?:Penulis|Pengarang)\s+(.+?)(?=\s+(?:Penerjemah|Deskripsi|Judul|Tata\s*letak|Ukuran\s*Buku))/i);
+            if (am) rawAuthor = am[1].trim();
+          }
+          if (rawAuthor) {
+            rawAuthor = rawAuthor.replace(/^[""']|[""']$/g, "").trim();
+            if (rawAuthor.length > 3) author = rawAuthor;
           }
 
-          const descStart = title ? allText.indexOf(title) + title.length : 0;
-          const descText = allText.slice(descStart).replace(/^[^a-zA-Z0-9]+/, "").trim();
-          const match = descText.match(/^.*?[.!?]/);
-          description = match
-            ? match[0] + " Baca selanjutnya..."
-            : descText.slice(0, 200) + (descText.length > 200 ? " Baca selanjutnya..." : "");
+          let rawDesc = extractAfter("Deskripsi", allText);
+          if (!rawDesc) {
+            const dm = allText.match(/Deskripsi\s+(.+?)(?=\s+(?:Penerjemah|Judul|Penulis|Pengarang|Tata\s*letak|Ukuran\s*Buku))/i);
+            if (dm) rawDesc = dm[1].trim();
+          }
+          if (rawDesc) {
+            const ds = rawDesc.match(/^.*?[.!?]/);
+            description = ds
+              ? ds[0] + " Baca selanjutnya..."
+              : rawDesc.slice(0, 200) + (rawDesc.length > 200 ? " Baca selanjutnya..." : "");
+          }
+        }
+
+        if (!description && allText) {
+          const ds = allText.match(/^.*?[.!?]/);
+          description = ds
+            ? ds[0] + " Baca selanjutnya..."
+            : allText.slice(0, 200) + (allText.length > 200 ? " Baca selanjutnya..." : "");
         }
       } catch (e) { console.error("text extract error:", e); }
 
