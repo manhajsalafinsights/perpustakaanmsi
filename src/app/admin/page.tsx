@@ -296,53 +296,43 @@ export default function AdminPage() {
         const allText = pageTexts.join("\n\n");
         console.log("[extractClientSide] allText:", allText);
 
-        const labels = /(Deskripsi|Penerjemah|Judul\s*Asli|Judul|Penulis|Pengarang|Tata\s*letak|Ukuran\s*Buku|Materi|Editor|Cover|Halaman)\s*/gi;
+        const lines = allText.split("\n").map((l) => l.trim()).filter(Boolean);
+        const knownLabels = new Set([
+          "judul", "judul buku", "judul asli", "penulis", "pengarang",
+          "penerjemah", "deskripsi", "tata letak", "tata letak & layout",
+          "ukuran buku", "edisi", "diterbitkan oleh", "desain & layout",
+          "materi", "editor", "cover", "halaman",
+        ]);
 
-        const extractAfter = (label: string, text: string) => {
-          const re = new RegExp(
-            `${label}\\s+(.+?)(?=\\s+(?:${[
-              "Deskripsi", "Penerjemah", "Judul\\s*Asli", "Judul",
-              "Penulis", "Pengarang", "Tata\\s*letak", "Ukuran\\s*Buku",
-              "Materi", "Editor", "Cover", "Halaman",
-            ].join("|")})|$)`,
-            "i"
-          );
-          const m = text.match(re);
-          return m ? m[1].trim() : "";
-        };
-
-        if (allText) {
-          let rawTitle = extractAfter("Judul", allText);
-          if (!rawTitle) {
-            const jm = allText.match(/Judul\s+(.+?)(?=\s+(?:Penulis|Pengarang|Penerjemah|Deskripsi))/i);
-            if (jm) rawTitle = jm[1].trim();
-          }
-          if (rawTitle) {
-            rawTitle = rawTitle
-              .replace(/^[""']|[""']$/g, "")
-              .replace(/\[[^\]]*\]/g, "")
-              .trim();
-            if (rawTitle.length > 3 && rawTitle.length < 150) {
-              title = normalizeTitle(rawTitle.toLowerCase());
-              titleFromLabel = true;
+        const findValue = (labelVariants: string[], textLines: string[]) => {
+          for (let i = 0; i < textLines.length - 1; i++) {
+            const line = textLines[i].toLowerCase().replace(/[:.]+$/, "").trim();
+            if (labelVariants.some((v) => line === v)) {
+              const val = textLines[i + 1];
+              if (val && !knownLabels.has(val.toLowerCase().replace(/[:.]+$/, "").trim())) {
+                return val;
+              }
             }
           }
+          return "";
+        };
 
-          let rawAuthor = extractAfter("Penulis", allText) || extractAfter("Pengarang", allText);
-          if (!rawAuthor) {
-            const am = allText.match(/(?:Penulis|Pengarang)\s+(.+?)(?=\s+(?:Penerjemah|Deskripsi|Judul|Tata\s*letak|Ukuran\s*Buku))/i);
-            if (am) rawAuthor = am[1].trim();
+        if (lines.length > 0) {
+          const rawTitle = findValue(["judul", "judul buku", "judul asli", "judul kitab"], lines);
+          if (rawTitle) {
+            title = normalizeTitle(rawTitle.toLowerCase())
+              .replace(/\[[^\]]*\]/g, "")
+              .trim();
+            if (title.length > 3 && title.length < 150) titleFromLabel = true;
+            else title = "";
           }
+
+          const rawAuthor = findValue(["penulis", "pengarang"], lines);
           if (rawAuthor) {
-            rawAuthor = rawAuthor.replace(/^[""']|[""']$/g, "").trim();
-            if (rawAuthor.length > 3) author = rawAuthor;
+            author = rawAuthor.replace(/\[[^\]]*\]/g, "").trim();
           }
 
-          let rawDesc = extractAfter("Deskripsi", allText);
-          if (!rawDesc) {
-            const dm = allText.match(/Deskripsi\s+(.+?)(?=\s+(?:Penerjemah|Judul|Penulis|Pengarang|Tata\s*letak|Ukuran\s*Buku))/i);
-            if (dm) rawDesc = dm[1].trim();
-          }
+          const rawDesc = findValue(["deskripsi"], lines);
           if (rawDesc) {
             const ds = rawDesc.match(/^.*?[.!?]/);
             description = ds
@@ -352,10 +342,11 @@ export default function AdminPage() {
         }
 
         if (!description && allText) {
-          const ds = allText.match(/^.*?[.!?]/);
+          const body = allText.replace(/[\s\S]*?(?:Muqoddimah|Pendahuluan|Bab|Pasal)/i, "");
+          const ds = body.match(/^.*?[.!?]/);
           description = ds
             ? ds[0] + " Baca selanjutnya..."
-            : allText.slice(0, 200) + (allText.length > 200 ? " Baca selanjutnya..." : "");
+            : body.slice(0, 200) + (body.length > 200 ? " Baca selanjutnya..." : "");
         }
       } catch (e) { console.error("text extract error:", e); }
 
