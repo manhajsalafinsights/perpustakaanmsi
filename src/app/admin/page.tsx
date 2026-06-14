@@ -265,36 +265,34 @@ export default function AdminPage() {
 
       try {
         const pageCount = pdfDoc.numPages;
-        const lines: { y: number; x: number; text: string }[] = [];
-
-        const isLabel = (s: string) =>
-          /^(?:Deskripsi|Penerjemah|Judul\s*Asli|Judul|Penulis|Pengarang|Karya|Oleh|Karangan|Tata\s*letak|Ukuran\s*Buku|Materi|Editor|Cover|Halaman)/i.test(s);
+        const pageTexts: string[] = [];
 
         for (let i = 2; i <= Math.min(pageCount, 7); i++) {
           const page = await pdfDoc.getPage(i);
           const content = await page.getTextContent();
 
+          const pageLines: { y: number; x: number; text: string }[] = [];
           for (const item of content.items) {
             const it = item as { str?: string; transform?: number[] };
             if (!it.str || !it.str.trim()) continue;
             const t = it.transform;
-            const y = t ? Math.round(t[5]) : 0;
-            const x = t ? Math.round(t[4]) : 0;
-            lines.push({ y, text: it.str.trim(), x });
+            if (!t) continue;
+            pageLines.push({ y: Math.round(t[5]), x: Math.round(t[4]), text: it.str.trim() });
           }
+
+          const rows = new Map<number, { x: number; text: string }[]>();
+          for (const l of pageLines) {
+            if (!rows.has(l.y)) rows.set(l.y, []);
+            rows.get(l.y)!.push({ x: l.x, text: l.text });
+          }
+          const sorted = [...rows.entries()].sort((a, b) => b[0] - a[0]);
+          const pageText = sorted.map(([, items]) =>
+            items.sort((a, b) => a.x - b.x).map((i) => i.text).join(" ")
+          ).join("\n");
+          if (pageText.trim()) pageTexts.push(pageText);
         }
 
-        const rows = new Map<number, { x: number; text: string }[]>();
-        for (const l of lines) {
-          if (!rows.has(l.y)) rows.set(l.y, []);
-          rows.get(l.y)!.push({ x: l.x, text: l.text });
-        }
-        const sortedRows = [...rows.entries()].sort((a, b) => b[0] - a[0]);
-        const rowTexts = sortedRows.map(([, items]) =>
-          items.sort((a, b) => a.x - b.x).map((i) => i.text).join(" ")
-        );
-        const allText = rowTexts.join("\n");
-        console.log("[extractClientSide] rows:", rowTexts);
+        const allText = pageTexts.join("\n\n");
         console.log("[extractClientSide] allText:", allText);
 
         const labels = /(Deskripsi|Penerjemah|Judul\s*Asli|Judul|Penulis|Pengarang|Tata\s*letak|Ukuran\s*Buku|Materi|Editor|Cover|Halaman)\s*/gi;
