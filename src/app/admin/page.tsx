@@ -268,32 +268,52 @@ export default function AdminPage() {
       } catch (e) { console.error("getMetadata error:", e); }
 
       try {
-        const page = await pdfDoc.getPage(1);
-        const content = await page.getTextContent();
-        const fullText = content.items
-          .map((item: unknown) => (item as { str?: string }).str || "")
-          .join(" ")
-          .replace(/\s+/g, " ")
-          .trim();
+        const pageCount = pdfDoc.numPages;
+        let allText = "";
+        const authorPatterns = [
+          /(?:Pengarang|Penulis|Karya|Oleh|Karangan|Disusun\s*oleh|Author|By)\s*[:=]\s*(.+?)(?:[.\n]|$)/i,
+          /(?:ditulis\s*oleh|dikarang\s*oleh|karangan)\s*[:=]?\s*(.+?)(?:[.\n]|$)/i,
+        ];
 
-        console.log("[extractClientSide] fullText:", fullText);
-
-        if (fullText) {
-          const match = fullText.match(/^.*?[.!?]/);
-          description = match
-            ? match[0] + " Baca selanjutnya..."
-            : fullText.slice(0, 200) + (fullText.length > 200 ? " Baca selanjutnya..." : "");
+        for (let i = 1; i <= Math.min(pageCount, 5); i++) {
+          const page = await pdfDoc.getPage(i);
+          const content = await page.getTextContent();
+          const text = content.items
+            .map((item: unknown) => (item as { str?: string }).str || "")
+            .join(" ")
+            .replace(/\s+/g, " ")
+            .trim();
+          if (text) allText += (allText ? " " : "") + text;
 
           if (!author) {
-            const patterns = [
-              /(?:Pengarang|Penulis|Karya|Oleh|Karangan|Disusun\s*oleh|Author|By)\s*[:=]\s*([^\n,;.(]+)/i,
-              /(?:ditulis\s*oleh|dikarang\s*oleh|karangan)\s*[:=]?\s*([^\n,;.(]+)/i,
-            ];
-            for (const re of patterns) {
-              const am = fullText.match(re);
-              if (am) { author = am[1].trim(); break; }
+            for (const re of authorPatterns) {
+              const am = text.match(re);
+              if (am) {
+                author = am[1].trim();
+                break;
+              }
             }
           }
+          if (author && i === 1) break;
+        }
+
+        console.log("[extractClientSide] allText:", allText);
+
+        if (allText) {
+          if (!author) {
+            const titleWords = ["syaikh", "syekh", "ustadz", "dr\\.", "al-ustadz", "al-\\w+"];
+            const namePattern = new RegExp(
+              `(?:${titleWords.join("|")})\\s+([A-Z][a-z]+(?:\\s+(?:bin\\s+)?[A-Z][a-z]+){1,4})`,
+              "i"
+            );
+            const nm = allText.match(namePattern);
+            if (nm) author = nm[0].trim();
+          }
+
+          const match = allText.match(/^.*?[.!?]/);
+          description = match
+            ? match[0] + " Baca selanjutnya..."
+            : allText.slice(0, 200) + (allText.length > 200 ? " Baca selanjutnya..." : "");
         }
       } catch (e) { console.error("text extract error:", e); }
 
