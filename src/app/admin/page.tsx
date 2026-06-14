@@ -272,29 +272,23 @@ export default function AdminPage() {
           const page = await pdfDoc.getPage(i);
           const content = await page.getTextContent();
 
-          interface ItemEx { x: number; w: number; text: string }
-          const pageItems: { y: number; items: ItemEx[] }[] = [];
+          const rows: { y: number; items: { x: number; text: string }[] }[] = [];
 
           for (const item of content.items) {
-            const it = item as { str?: string; transform?: number[]; width?: number };
-            if (!it.str || !it.str.trim() || !it.transform || it.width === undefined) continue;
+            const it = item as { str?: string; transform?: number[] };
+            if (!it.str || !it.str.trim() || !it.transform) continue;
             const x = Math.round(it.transform[4]);
             const y = Math.round(it.transform[5]);
-            let row = pageItems.find((r) => Math.abs(r.y - y) < 3);
-            if (!row) { row = { y, items: [] }; pageItems.push(row); }
-            row.items.push({ x, w: Math.round(it.width), text: it.str });
+            let row = rows.find((r) => Math.abs(r.y - y) < 3);
+            if (!row) { row = { y, items: [] }; rows.push(row); }
+            row.items.push({ x, text: it.str });
           }
 
-          pageItems.sort((a, b) => b.y - a.y);
-          const pageText = pageItems.map((row) => {
-            const arr = row.items.sort((a, b) => a.x - b.x);
-            let line = arr[0].text;
-            for (let j = 1; j < arr.length; j++) {
-              const gap = arr[j].x - (arr[j - 1].x + arr[j - 1].w);
-              line += gap > 8 ? " " + arr[j].text : arr[j].text;
-            }
-            return line;
-          }).join("\n");
+          rows.sort((a, b) => b.y - a.y);
+          const lines = rows.map((row) =>
+            row.items.sort((a, b) => a.x - b.x).map((it) => it.text).join(" ")
+          );
+          const pageText = lines.join("\n");
           if (pageText.trim() && !/daftar\s*isi/i.test(pageText)) pageTexts.push(pageText);
         }
 
@@ -302,50 +296,47 @@ export default function AdminPage() {
         console.log("[extractClientSide] allText:", allText);
 
         const lines = allText.split("\n").map((l) => l.trim()).filter(Boolean);
-        const knownLabels = new Set([
-          "judul", "judul buku", "judul asli", "judul kitab",
-          "penulis", "pengarang", "penyusun",
-          "penerjemah", "deskripsi", "tata letak", "tata letak & layout",
-          "ukuran buku", "edisi", "diterbitkan oleh", "desain & layout",
-          "materi", "editor", "cover", "halaman",
-        ]);
-
-        const findValue = (labelVariants: string[], textLines: string[]) => {
-          for (let i = 0; i < textLines.length - 1; i++) {
-            const line = textLines[i].toLowerCase().replace(/[:.]+$/, "").trim();
-            if (labelVariants.some((v) => line === v)) {
-              const val = textLines[i + 1];
-              if (val && !knownLabels.has(val.toLowerCase().replace(/[:.]+$/, "").trim())) {
-                return val;
-              }
-            }
-          }
-          return "";
-        };
 
         if (lines.length > 0) {
-          const rawTitle = findValue(["judul", "judul buku", "judul asli", "judul kitab"], lines);
-          if (rawTitle) {
+          const extractField = (labels: string[], textLines: string[]) => {
+            for (let i = 0; i < textLines.length; i++) {
+              const line = textLines[i];
+              const lower = line.toLowerCase();
+              for (const label of labels) {
+                const idx = lower.indexOf(label);
+                if (idx === -1) continue;
+                const after = line.slice(idx + label.length).replace(/^[:.\s]+/, "").trim();
+                if (after) return after;
+                if (i + 1 < textLines.length) {
+                  const next = textLines[i + 1];
+                  if (next && next.length > 0) return next;
+                }
+              }
+            }
+            return "";
+          };
+
+          const rawTitle = extractField(["judul buku", "judul asli", "judul kitab", "judul"], lines);
+          if (rawTitle && rawTitle.length > 3 && rawTitle.length < 150) {
             title = normalizeTitle(rawTitle.toLowerCase())
               .replace(/\[[^\]]*\]/g, "")
               .trim();
-            if (title.length > 3 && title.length < 150) titleFound = true;
-            else title = "";
+            titleFound = true;
           }
 
-          const rawAuthor = findValue(["penulis", "pengarang", "penyusun"], lines);
+          const rawAuthor = extractField(["penulis", "pengarang", "penyusun"], lines);
           if (rawAuthor) {
             author = rawAuthor.replace(/\[[^\]]*\]/g, "").trim();
             if (author.length > 0) authorFound = true;
           }
 
-          const rawTranslator = findValue(["penerjemah"], lines);
+          const rawTranslator = extractField(["penerjemah"], lines);
           if (rawTranslator) {
             translator = rawTranslator.replace(/\[[^\]]*\]/g, "").trim();
             if (translator.length > 0) translatorFound = true;
           }
 
-          const rawDesc = findValue(["deskripsi"], lines);
+          const rawDesc = extractField(["deskripsi"], lines);
           if (rawDesc && rawDesc.replace(/[^a-zA-Z0-9\s]/g, "").length > rawDesc.length * 0.5) {
             const ds = rawDesc.match(/^.*?[.!?]/);
             description = ds
