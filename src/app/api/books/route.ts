@@ -7,6 +7,12 @@ const db = () => {
 };
 
 export async function GET(request: NextRequest) {
+  await db()
+    .from("books")
+    .update({ status: "published", published_at: new Date().toISOString() })
+    .eq("status", "scheduled")
+    .lte("scheduled_at", new Date().toISOString());
+
   const { searchParams } = new URL(request.url);
   const search = searchParams.get("search") || "";
   const category = searchParams.get("category") || "";
