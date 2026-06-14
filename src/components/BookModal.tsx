@@ -130,9 +130,24 @@ export default function BookModal({ book, isOpen, onClose }: BookModalProps) {
                 </span>
               </div>
 
-              <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-4">
+              <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
                 {book.title}
               </h2>
+
+              {(book.author || book.translator) && (
+                <div className="text-sm text-muted mb-4 space-y-0.5">
+                  {book.author && (
+                    <div>
+                      Penulis: <span className="font-medium text-foreground">{book.author}</span>
+                    </div>
+                  )}
+                  {book.translator && (
+                    <div>
+                      Penerjemah: <span className="font-medium text-foreground">{book.translator}</span>
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div className="flex gap-1 mb-6 border-b border-border">
                 <button

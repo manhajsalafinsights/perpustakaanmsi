@@ -92,6 +92,20 @@ export default function BookCard({ book, index = 0, onClick, isNew }: BookCardPr
             <p className="text-[11px] text-muted line-clamp-2 leading-relaxed">
               {book.description}
             </p>
+            {(book.author || book.translator) && (
+              <div className="text-[11px] text-muted mt-1.5 space-y-0.5">
+                {book.author && (
+                  <div className="truncate">
+                    Penulis: <span className="font-medium text-foreground/80">{book.author}</span>
+                  </div>
+                )}
+                {book.translator && (
+                  <div className="truncate">
+                    Penerjemah: <span className="font-medium text-foreground/80">{book.translator}</span>
+                  </div>
+                )}
+              </div>
+            )}
             <div className="flex items-center gap-1.5 mt-2 flex-wrap">
               <span className="text-[10px] font-medium text-primary bg-primary/10 px-1.5 py-0.5 rounded-full">
                 {book.category}

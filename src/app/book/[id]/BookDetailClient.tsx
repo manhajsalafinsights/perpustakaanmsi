@@ -410,10 +410,19 @@ export default function BookDetailClient({ id }: { id: string }) {
                 </div>
               </div>
 
-              {/* Author */}
-              {book.author && (
-                <div className="text-sm text-muted mb-4">
-                  Penulis: <span className="font-medium text-foreground">{book.author}</span>
+              {/* Author & Translator */}
+              {(book.author || book.translator) && (
+                <div className="text-sm text-muted mb-4 space-y-1">
+                  {book.author && (
+                    <div>
+                      Penulis: <span className="font-medium text-foreground">{book.author}</span>
+                    </div>
+                  )}
+                  {book.translator && (
+                    <div>
+                      Penerjemah: <span className="font-medium text-foreground">{book.translator}</span>
+                    </div>
+                  )}
                 </div>
               )}
 
