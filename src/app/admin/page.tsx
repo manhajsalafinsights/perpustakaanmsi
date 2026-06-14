@@ -258,6 +258,7 @@ export default function AdminPage() {
 
       let description = "";
       let author = "";
+      let title = "";
 
       try {
         const meta = await pdfDoc.getMetadata();
@@ -270,9 +271,10 @@ export default function AdminPage() {
       try {
         const pageCount = pdfDoc.numPages;
         let allText = "";
-        const authorPatterns = [
+        const labelPatterns = [
           /(?:Pengarang|Penulis|Karya|Oleh|Karangan|Disusun\s*oleh|Author|By)\s*[:=]\s*(.+?)(?:[.\n]|$)/i,
           /(?:ditulis\s*oleh|dikarang\s*oleh|karangan)\s*[:=]?\s*(.+?)(?:[.\n]|$)/i,
+          /(?:Judul|Kitab|Judul\s*Kitab|Materi)\s*[:=]\s*(.+?)(?:[.\n]|$)/i,
         ];
 
         for (let i = 2; i <= Math.min(pageCount, 7); i++) {
@@ -286,7 +288,7 @@ export default function AdminPage() {
           if (text) allText += (allText ? " " : "") + text;
 
           if (!author) {
-            for (const re of authorPatterns) {
+            for (const re of labelPatterns.slice(0, 2)) {
               const am = text.match(re);
               if (am) {
                 author = am[1].trim();
@@ -294,34 +296,52 @@ export default function AdminPage() {
               }
             }
           }
-          if (author && i === 1) break;
+          if (!title) {
+            for (const re of labelPatterns.slice(2)) {
+              const tm = text.match(re);
+              if (tm) {
+                title = tm[1].trim();
+                break;
+              }
+            }
+          }
         }
 
         console.log("[extractClientSide] allText:", allText);
 
         if (allText) {
           if (!author) {
-            const titleWords = ["syaikh", "syekh", "ustadz", "dr\\.", "al-ustadz", "al-\\w+"];
+            const gelar = ["syaikh", "syekh", "ustadz", "dr\\.", "al-ustadz", "al-\\w+"];
             const namePattern = new RegExp(
-              `(?:${titleWords.join("|")})\\s+([A-Z][a-z]+(?:\\s+(?:bin\\s+)?[A-Z][a-z]+){1,4})`,
+              `(?:${gelar.join("|")})\\s+([A-Z][a-z]+(?:\\s+(?:bin\\s+)?[A-Z][a-z]+){1,4})`,
               "i"
             );
             const nm = allText.match(namePattern);
             if (nm) author = nm[0].trim();
           }
 
-          const match = allText.match(/^.*?[.!?]/);
+          if (!title) {
+            const titleMatch = allText.match(/^(.+?)[.!]/);
+            if (titleMatch) {
+              const t = titleMatch[1].trim();
+              if (t.length > 10 && t.length < 120) title = t;
+            }
+          }
+
+          const descStart = title ? allText.indexOf(title) + title.length : 0;
+          const descText = allText.slice(descStart).replace(/^[^a-zA-Z0-9]+/, "").trim();
+          const match = descText.match(/^.*?[.!?]/);
           description = match
             ? match[0] + " Baca selanjutnya..."
-            : allText.slice(0, 200) + (allText.length > 200 ? " Baca selanjutnya..." : "");
+            : descText.slice(0, 200) + (descText.length > 200 ? " Baca selanjutnya..." : "");
         }
       } catch (e) { console.error("text extract error:", e); }
 
       await pdfDoc.destroy();
-      return { description, author };
+      return { title, description, author };
     } catch (e) {
       console.error("extractClientSide error:", e);
-      return { description: "", author: "" };
+      return { title: "", description: "", author: "" };
     }
   };
 
@@ -355,16 +375,16 @@ export default function AdminPage() {
       console.error("server extract error:", e);
     }
 
-    // Try client-side extraction (metadata + text) for missing fields
+    // Try client-side extraction (text) — overrides server values
     const clientResult = await extractClientSide(url);
-    if (clientResult.description && !filledFields.includes("description")) {
-      filledFields.push("description");
-      setForm((prev) => (prev.description ? prev : { ...prev, description: clientResult.description }));
-    }
-    if (clientResult.author && !filledFields.includes("author")) {
-      filledFields.push("author");
-      setForm((prev) => (prev.author ? prev : { ...prev, author: clientResult.author }));
-    }
+    filledFields = filledFields.filter(
+      (f) => !(f === "title" && clientResult.title) &&
+             !(f === "description" && clientResult.description) &&
+             !(f === "author" && clientResult.author)
+    );
+    if (clientResult.title) { filledFields.push("title"); setForm((prev) => ({ ...prev, title: clientResult.title })); }
+    if (clientResult.description) { filledFields.push("description"); setForm((prev) => ({ ...prev, description: clientResult.description })); }
+    if (clientResult.author) { filledFields.push("author"); setForm((prev) => ({ ...prev, author: clientResult.author })); }
 
     setExtracting(false);
     if (filledFields.length > 0) {
