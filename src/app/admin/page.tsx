@@ -318,7 +318,7 @@ export default function AdminPage() {
         };
 
         if (lines.length > 0) {
-          const rawTitle = findValue(["judul", "judul buku", "judul asli", "judul kitab"], lines);
+          const rawTitle = findValue(["judul", "judul asli", "judul kitab"], lines);
           if (rawTitle) {
             title = normalizeTitle(rawTitle.toLowerCase())
               .replace(/\[[^\]]*\]/g, "")
