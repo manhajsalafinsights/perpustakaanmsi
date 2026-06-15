@@ -99,13 +99,13 @@ export default function BookDetailClient({ id }: { id: string }) {
     setFlipDir(dir);
     setFlipAngle(0);
     requestAnimationFrame(() => {
-      requestAnimationFrame(() => setFlipAngle(dir > 0 ? -180 : 180));
+      requestAnimationFrame(() => setFlipAngle(dir > 0 ? -80 : 80));
     });
     setTimeout(() => {
       setCurrentPage(p => Math.max(1, Math.min(numPagesRef.current, p + dir)));
       flipRef.current = false;
       setFlipAngle(0);
-    }, 400);
+    }, 500);
   };
 
   // TTS inline
@@ -878,22 +878,25 @@ export default function BookDetailClient({ id }: { id: string }) {
                     onLoadError={() => { setPdfError(true); setPdfLoading(false); }}
                     loading={null}
                   >
-                    <div className="relative flex justify-center px-4" style={{ perspective: "1500px" }}>
+                    <div className="relative flex justify-center px-4" style={{ perspective: "2000px" }}>
                       {flipDir !== 0 && (
-                        <div className="absolute inset-0 flex justify-center" style={{ backfaceVisibility: "hidden" }}>
-                          <Page
-                            pageNumber={Math.max(1, Math.min(numPagesRef.current, currentPage + flipDir))}
-                            width={typeof window !== "undefined" ? Math.min(window.innerWidth - 48, 900) : 800}
-                            renderTextLayer={false}
-                            renderAnnotationLayer={false}
-                          />
+                        <div className="absolute inset-0 flex justify-center">
+                          <div style={{ boxShadow: "inset 4px 0 12px rgba(0,0,0,0.12)" }}>
+                            <Page
+                              pageNumber={Math.max(1, Math.min(numPagesRef.current, currentPage + flipDir))}
+                              width={typeof window !== "undefined" ? Math.min(window.innerWidth - 48, 900) : 800}
+                              renderTextLayer={false}
+                              renderAnnotationLayer={false}
+                            />
+                          </div>
                         </div>
                       )}
                       <div style={{
-                        transform: `rotateY(${flipAngle}deg)`,
-                        transition: "transform 0.35s ease-in-out",
+                        transform: `perspective(2000px) rotateY(${flipAngle}deg) translateX(${flipAngle / 4}px)`,
+                        transition: "transform 0.45s cubic-bezier(0.22, 1, 0.36, 1)",
                         transformOrigin: flipDir > 0 ? "left" : "right",
                         backfaceVisibility: "hidden",
+                        boxShadow: `${flipDir > 0 ? -flipAngle : flipAngle}px 4px 20px rgba(0,0,0,0.18)`,
                       }}>
                         <Page
                           pageNumber={currentPage}
