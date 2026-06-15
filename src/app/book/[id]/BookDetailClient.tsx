@@ -873,7 +873,7 @@ export default function BookDetailClient({ id }: { id: string }) {
                       <span className="hidden sm:inline">{saveFeedback ? "Tersimpan" : "Simpan"}</span>
                     </button>
                     <button
-                      onClick={() => setShowTTS(true)}
+                      onClick={() => { setTtsStatus("extracting"); setTtsMsg("Mengunduh PDF..."); setShowTTS(true); }}
                       className="flex items-center gap-0.5 px-2 py-1.5 text-xs font-medium rounded-lg bg-surface-dark text-muted hover:text-primary hover:bg-primary/10 transition-colors"
                     >
                       <Volume2 className="w-3.5 h-3.5" />
