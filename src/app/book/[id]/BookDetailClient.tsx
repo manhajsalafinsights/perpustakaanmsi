@@ -923,7 +923,7 @@ export default function BookDetailClient({ id }: { id: string }) {
 
       {/* Payment Modal */}
       {showPaymentModal && book && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="glass rounded-2xl p-6 sm:p-8 max-w-md w-full border border-accent/20 shadow-2xl">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-semibold text-foreground">Info Pembayaran</h3>
@@ -968,7 +968,7 @@ export default function BookDetailClient({ id }: { id: string }) {
       )}
 
       {showTTS && ttsStatus === "extracting" && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 backdrop-blur-sm">
           <div className="bg-background rounded-2xl p-8 shadow-2xl border border-border flex flex-col items-center gap-4 max-w-xs w-full mx-4">
             <Loader2 className="w-10 h-10 text-primary animate-spin" />
             <p className="text-sm text-foreground font-medium text-center">{ttsMsg}</p>
@@ -980,7 +980,7 @@ export default function BookDetailClient({ id }: { id: string }) {
       )}
 
       {showTTS && ttsStatus === "error" && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 backdrop-blur-sm">
           <div className="bg-background rounded-2xl p-8 shadow-2xl border border-border flex flex-col items-center gap-4 max-w-xs w-full mx-4">
             <AlertCircle className="w-10 h-10 text-red-400" />
             <p className="text-sm text-foreground font-medium text-center">{ttsMsg}</p>
@@ -992,7 +992,7 @@ export default function BookDetailClient({ id }: { id: string }) {
       )}
 
       {showTTS && ttsChunks.length > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-t border-border shadow-2xl">
+        <div className="fixed bottom-0 left-0 right-0 z-[200] bg-background/95 backdrop-blur-md border-t border-border shadow-2xl">
           <div className="h-0.5 bg-surface-dark">
             <div className="h-full bg-primary transition-all duration-300" style={{ width: `${ttsChunks.length > 0 ? ((ttsIdx + 1) / ttsChunks.length) * 100 : 0}%` }} />
           </div>
