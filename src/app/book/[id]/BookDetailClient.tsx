@@ -991,8 +991,8 @@ export default function BookDetailClient({ id }: { id: string }) {
           <div className="h-0.5 bg-surface-dark">
             <div className="h-full bg-primary transition-all duration-300" style={{ width: `${ttsChunks.length > 0 ? ((ttsIdx + 1) / ttsChunks.length) * 100 : 0}%` }} />
           </div>
-          <div className="flex items-center justify-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5">
-            <button onClick={() => { window.speechSynthesis?.cancel(); setShowTTS(false); setTtsStatus("idle"); setTtsChunks([]); }} className="absolute left-3 sm:left-4 p-1.5 rounded-lg text-muted hover:text-foreground hover:bg-surface-dark transition-colors">
+          <div className="relative flex items-center justify-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5">
+            <button onClick={() => { window.speechSynthesis?.cancel(); setShowTTS(false); setTtsStatus("idle"); setTtsChunks([]); }} className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-muted hover:text-foreground hover:bg-surface-dark transition-colors">
               <X className="w-4 h-4" />
             </button>
             <button onClick={ttsPrev} disabled={ttsIdx === 0} className="p-1.5 rounded-lg text-muted hover:text-foreground hover:bg-surface-dark disabled:opacity-30 transition-colors">
@@ -1010,8 +1010,10 @@ export default function BookDetailClient({ id }: { id: string }) {
             <button onClick={() => { const sp = [0.75, 1, 1.25, 1.5, 2]; const i = sp.indexOf(ttsSpeed); const ns = sp[(i + 1) % sp.length]; setTtsSpeed(ns); if (ttsStatus === "playing") { window.speechSynthesis?.cancel(); ttsSpeak(ttsIdxRef.current); } }} className="px-2 py-1 text-xs font-semibold rounded-lg bg-surface-dark text-muted hover:text-foreground transition-colors">
               {ttsSpeed}x
             </button>
-            <span className="hidden sm:block text-xs text-muted ml-auto">{ttsIdx + 1}/{ttsChunks.length}</span>
-            <Volume2 className="hidden sm:block w-3.5 h-3.5 text-muted" />
+            <span className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
+              <span className="hidden sm:inline text-xs text-muted">{ttsIdx + 1}/{ttsChunks.length}</span>
+              <Volume2 className="hidden sm:block w-3.5 h-3.5 text-muted" />
+            </span>
           </div>
         </div>
       )}
