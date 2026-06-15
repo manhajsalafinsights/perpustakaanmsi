@@ -1,24 +1,10 @@
-let pdfjsInstance: typeof import("pdfjs-dist") | null = null;
-
-async function getPdfjs() {
-  if (!pdfjsInstance) {
-    const pdfjs = await import("pdfjs-dist");
-    pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-      "pdfjs-dist/build/pdf.worker.min.mjs",
-      import.meta.url,
-    ).toString();
-    pdfjsInstance = pdfjs;
-  }
-  return pdfjsInstance;
-}
-
 export interface TTSChunk {
   index: number;
   text: string;
 }
 
 export async function extractPDFText(pdfUrl: string, pageLimit?: number): Promise<string> {
-  const pdfjs = await getPdfjs();
+  const { pdfjs } = await import("react-pdf");
   const proxyUrl = `/api/pdf-proxy?url=${encodeURIComponent(pdfUrl)}`;
   const pdfDoc = await pdfjs.getDocument(proxyUrl).promise;
   const totalPages = pdfDoc.numPages;
@@ -68,7 +54,6 @@ export function chunkText(text: string): TTSChunk[] {
     .split(/\n\n+/)
     .map((s) => s.replace(/\s+/g, " ").trim())
     .filter((s) => s.length > 20);
-
   if (raw.length === 0) return [];
 
   const result: TTSChunk[] = [];
@@ -95,22 +80,12 @@ export function playChunk(
     return null;
   }
 
-  window.speechSynthesis.cancel();
-
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = "id-ID";
   utterance.rate = rate;
 
-  try {
-    const voices = window.speechSynthesis.getVoices();
-    const idVoice = voices.find(
-      (v) => v.lang.startsWith("id") || v.lang.startsWith("ms"),
-    );
-    if (idVoice) utterance.voice = idVoice;
-  } catch {}
-
   utterance.onend = onEnd;
-  utterance.onerror = (e) => { console.error("[tts] speak error:", e); onError(); };
+  utterance.onerror = () => onError();
   window.speechSynthesis.speak(utterance);
   return utterance;
 }
