@@ -161,21 +161,21 @@ export default function BookDetailClient({ id }: { id: string }) {
     setTtsStatus("playing");
     const ss = window.speechSynthesis;
     if (!ss) { setTtsStatus("done"); return; }
-    if (ss.paused) ss.resume();
-    // Android butuh cancel + delay, iOS butuh voices
+    const clean = c[idx].text.replace(/[^\w\s.,!?;:'"()\-]/g, " ").replace(/\s+/g, " ").trim();
+    if (!clean || clean.length < 2) { ttsSpeak(idx + 1); return; }
     ss.cancel();
-    ss.getVoices();
-    const u = new SpeechSynthesisUtterance(c[idx].text);
+    const u = new SpeechSynthesisUtterance(clean);
     u.lang = "id-ID";
     u.rate = ttsSpRef.current;
-    const voices = ss.getVoices();
-    const id = voices.find(v => v.lang.startsWith("id"));
-    if (id) u.voice = id;
+    u.volume = 1;
     activeUtterance = u;
-    u.onend = () => { const n = ttsIdxRef.current + 1; if (n < ttsChRef.current.length) ttsSpeak(n); else setTtsStatus("done"); };
-    u.onerror = () => setTtsStatus("done");
-    // delay kecil biar Android sempat setup
-    setTimeout(() => { try { ss.speak(u); } catch { setTtsStatus("done"); } }, 50);
+    let done = false;
+    const finish = () => { if (done) return; done = true; setTtsStatus("done"); };
+    u.onend = () => { finish(); const n = ttsIdxRef.current + 1; if (n < ttsChRef.current.length) ttsSpeak(n); };
+    u.onerror = () => finish();
+    const fb = setTimeout(() => finish(), 8000);
+    u.onstart = () => clearTimeout(fb);
+    try { ss.speak(u); } catch { finish(); }
   };
 
   const ttsPlay = () => {
