@@ -6,7 +6,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Document, Page, pdfjs } from "react-pdf";
-import TTSPlayer from "@/components/TTSPlayer";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 
@@ -35,6 +34,12 @@ import {
   BookmarkCheck,
   Clock,
   Volume2,
+  Play,
+  Pause,
+  Square,
+  SkipBack,
+  SkipForward,
+  AlertCircle,
 } from "lucide-react";
 
 function formatNumber(n: number): string {
@@ -86,6 +91,96 @@ export default function BookDetailClient({ id }: { id: string }) {
   const [saveFeedback, setSaveFeedback] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showTTS, setShowTTS] = useState(false);
+
+  // TTS inline
+  const [ttsStatus, setTtsStatus] = useState("idle");
+  const [ttsChunks, setTtsChunks] = useState<{ index: number; text: string }[]>([]);
+  const [ttsIdx, setTtsIdx] = useState(0);
+  const [ttsSpeed, setTtsSpeed] = useState(1);
+  const [ttsMsg, setTtsMsg] = useState("");
+  const ttsIdxRef = useRef(0);
+  const ttsChRef = useRef(ttsChunks);
+  const ttsSpRef = useRef(ttsSpeed);
+  ttsIdxRef.current = ttsIdx;
+  ttsChRef.current = ttsChunks;
+  ttsSpRef.current = ttsSpeed;
+
+  useEffect(() => {
+    if (!showTTS) return;
+    const url = selectedVolume?.file_url || book?.file_url || "";
+    if (!url) { setTtsMsg("Tidak ada file PDF"); setTtsStatus("error"); return; }
+    let dead = false;
+    (async () => {
+      try {
+        setTtsStatus("extracting");
+        setTtsMsg("Mengunduh PDF...");
+        const { pdfjs: p } = await import("react-pdf");
+        const proxyUrl = `/api/pdf-proxy?url=${encodeURIComponent(url)}`;
+        const doc = await p.getDocument(proxyUrl).promise;
+        if (dead) return;
+        const maxPages = isPaid ? Math.min(doc.numPages, MAX_FREE_PAGES) : doc.numPages;
+        const texts: string[] = [];
+        for (let i = 1; i <= maxPages; i++) {
+          const pg = await doc.getPage(i);
+          const ct = await pg.getTextContent();
+          const rows: { y: number; items: { x: number; text: string }[] }[] = [];
+          for (const item of ct.items) {
+            const it = item as { str?: string; transform?: number[] };
+            if (!it.str?.trim() || !it.transform) continue;
+            const x = Math.round(it.transform[4]), y = Math.round(it.transform[5]);
+            let r = rows.find((rr) => Math.abs(rr.y - y) < 3);
+            if (!r) { r = { y, items: [] }; rows.push(r); }
+            r.items.push({ x, text: it.str });
+          }
+          rows.sort((a, b) => b.y - a.y);
+          const lines = rows.map((r) => r.items.sort((a, b) => a.x - b.x).map((it) => it.text).join(" ")).filter(Boolean);
+          const t = lines.join("\n").trim();
+          if (t && !/daftar\s*isi/i.test(t)) texts.push(t);
+        }
+        await doc.destroy();
+        if (dead) return;
+        const raw = texts.join("\n\n").split(/\n\n+/).map((s) => s.replace(/\s+/g, " ").trim()).filter((s) => s.length > 20);
+        const chunks: { index: number; text: string }[] = [];
+        for (const p of raw) {
+          const sents = p.match(/[^.!?]+[.!?]+/g) || [p];
+          for (const s of sents) {
+            const tr = s.trim();
+            if (tr.length > 10) chunks.push({ index: chunks.length, text: tr });
+          }
+        }
+        if (dead) return;
+        if (chunks.length === 0) { setTtsMsg("Teks terlalu pendek"); setTtsStatus("error"); return; }
+        setTtsChunks(chunks);
+        setTtsStatus("ready");
+      } catch (e: any) {
+        if (!dead) { setTtsMsg("Gagal: " + (e?.message || "unknown")); setTtsStatus("error"); }
+      }
+    })();
+    return () => { dead = true; if (typeof window !== "undefined" && window.speechSynthesis) window.speechSynthesis.cancel(); };
+  }, [showTTS]);
+
+  const ttsSpeak = (idx: number) => {
+    const c = ttsChRef.current;
+    if (idx >= c.length) { setTtsStatus("done"); return; }
+    setTtsIdx(idx);
+    setTtsStatus("playing");
+    if (!window.speechSynthesis) { setTtsStatus("done"); return; }
+    const u = new SpeechSynthesisUtterance(c[idx].text);
+    u.lang = "id-ID";
+    u.rate = ttsSpRef.current;
+    u.onend = () => { const n = ttsIdxRef.current + 1; if (n < ttsChRef.current.length) ttsSpeak(n); else setTtsStatus("done"); };
+    u.onerror = () => setTtsStatus("done");
+    window.speechSynthesis.speak(u);
+  };
+
+  const ttsPlay = () => {
+    if (ttsStatus === "ready" || ttsStatus === "done") ttsSpeak(ttsStatus === "done" ? 0 : ttsIdxRef.current);
+    else if (ttsStatus === "paused") { setTtsStatus("playing"); window.speechSynthesis?.resume(); }
+  };
+  const ttsPause = () => { setTtsStatus("paused"); window.speechSynthesis?.pause(); };
+  const ttsStop = () => { window.speechSynthesis?.cancel(); setTtsStatus("ready"); setTtsIdx(0); };
+  const ttsPrev = () => { window.speechSynthesis?.cancel(); const i = Math.max(0, ttsIdxRef.current - 1); if (ttsStatus === "playing" || ttsStatus === "paused") ttsSpeak(i); else setTtsIdx(i); };
+  const ttsNext = () => { window.speechSynthesis?.cancel(); const i = Math.min(ttsChRef.current.length - 1, ttsIdxRef.current + 1); if (ttsStatus === "playing" || ttsStatus === "paused") ttsSpeak(i); else setTtsIdx(i); };
 
   const PROGRESS_KEY = `book_progress_${id}`;
 
@@ -866,12 +961,58 @@ export default function BookDetailClient({ id }: { id: string }) {
         </div>
       )}
 
-      {showTTS && (
-        <TTSPlayer
-          pdfUrl={selectedVolume?.file_url || book?.file_url || ""}
-          pageLimit={isPaid ? MAX_FREE_PAGES : undefined}
-          onClose={() => setShowTTS(false)}
-        />
+      {showTTS && ttsStatus === "extracting" && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="bg-background rounded-2xl p-8 shadow-2xl border border-border flex flex-col items-center gap-4 max-w-xs w-full mx-4">
+            <Loader2 className="w-10 h-10 text-primary animate-spin" />
+            <p className="text-sm text-foreground font-medium text-center">{ttsMsg}</p>
+            <button onClick={() => { window.speechSynthesis?.cancel(); setShowTTS(false); setTtsStatus("idle"); setTtsChunks([]); }} className="text-xs text-muted hover:text-foreground underline">
+              Batal
+            </button>
+          </div>
+        </div>
+      )}
+
+      {showTTS && ttsStatus === "error" && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="bg-background rounded-2xl p-8 shadow-2xl border border-border flex flex-col items-center gap-4 max-w-xs w-full mx-4">
+            <AlertCircle className="w-10 h-10 text-red-400" />
+            <p className="text-sm text-foreground font-medium text-center">{ttsMsg}</p>
+            <button onClick={() => { setShowTTS(false); setTtsStatus("idle"); setTtsChunks([]); }} className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-xl hover:bg-primary-dark transition-colors">
+              Tutup
+            </button>
+          </div>
+        </div>
+      )}
+
+      {showTTS && ttsChunks.length > 0 && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-t border-border shadow-2xl">
+          <div className="h-0.5 bg-surface-dark">
+            <div className="h-full bg-primary transition-all duration-300" style={{ width: `${ttsChunks.length > 0 ? ((ttsIdx + 1) / ttsChunks.length) * 100 : 0}%` }} />
+          </div>
+          <div className="flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2.5">
+            <button onClick={() => { window.speechSynthesis?.cancel(); setShowTTS(false); setTtsStatus("idle"); setTtsChunks([]); }} className="p-1.5 rounded-lg text-muted hover:text-foreground hover:bg-surface-dark transition-colors">
+              <X className="w-4 h-4" />
+            </button>
+            <button onClick={ttsPrev} disabled={ttsIdx === 0} className="p-1.5 rounded-lg text-muted hover:text-foreground hover:bg-surface-dark disabled:opacity-30 transition-colors">
+              <SkipBack className="w-4 h-4" />
+            </button>
+            <button onClick={ttsStatus === "playing" ? ttsPause : ttsPlay} className="p-2 rounded-full bg-primary text-white hover:bg-primary-dark transition-colors">
+              {ttsStatus === "playing" ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+            </button>
+            <button onClick={ttsNext} disabled={ttsIdx >= ttsChunks.length - 1} className="p-1.5 rounded-lg text-muted hover:text-foreground hover:bg-surface-dark disabled:opacity-30 transition-colors">
+              <SkipForward className="w-4 h-4" />
+            </button>
+            <button onClick={ttsStop} className="p-1.5 rounded-lg text-muted hover:text-foreground hover:bg-surface-dark transition-colors">
+              <Square className="w-4 h-4" />
+            </button>
+            <button onClick={() => { const sp = [0.75, 1, 1.25, 1.5, 2]; const i = sp.indexOf(ttsSpeed); const ns = sp[(i + 1) % sp.length]; setTtsSpeed(ns); if (ttsStatus === "playing") { window.speechSynthesis?.cancel(); ttsSpeak(ttsIdxRef.current); } }} className="px-2 py-1 text-xs font-semibold rounded-lg bg-surface-dark text-muted hover:text-foreground transition-colors">
+              {ttsSpeed}x
+            </button>
+            <span className="hidden sm:block text-xs text-muted ml-auto">{ttsIdx + 1}/{ttsChunks.length}</span>
+            <Volume2 className="hidden sm:block w-3.5 h-3.5 text-muted" />
+          </div>
+        </div>
       )}
     </div>
   );
