@@ -8,7 +8,6 @@ import { motion } from "framer-motion";
 import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
-import "react-pdf/dist/pdf.worker.entry";
 import {
   BookOpen,
   Download,
@@ -98,6 +97,10 @@ export default function BookDetailClient({ id }: { id: string }) {
   ttsIdxRef.current = ttsIdx;
   ttsChRef.current = ttsChunks;
   ttsSpRef.current = ttsSpeed;
+
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-expect-error - worker entry has no type declarations
+  useEffect(() => { import("react-pdf/dist/pdf.worker.entry"); }, []);
 
   useEffect(() => {
     if (!showTTS) return;
