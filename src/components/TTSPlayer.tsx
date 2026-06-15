@@ -10,6 +10,9 @@ import {
   Volume2,
   X,
   Loader2,
+  FileAudio,
+  FileText,
+  AlertCircle,
 } from "lucide-react";
 import { extractPDFText, chunkText, playChunk, stopSpeech, TTSChunk } from "@/lib/tts";
 
@@ -26,25 +29,19 @@ export default function TTSPlayer({ pdfUrl, pageLimit, onClose }: TTSPlayerProps
   const [chunks, setChunks] = useState<TTSChunk[]>([]);
   const [chunkIndex, setChunkIndex] = useState(0);
   const [speed, setSpeed] = useState(1);
-  const [msg, setMsg] = useState("Mengunduh PDF...");
+  const [msg, setMsg] = useState("");
 
   const idxRef = useRef(0);
   const chunksRef = useRef<TTSChunk[]>([]);
   const speedRef = useRef(1);
 
-  useEffect(() => {
-    idxRef.current = chunkIndex;
-  }, [chunkIndex]);
+  idxRef.current = chunkIndex;
+  chunksRef.current = chunks;
+  speedRef.current = speed;
 
   useEffect(() => {
-    chunksRef.current = chunks;
-  }, [chunks]);
+    if (!pdfUrl) { setMsg("Tidak ada file PDF"); return; }
 
-  useEffect(() => {
-    speedRef.current = speed;
-  }, [speed]);
-
-  useEffect(() => {
     let cancelled = false;
 
     (async () => {
@@ -54,7 +51,7 @@ export default function TTSPlayer({ pdfUrl, pageLimit, onClose }: TTSPlayerProps
         if (cancelled) return;
 
         if (!text.trim()) {
-          setMsg("Tidak ada teks yang bisa diekstrak dari PDF ini");
+          setMsg("Gagal mengekstrak teks dari PDF ini");
           return;
         }
 
@@ -71,7 +68,7 @@ export default function TTSPlayer({ pdfUrl, pageLimit, onClose }: TTSPlayerProps
         setStatus("ready");
       } catch (e) {
         if (!cancelled) {
-          setMsg("Gagal memproses PDF: " + (e instanceof Error ? e.message : "Error"));
+          setMsg("Gagal: " + (e instanceof Error ? e.message : "Error"));
         }
       }
     })();
@@ -101,13 +98,13 @@ export default function TTSPlayer({ pdfUrl, pageLimit, onClose }: TTSPlayerProps
       speakNext(status === "done" ? 0 : idxRef.current);
     } else if (status === "paused") {
       setStatus("playing");
-      window.speechSynthesis.resume();
+      window.speechSynthesis?.resume();
     }
   };
 
   const handlePause = () => {
     setStatus("paused");
-    window.speechSynthesis.pause();
+    window.speechSynthesis?.pause();
   };
 
   const handleStop = () => {
@@ -142,20 +139,39 @@ export default function TTSPlayer({ pdfUrl, pageLimit, onClose }: TTSPlayerProps
 
   const pct = chunks.length > 0 ? ((chunkIndex + 1) / chunks.length) * 100 : 0;
 
+  const isError = status === "extracting" && chunks.length === 0 && msg && !msg.startsWith("Mengunduh") && !msg.startsWith("Memproses");
+
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-t border-border shadow-2xl">
-      {status === "extracting" || chunks.length === 0 ? (
-        <div className="flex items-center justify-between gap-3 px-4 py-3">
-          <div className="flex items-center gap-2 text-sm text-muted">
-            {status === "extracting" && <Loader2 className="w-4 h-4 animate-spin" />}
-            {msg}
+    <>
+      {/* Overlay loading */}
+      {(status === "extracting" && chunks.length === 0 && !isError) && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="bg-background rounded-2xl p-8 shadow-2xl border border-border flex flex-col items-center gap-4 max-w-xs w-full mx-4">
+            <Loader2 className="w-10 h-10 text-primary animate-spin" />
+            <p className="text-sm text-foreground font-medium text-center">{msg}</p>
+            <button onClick={onClose} className="text-xs text-muted hover:text-foreground underline">
+              Batal
+            </button>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg text-muted hover:text-foreground hover:bg-surface-dark transition-colors">
-            <X className="w-4 h-4" />
-          </button>
         </div>
-      ) : (
-        <div>
+      )}
+
+      {/* Error state */}
+      {isError && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="bg-background rounded-2xl p-8 shadow-2xl border border-border flex flex-col items-center gap-4 max-w-xs w-full mx-4">
+            <AlertCircle className="w-10 h-10 text-red-400" />
+            <p className="text-sm text-foreground font-medium text-center">{msg}</p>
+            <button onClick={onClose} className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-xl hover:bg-primary-dark transition-colors">
+              Tutup
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Player bar */}
+      {chunks.length > 0 && (
+        <div className="fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-t border-border shadow-2xl">
           <div className="h-0.5 bg-surface-dark">
             <div className="h-full bg-primary transition-all duration-300" style={{ width: `${pct}%` }} />
           </div>
@@ -191,6 +207,6 @@ export default function TTSPlayer({ pdfUrl, pageLimit, onClose }: TTSPlayerProps
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }

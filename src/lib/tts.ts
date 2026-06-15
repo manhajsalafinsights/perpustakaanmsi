@@ -101,14 +101,16 @@ export function playChunk(
   utterance.lang = "id-ID";
   utterance.rate = rate;
 
-  const voices = window.speechSynthesis.getVoices();
-  const idVoice = voices.find(
-    (v) => v.lang.startsWith("id") || v.lang.startsWith("ms"),
-  );
-  if (idVoice) utterance.voice = idVoice;
+  try {
+    const voices = window.speechSynthesis.getVoices();
+    const idVoice = voices.find(
+      (v) => v.lang.startsWith("id") || v.lang.startsWith("ms"),
+    );
+    if (idVoice) utterance.voice = idVoice;
+  } catch {}
 
   utterance.onend = onEnd;
-  utterance.onerror = onError;
+  utterance.onerror = (e) => { console.error("[tts] speak error:", e); onError(); };
   window.speechSynthesis.speak(utterance);
   return utterance;
 }
