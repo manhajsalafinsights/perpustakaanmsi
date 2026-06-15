@@ -81,6 +81,7 @@ export default function BookDetailClient({ id }: { id: string }) {
   const [showViewer, setShowViewer] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [numPages, setNumPages] = useState(0);
+  const numPagesRef = useRef(0);
   const [pdfError, setPdfError] = useState(false);
   const [pdfLoading, setPdfLoading] = useState(false);
   const [savedPage, setSavedPage] = useState(0);
@@ -88,6 +89,24 @@ export default function BookDetailClient({ id }: { id: string }) {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [ttsKey, setTtsKey] = useState(0);
   const showTTS = ttsKey > 0;
+  const [flipDir, setFlipDir] = useState(0);
+  const [flipAngle, setFlipAngle] = useState(0);
+  const flipRef = useRef(false);
+
+  const goPage = (dir: number) => {
+    if (flipRef.current) return;
+    flipRef.current = true;
+    setFlipDir(dir);
+    setFlipAngle(0);
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => setFlipAngle(dir > 0 ? -180 : 180));
+    });
+    setTimeout(() => {
+      setCurrentPage(p => Math.max(1, Math.min(numPagesRef.current, p + dir)));
+      flipRef.current = false;
+      setFlipAngle(0);
+    }, 400);
+  };
 
   // TTS inline
   const [ttsStatus, setTtsStatus] = useState("idle");
@@ -102,6 +121,7 @@ export default function BookDetailClient({ id }: { id: string }) {
   ttsIdxRef.current = ttsIdx;
   ttsChRef.current = ttsChunks;
   ttsSpRef.current = ttsSpeed;
+  numPagesRef.current = numPages;
 
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-expect-error - worker entry has no type declarations
@@ -842,8 +862,8 @@ export default function BookDetailClient({ id }: { id: string }) {
                   onTouchEnd={e => {
                     const dx = e.changedTouches[0].clientX - swipeRef.current.x;
                     const dy = e.changedTouches[0].clientY - swipeRef.current.y;
-                    if (Math.abs(dx) > Math.abs(dy) * 2 && Math.abs(dx) > 50) {
-                      setCurrentPage(p => dx > 0 ? Math.max(1, p - 1) : Math.min(numPages, p + 1));
+                    if (!flipRef.current && Math.abs(dx) > Math.abs(dy) * 2 && Math.abs(dx) > 50) {
+                      goPage(dx > 0 ? -1 : 1);
                     }
                   }}
                 >
@@ -854,23 +874,40 @@ export default function BookDetailClient({ id }: { id: string }) {
                   )}
                   <Document
                     file={`/api/pdf-proxy?url=${encodeURIComponent(selectedVolume?.file_url || book?.file_url || "")}`}
-                    onLoadSuccess={({ numPages: pages }) => { setNumPages(pages); setPdfLoading(false); }}
+                    onLoadSuccess={({ numPages: pages }) => { setNumPages(pages); numPagesRef.current = pages; setPdfLoading(false); }}
                     onLoadError={() => { setPdfError(true); setPdfLoading(false); }}
                     loading={null}
                   >
-                    <div className="flex justify-center px-4">
-                      <Page
-                        pageNumber={currentPage}
-                        width={typeof window !== "undefined" ? Math.min(window.innerWidth - 48, 900) : 800}
-                        renderTextLayer={false}
-                        renderAnnotationLayer={false}
-                      />
+                    <div className="relative flex justify-center px-4" style={{ perspective: "1500px" }}>
+                      {flipDir !== 0 && (
+                        <div className="absolute inset-0 flex justify-center" style={{ backfaceVisibility: "hidden" }}>
+                          <Page
+                            pageNumber={Math.max(1, Math.min(numPagesRef.current, currentPage + flipDir))}
+                            width={typeof window !== "undefined" ? Math.min(window.innerWidth - 48, 900) : 800}
+                            renderTextLayer={false}
+                            renderAnnotationLayer={false}
+                          />
+                        </div>
+                      )}
+                      <div style={{
+                        transform: `rotateY(${flipAngle}deg)`,
+                        transition: "transform 0.35s ease-in-out",
+                        transformOrigin: flipDir > 0 ? "left" : "right",
+                        backfaceVisibility: "hidden",
+                      }}>
+                        <Page
+                          pageNumber={currentPage}
+                          width={typeof window !== "undefined" ? Math.min(window.innerWidth - 48, 900) : 800}
+                          renderTextLayer={false}
+                          renderAnnotationLayer={false}
+                        />
+                      </div>
                     </div>
                   </Document>
                 </div>
                 <div className="flex-shrink-0 grid grid-cols-3 items-center px-2 py-1.5 border-t border-border bg-background/95 backdrop-blur-sm">
                   <button
-                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    onClick={() => goPage(-1)}
                     disabled={currentPage <= 1}
                     className="justify-self-start flex items-center gap-0.5 px-2 py-1.5 text-xs font-medium rounded-lg bg-surface-dark text-muted hover:bg-border disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                   >
@@ -907,7 +944,7 @@ export default function BookDetailClient({ id }: { id: string }) {
                       </button>
                     )}
                     <button
-                      onClick={() => setCurrentPage(p => Math.min(numPages, p + 1))}
+                      onClick={() => goPage(1)}
                       disabled={numPages === 0 || (isPaid ? currentPage >= Math.min(numPages, MAX_FREE_PAGES) : currentPage >= numPages)}
                       className="flex items-center gap-0.5 px-2 py-1.5 text-xs font-medium rounded-lg bg-surface-dark text-muted hover:bg-border disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                     >
