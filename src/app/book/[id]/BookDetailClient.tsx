@@ -265,6 +265,19 @@ export default function BookDetailClient({ id }: { id: string }) {
     window.open(url, "_blank");
   };
 
+  const handleDownloadPage = () => {
+    const c = document.querySelector<HTMLCanvasElement>(".react-pdf__Page canvas");
+    if (!c) return;
+    c.toBlob((blob) => {
+      if (!blob) return;
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `${book?.title || "halaman"}-${currentPage}.png`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    });
+  };
+
   const handleBuyWhatsApp = () => {
     if (!book) return;
     fetch("/api/books/stats", {
@@ -900,6 +913,13 @@ export default function BookDetailClient({ id }: { id: string }) {
                         <span className="hidden sm:inline">Download</span>
                       </button>
                     )}
+                    <button
+                      onClick={handleDownloadPage}
+                      className="flex items-center gap-0.5 px-2 py-1.5 text-xs font-medium text-foreground bg-surface-dark rounded-lg hover:bg-border transition-colors"
+                    >
+                      <Download className="w-3 w-3" />
+                      <span className="hidden sm:inline">Halaman</span>
+                    </button>
                     <button
                       onClick={() => setCurrentPage(p => Math.min(numPages, p + 1))}
                       disabled={numPages === 0 || (isPaid ? currentPage >= Math.min(numPages, MAX_FREE_PAGES) : currentPage >= numPages)}
