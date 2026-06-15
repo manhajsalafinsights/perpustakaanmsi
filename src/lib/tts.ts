@@ -1,4 +1,16 @@
-import { pdfjs } from "react-pdf";
+let pdfjsInstance: typeof import("pdfjs-dist") | null = null;
+
+async function getPdfjs() {
+  if (!pdfjsInstance) {
+    const pdfjs = await import("pdfjs-dist");
+    pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+      "pdfjs-dist/build/pdf.worker.min.mjs",
+      import.meta.url,
+    ).toString();
+    pdfjsInstance = pdfjs;
+  }
+  return pdfjsInstance;
+}
 
 export interface TTSChunk {
   index: number;
@@ -6,6 +18,7 @@ export interface TTSChunk {
 }
 
 export async function extractPDFText(pdfUrl: string, pageLimit?: number): Promise<string> {
+  const pdfjs = await getPdfjs();
   const proxyUrl = `/api/pdf-proxy?url=${encodeURIComponent(pdfUrl)}`;
   const pdfDoc = await pdfjs.getDocument(proxyUrl).promise;
   const totalPages = pdfDoc.numPages;
@@ -71,17 +84,24 @@ export function chunkText(text: string): TTSChunk[] {
   return result;
 }
 
-export function speakChunk(
-  chunk: TTSChunk,
+export function playChunk(
+  text: string,
   onEnd: () => void,
   onError: () => void,
   rate: number = 1,
-): SpeechSynthesisUtterance {
-  const utterance = new SpeechSynthesisUtterance(chunk.text);
+): SpeechSynthesisUtterance | null {
+  if (typeof window === "undefined" || !window.speechSynthesis) {
+    onError();
+    return null;
+  }
+
+  window.speechSynthesis.cancel();
+
+  const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = "id-ID";
   utterance.rate = rate;
 
-  const voices = speechSynthesis.getVoices();
+  const voices = window.speechSynthesis.getVoices();
   const idVoice = voices.find(
     (v) => v.lang.startsWith("id") || v.lang.startsWith("ms"),
   );
@@ -89,10 +109,12 @@ export function speakChunk(
 
   utterance.onend = onEnd;
   utterance.onerror = onError;
-  speechSynthesis.speak(utterance);
+  window.speechSynthesis.speak(utterance);
   return utterance;
 }
 
 export function stopSpeech() {
-  speechSynthesis.cancel();
+  if (typeof window !== "undefined" && window.speechSynthesis) {
+    window.speechSynthesis.cancel();
+  }
 }
