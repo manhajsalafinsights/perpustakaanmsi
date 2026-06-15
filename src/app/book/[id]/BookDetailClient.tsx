@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Document, Page, pdfjs } from "react-pdf";
+import TTSPlayer from "@/components/TTSPlayer";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 
@@ -33,6 +34,7 @@ import {
   Loader2,
   BookmarkCheck,
   Clock,
+  Volume2,
 } from "lucide-react";
 
 function formatNumber(n: number): string {
@@ -83,6 +85,7 @@ export default function BookDetailClient({ id }: { id: string }) {
   const [savedPage, setSavedPage] = useState(0);
   const [saveFeedback, setSaveFeedback] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showTTS, setShowTTS] = useState(false);
 
   const PROGRESS_KEY = `book_progress_${id}`;
 
@@ -774,6 +777,13 @@ export default function BookDetailClient({ id }: { id: string }) {
                       <BookmarkCheck className={`w-3.5 h-3.5 ${saveFeedback ? "fill-current" : ""}`} />
                       <span className="hidden sm:inline">{saveFeedback ? "Tersimpan" : "Simpan"}</span>
                     </button>
+                    <button
+                      onClick={() => setShowTTS(true)}
+                      className="flex items-center gap-0.5 px-2 py-1.5 text-xs font-medium rounded-lg bg-surface-dark text-muted hover:text-primary hover:bg-primary/10 transition-colors"
+                    >
+                      <Volume2 className="w-3.5 h-3.5" />
+                      <span className="hidden sm:inline">Dengarkan</span>
+                    </button>
                   </div>
                   <div className="justify-self-end flex items-center gap-1">
                     {isPaid && currentPage >= MAX_FREE_PAGES && numPages > 0 && (
@@ -854,6 +864,14 @@ export default function BookDetailClient({ id }: { id: string }) {
             </div>
           </div>
         </div>
+      )}
+
+      {showTTS && (
+        <TTSPlayer
+          pdfUrl={selectedVolume?.file_url || book?.file_url || ""}
+          pageLimit={isPaid ? MAX_FREE_PAGES : undefined}
+          onClose={() => setShowTTS(false)}
+        />
       )}
     </div>
   );
