@@ -867,11 +867,10 @@ export default function BookDetailClient({ id }: { id: string }) {
       )}
 
       {showTTS && (
-        <TTSPlayer
-          pdfUrl={selectedVolume?.file_url || book?.file_url || ""}
-          pageLimit={isPaid ? MAX_FREE_PAGES : undefined}
-          onClose={() => setShowTTS(false)}
-        />
+        <div style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 9999, background: "blue", color: "white", padding: 20 }}>
+          🔵 TTS BUTTON CLICKED
+          <button onClick={() => setShowTTS(false)} style={{ marginLeft: 16, background: "white", color: "black", border: "none", padding: "4px 12px", borderRadius: 4 }}>X</button>
+        </div>
       )}
     </div>
   );
