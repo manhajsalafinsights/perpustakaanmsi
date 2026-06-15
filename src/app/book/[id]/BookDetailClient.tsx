@@ -86,7 +86,8 @@ export default function BookDetailClient({ id }: { id: string }) {
   const [savedPage, setSavedPage] = useState(0);
   const [saveFeedback, setSaveFeedback] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [showTTS, setShowTTS] = useState(false);
+  const [ttsKey, setTtsKey] = useState(0);
+  const showTTS = ttsKey > 0;
 
   // TTS inline
   const [ttsStatus, setTtsStatus] = useState("idle");
@@ -106,46 +107,40 @@ export default function BookDetailClient({ id }: { id: string }) {
   useEffect(() => { import("react-pdf/dist/pdf.worker.entry"); }, []);
 
   useEffect(() => {
-    if (!showTTS) return;
+    if (ttsKey === 0) return;
     const url = selectedVolume?.file_url || book?.file_url || "";
     if (!url) { setTtsMsg("Tidak ada file PDF"); setTtsStatus("error"); return; }
     let dead = false;
     (async () => {
       try {
         setTtsStatus("extracting");
-        setTtsMsg("Mengunduh PDF...");
+        setTtsMsg(`Mengekstrak halaman ${currentPage}...`);
         const proxyUrl = `/api/pdf-proxy?url=${encodeURIComponent(url)}`;
         const doc = await pdfjs.getDocument(proxyUrl).promise;
         if (dead) return;
-        const maxPages = isPaid ? Math.min(doc.numPages, MAX_FREE_PAGES) : doc.numPages;
-        const texts: string[] = [];
-        for (let i = 1; i <= maxPages; i++) {
-          const pg = await doc.getPage(i);
-          const ct = await pg.getTextContent();
-          const rows: { y: number; items: { x: number; text: string }[] }[] = [];
-          for (const item of ct.items) {
-            const it = item as { str?: string; transform?: number[] };
-            if (!it.str?.trim() || !it.transform) continue;
-            const x = Math.round(it.transform[4]), y = Math.round(it.transform[5]);
-            let r = rows.find((rr) => Math.abs(rr.y - y) < 3);
-            if (!r) { r = { y, items: [] }; rows.push(r); }
-            r.items.push({ x, text: it.str });
-          }
-          rows.sort((a, b) => b.y - a.y);
-          const lines = rows.map((r) => r.items.sort((a, b) => a.x - b.x).map((it) => it.text).join(" ")).filter(Boolean);
-          const t = lines.join("\n").trim();
-          if (t && !/daftar\s*isi/i.test(t)) texts.push(t);
+        const pg = await doc.getPage(currentPage);
+        const ct = await pg.getTextContent();
+        const rows: { y: number; items: { x: number; text: string }[] }[] = [];
+        for (const item of ct.items) {
+          const it = item as { str?: string; transform?: number[] };
+          if (!it.str?.trim() || !it.transform) continue;
+          const x = Math.round(it.transform[4]), y = Math.round(it.transform[5]);
+          let r = rows.find((rr) => Math.abs(rr.y - y) < 3);
+          if (!r) { r = { y, items: [] }; rows.push(r); }
+          r.items.push({ x, text: it.str });
         }
+        rows.sort((a, b) => b.y - a.y);
+        const lines = rows.map((r) => r.items.sort((a, b) => a.x - b.x).map((it) => it.text).join(" ")).filter(Boolean);
+        const t = lines.join("\n").trim();
         await doc.destroy();
         if (dead) return;
-        const raw = texts.join("\n\n").split(/\n\n+/).map((s) => s.replace(/\s+/g, " ").trim()).filter((s) => s.length > 20);
+        if (!t || /daftar\s*isi/i.test(t)) { setTtsMsg("Tidak ada teks di halaman ini"); setTtsStatus("error"); return; }
+        const raw = t.replace(/\s+/g, " ").trim();
         const chunks: { index: number; text: string }[] = [];
-        for (const p of raw) {
-          const sents = p.match(/[^.!?]+[.!?]+/g) || [p];
-          for (const s of sents) {
-            const tr = s.trim();
-            if (tr.length > 10) chunks.push({ index: chunks.length, text: tr });
-          }
+        const sents = raw.match(/[^.!?]+[.!?]+/g) || [raw];
+        for (const s of sents) {
+          const tr = s.trim();
+          if (tr.length > 10) chunks.push({ index: chunks.length, text: tr });
         }
         if (dead) return;
         if (chunks.length === 0) { setTtsMsg("Teks terlalu pendek"); setTtsStatus("error"); return; }
@@ -156,7 +151,7 @@ export default function BookDetailClient({ id }: { id: string }) {
       }
     })();
     return () => { dead = true; if (typeof window !== "undefined" && window.speechSynthesis) window.speechSynthesis.cancel(); };
-  }, [showTTS]);
+  }, [ttsKey]);
 
   const ttsSpeak = (idx: number) => {
     const c = ttsChRef.current;
@@ -263,19 +258,6 @@ export default function BookDetailClient({ id }: { id: string }) {
       body: JSON.stringify({ id: book.id, type: "downloads" }),
     }).catch(() => {});
     window.open(url, "_blank");
-  };
-
-  const handleDownloadPage = () => {
-    const c = document.querySelector<HTMLCanvasElement>(".react-pdf__Page canvas");
-    if (!c) return;
-    c.toBlob((blob) => {
-      if (!blob) return;
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = `${book?.title || "halaman"}-${currentPage}.png`;
-      a.click();
-      URL.revokeObjectURL(a.href);
-    });
   };
 
   const handleBuyWhatsApp = () => {
@@ -887,7 +869,7 @@ export default function BookDetailClient({ id }: { id: string }) {
                       <span className="hidden sm:inline">{saveFeedback ? "Tersimpan" : "Simpan"}</span>
                     </button>
                     <button
-                      onClick={() => { setTtsStatus("extracting"); setTtsMsg("Mengunduh PDF..."); setShowTTS(true); }}
+                      onClick={() => { window.speechSynthesis?.cancel(); setTtsChunks([]); setTtsStatus("extracting"); setTtsMsg(`Mengekstrak halaman ${currentPage}...`); setTtsKey(k => k + 1); }}
                       className="flex items-center gap-0.5 px-2 py-1.5 text-xs font-medium rounded-lg bg-surface-dark text-muted hover:text-primary hover:bg-primary/10 transition-colors"
                     >
                       <Volume2 className="w-3.5 h-3.5" />
@@ -904,22 +886,6 @@ export default function BookDetailClient({ id }: { id: string }) {
                         <span className="hidden sm:inline">Beli</span>
                       </button>
                     )}
-                    {!isPaid && (
-                      <button
-                        onClick={() => handleDownload(selectedVolume || undefined)}
-                        className="flex items-center gap-0.5 px-2 py-1.5 text-xs font-medium text-foreground bg-surface-dark rounded-lg hover:bg-border transition-colors"
-                      >
-                        <Download className="w-3 w-3" />
-                        <span className="hidden sm:inline">Download</span>
-                      </button>
-                    )}
-                    <button
-                      onClick={handleDownloadPage}
-                      className="flex items-center gap-0.5 px-2 py-1.5 text-xs font-medium text-foreground bg-surface-dark rounded-lg hover:bg-border transition-colors"
-                    >
-                      <Download className="w-3 w-3" />
-                      <span className="hidden sm:inline">Halaman</span>
-                    </button>
                     <button
                       onClick={() => setCurrentPage(p => Math.min(numPages, p + 1))}
                       disabled={numPages === 0 || (isPaid ? currentPage >= Math.min(numPages, MAX_FREE_PAGES) : currentPage >= numPages)}
@@ -987,7 +953,7 @@ export default function BookDetailClient({ id }: { id: string }) {
           <div className="bg-background rounded-2xl p-8 shadow-2xl border border-border flex flex-col items-center gap-4 max-w-xs w-full mx-4">
             <Loader2 className="w-10 h-10 text-primary animate-spin" />
             <p className="text-sm text-foreground font-medium text-center">{ttsMsg}</p>
-            <button onClick={() => { window.speechSynthesis?.cancel(); setShowTTS(false); setTtsStatus("idle"); setTtsChunks([]); }} className="text-xs text-muted hover:text-foreground underline">
+            <button onClick={() => { window.speechSynthesis?.cancel(); setTtsKey(0); setTtsStatus("idle"); setTtsChunks([]); }} className="text-xs text-muted hover:text-foreground underline">
               Batal
             </button>
           </div>
@@ -999,7 +965,7 @@ export default function BookDetailClient({ id }: { id: string }) {
           <div className="bg-background rounded-2xl p-8 shadow-2xl border border-border flex flex-col items-center gap-4 max-w-xs w-full mx-4">
             <AlertCircle className="w-10 h-10 text-red-400" />
             <p className="text-sm text-foreground font-medium text-center">{ttsMsg}</p>
-            <button onClick={() => { setShowTTS(false); setTtsStatus("idle"); setTtsChunks([]); }} className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-xl hover:bg-primary-dark transition-colors">
+            <button onClick={() => { setTtsKey(0); setTtsStatus("idle"); setTtsChunks([]); }} className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-xl hover:bg-primary-dark transition-colors">
               Tutup
             </button>
           </div>
@@ -1012,7 +978,7 @@ export default function BookDetailClient({ id }: { id: string }) {
             <div className="h-full bg-primary transition-all duration-300" style={{ width: `${ttsChunks.length > 0 ? ((ttsIdx + 1) / ttsChunks.length) * 100 : 0}%` }} />
           </div>
           <div className="relative flex items-center justify-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5">
-            <button onClick={() => { window.speechSynthesis?.cancel(); setShowTTS(false); setTtsStatus("idle"); setTtsChunks([]); }} className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-muted hover:text-foreground hover:bg-surface-dark transition-colors">
+            <button onClick={() => { window.speechSynthesis?.cancel(); setTtsKey(0); setTtsStatus("idle"); setTtsChunks([]); }} className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-muted hover:text-foreground hover:bg-surface-dark transition-colors">
               <X className="w-4 h-4" />
             </button>
             <button onClick={ttsPrev} disabled={ttsIdx === 0} className="p-1.5 rounded-lg text-muted hover:text-foreground hover:bg-surface-dark disabled:opacity-30 transition-colors">
