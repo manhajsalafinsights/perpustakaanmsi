@@ -105,6 +105,7 @@ export default function BookDetailClient({ id }: { id: string }) {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-expect-error - worker entry has no type declarations
   useEffect(() => { import("react-pdf/dist/pdf.worker.entry"); }, []);
+  useEffect(() => { window.speechSynthesis?.getVoices(); }, []);
 
   useEffect(() => {
     if (ttsKey === 0) return;
@@ -159,11 +160,13 @@ export default function BookDetailClient({ id }: { id: string }) {
     setTtsIdx(idx);
     setTtsStatus("playing");
     if (!window.speechSynthesis) { setTtsStatus("done"); return; }
-    // iOS Safari: get voices first
-    window.speechSynthesis.getVoices();
     const u = new SpeechSynthesisUtterance(c[idx].text);
     u.lang = "id-ID";
     u.rate = ttsSpRef.current;
+    // cari suara Indonesia, fallback ke default
+    const voices = window.speechSynthesis.getVoices();
+    const id = voices.find(v => v.lang.startsWith("id"));
+    if (id) u.voice = id;
     activeUtterance = u;
     u.onend = () => { const n = ttsIdxRef.current + 1; if (n < ttsChRef.current.length) ttsSpeak(n); else setTtsStatus("done"); };
     u.onerror = () => setTtsStatus("done");
