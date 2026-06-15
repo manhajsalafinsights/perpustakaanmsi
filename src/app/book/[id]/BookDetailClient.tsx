@@ -8,13 +8,7 @@ import { motion } from "framer-motion";
 import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
-
-if (typeof window !== "undefined") {
-  pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-    "pdfjs-dist/build/pdf.worker.min.mjs",
-    import.meta.url,
-  ).toString();
-}
+import "react-pdf/dist/pdf.worker.entry";
 import {
   BookOpen,
   Download,
@@ -114,15 +108,8 @@ export default function BookDetailClient({ id }: { id: string }) {
       try {
         setTtsStatus("extracting");
         setTtsMsg("Mengunduh PDF...");
-        const { pdfjs: p } = await import("react-pdf");
-        if (!p.GlobalWorkerOptions.workerSrc) {
-          p.GlobalWorkerOptions.workerSrc = new URL(
-            "pdfjs-dist/build/pdf.worker.min.mjs",
-            import.meta.url,
-          ).toString();
-        }
         const proxyUrl = `/api/pdf-proxy?url=${encodeURIComponent(url)}`;
-        const doc = await p.getDocument(proxyUrl).promise;
+        const doc = await pdfjs.getDocument(proxyUrl).promise;
         if (dead) return;
         const maxPages = isPaid ? Math.min(doc.numPages, MAX_FREE_PAGES) : doc.numPages;
         const texts: string[] = [];
