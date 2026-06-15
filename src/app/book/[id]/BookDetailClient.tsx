@@ -115,6 +115,12 @@ export default function BookDetailClient({ id }: { id: string }) {
         setTtsStatus("extracting");
         setTtsMsg("Mengunduh PDF...");
         const { pdfjs: p } = await import("react-pdf");
+        if (!p.GlobalWorkerOptions.workerSrc) {
+          p.GlobalWorkerOptions.workerSrc = new URL(
+            "pdfjs-dist/build/pdf.worker.min.mjs",
+            import.meta.url,
+          ).toString();
+        }
         const proxyUrl = `/api/pdf-proxy?url=${encodeURIComponent(url)}`;
         const doc = await p.getDocument(proxyUrl).promise;
         if (dead) return;
