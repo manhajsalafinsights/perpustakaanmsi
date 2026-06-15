@@ -8,6 +8,9 @@ import { motion } from "framer-motion";
 import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
+
+let activeUtterance: SpeechSynthesisUtterance | null = null;
+
 import {
   BookOpen,
   Download,
@@ -161,12 +164,14 @@ export default function BookDetailClient({ id }: { id: string }) {
     setTtsIdx(idx);
     setTtsStatus("playing");
     if (!window.speechSynthesis) { setTtsStatus("done"); return; }
+    window.speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(c[idx].text);
     u.lang = "id-ID";
     u.rate = ttsSpRef.current;
+    activeUtterance = u;
     u.onend = () => { const n = ttsIdxRef.current + 1; if (n < ttsChRef.current.length) ttsSpeak(n); else setTtsStatus("done"); };
     u.onerror = () => setTtsStatus("done");
-    window.speechSynthesis.speak(u);
+    setTimeout(() => window.speechSynthesis.speak(u), 50);
   };
 
   const ttsPlay = () => {
@@ -986,8 +991,8 @@ export default function BookDetailClient({ id }: { id: string }) {
           <div className="h-0.5 bg-surface-dark">
             <div className="h-full bg-primary transition-all duration-300" style={{ width: `${ttsChunks.length > 0 ? ((ttsIdx + 1) / ttsChunks.length) * 100 : 0}%` }} />
           </div>
-          <div className="flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2.5">
-            <button onClick={() => { window.speechSynthesis?.cancel(); setShowTTS(false); setTtsStatus("idle"); setTtsChunks([]); }} className="p-1.5 rounded-lg text-muted hover:text-foreground hover:bg-surface-dark transition-colors">
+          <div className="flex items-center justify-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5">
+            <button onClick={() => { window.speechSynthesis?.cancel(); setShowTTS(false); setTtsStatus("idle"); setTtsChunks([]); }} className="absolute left-3 sm:left-4 p-1.5 rounded-lg text-muted hover:text-foreground hover:bg-surface-dark transition-colors">
               <X className="w-4 h-4" />
             </button>
             <button onClick={ttsPrev} disabled={ttsIdx === 0} className="p-1.5 rounded-lg text-muted hover:text-foreground hover:bg-surface-dark disabled:opacity-30 transition-colors">
