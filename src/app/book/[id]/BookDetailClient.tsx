@@ -98,6 +98,7 @@ export default function BookDetailClient({ id }: { id: string }) {
   const ttsIdxRef = useRef(0);
   const ttsChRef = useRef(ttsChunks);
   const ttsSpRef = useRef(ttsSpeed);
+  const swipeRef = useRef({ x: 0, y: 0 });
   ttsIdxRef.current = ttsIdx;
   ttsChRef.current = ttsChunks;
   ttsSpRef.current = ttsSpeed;
@@ -835,7 +836,17 @@ export default function BookDetailClient({ id }: { id: string }) {
               </div>
             ) : (
               <div className="h-full flex flex-col">
-                <div className="flex-1 overflow-auto flex flex-col items-center py-4">
+                <div
+                  className="flex-1 overflow-auto flex flex-col items-center py-4"
+                  onTouchStart={e => { swipeRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }; }}
+                  onTouchEnd={e => {
+                    const dx = e.changedTouches[0].clientX - swipeRef.current.x;
+                    const dy = e.changedTouches[0].clientY - swipeRef.current.y;
+                    if (Math.abs(dx) > Math.abs(dy) * 2 && Math.abs(dx) > 50) {
+                      setCurrentPage(p => dx > 0 ? Math.max(1, p - 1) : Math.min(numPages, p + 1));
+                    }
+                  }}
+                >
                   {pdfLoading && (
                     <div className="flex items-center justify-center py-20">
                       <Loader2 className="w-8 h-8 text-primary animate-spin" />
