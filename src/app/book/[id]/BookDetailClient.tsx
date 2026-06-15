@@ -159,14 +159,15 @@ export default function BookDetailClient({ id }: { id: string }) {
     setTtsIdx(idx);
     setTtsStatus("playing");
     if (!window.speechSynthesis) { setTtsStatus("done"); return; }
-    window.speechSynthesis.cancel();
+    // iOS Safari: get voices first
+    window.speechSynthesis.getVoices();
     const u = new SpeechSynthesisUtterance(c[idx].text);
     u.lang = "id-ID";
     u.rate = ttsSpRef.current;
     activeUtterance = u;
     u.onend = () => { const n = ttsIdxRef.current + 1; if (n < ttsChRef.current.length) ttsSpeak(n); else setTtsStatus("done"); };
     u.onerror = () => setTtsStatus("done");
-    setTimeout(() => window.speechSynthesis.speak(u), 50);
+    window.speechSynthesis.speak(u);
   };
 
   const ttsPlay = () => {
