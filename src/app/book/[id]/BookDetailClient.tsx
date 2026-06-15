@@ -159,18 +159,23 @@ export default function BookDetailClient({ id }: { id: string }) {
     if (idx >= c.length) { setTtsStatus("done"); return; }
     setTtsIdx(idx);
     setTtsStatus("playing");
-    if (!window.speechSynthesis) { setTtsStatus("done"); return; }
+    const ss = window.speechSynthesis;
+    if (!ss) { setTtsStatus("done"); return; }
+    if (ss.paused) ss.resume();
+    // Android butuh cancel + delay, iOS butuh voices
+    ss.cancel();
+    ss.getVoices();
     const u = new SpeechSynthesisUtterance(c[idx].text);
     u.lang = "id-ID";
     u.rate = ttsSpRef.current;
-    // cari suara Indonesia, fallback ke default
-    const voices = window.speechSynthesis.getVoices();
+    const voices = ss.getVoices();
     const id = voices.find(v => v.lang.startsWith("id"));
     if (id) u.voice = id;
     activeUtterance = u;
     u.onend = () => { const n = ttsIdxRef.current + 1; if (n < ttsChRef.current.length) ttsSpeak(n); else setTtsStatus("done"); };
     u.onerror = () => setTtsStatus("done");
-    window.speechSynthesis.speak(u);
+    // delay kecil biar Android sempat setup
+    setTimeout(() => { try { ss.speak(u); } catch { setTtsStatus("done"); } }, 50);
   };
 
   const ttsPlay = () => {
