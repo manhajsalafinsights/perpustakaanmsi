@@ -218,47 +218,62 @@ export default function Navbar() {
 
       {/* Mobile Bottom Navigation */}
       <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-50 glass border-t border-glass-border pb-safe">
-        <div className="flex items-center justify-around h-16 px-2">
-          <Link
-            href="/"
-            className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all duration-200 ${
-              isHome ? "text-primary" : "text-muted hover:text-foreground"
-            }`}
-          >
-            <Home className="w-5 h-5" />
-            <span className="text-[10px] font-medium">Beranda</span>
-          </Link>
-          <button
-            onClick={() => {
-              const searchInput = document.querySelector<HTMLInputElement>('input[placeholder="Cari buku..."]');
-              if (searchInput) searchInput.focus();
-              else window.scrollTo({ top: 0, behavior: "smooth" });
-            }}
-            className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl text-muted hover:text-foreground transition-all duration-200"
-          >
-            <Search className="w-5 h-5" />
-            <span className="text-[10px] font-medium">Cari</span>
-          </button>
-          <Link
-            href="/rekomendasi"
-            className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl text-muted hover:text-foreground transition-all duration-200"
-          >
-            <BookOpen className="w-5 h-5" />
-            <span className="text-[10px] font-medium">Rekomendasi</span>
-          </Link>
-          <Link
-            href="/profile"
-            className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl text-muted hover:text-foreground transition-all duration-200"
-          >
-            <User className="w-5 h-5" />
-            <span className="text-[10px] font-medium">Profil</span>
-          </Link>
-          <Link
-            href="/admin"
-            className="flex items-center justify-center w-10 h-10 bg-primary text-white rounded-xl hover:bg-primary-dark transition-all duration-200"
-          >
-            <User className="w-4 h-4" />
-          </Link>
+        <div className="flex items-center justify-around h-16 px-1">
+          {[
+            { href: "/", icon: Home, label: "Beranda" },
+            { href: null, icon: Search, label: "Cari", isSearch: true },
+            { href: "/rekomendasi", icon: BookOpen, label: "Rekomendasi" },
+            { href: "/profile", icon: User, label: "Profil" },
+            { href: "/admin", icon: User, label: "Admin", isAdmin: true },
+          ].map((item) => {
+            const active = item.href && pathname === item.href;
+            if (item.isSearch) {
+              return (
+                <button
+                  key="search"
+                  onClick={() => {
+                    const searchInput = document.querySelector<HTMLInputElement>('input[placeholder="Cari buku..."]');
+                    if (searchInput) searchInput.focus();
+                    else window.scrollTo({ top: 0, behavior: "smooth" });
+                  }}
+                  className="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl text-muted hover:text-foreground transition-all duration-200"
+                >
+                  <Search className="w-5 h-5" />
+                  <span className="text-[10px] font-medium">Cari</span>
+                </button>
+              );
+            }
+            if (item.isAdmin) {
+              return (
+                <Link
+                  key="admin"
+                  href="/admin"
+                  className={`flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl transition-all duration-200 ${
+                    active ? "text-primary" : "text-muted hover:text-foreground"
+                  }`}
+                >
+                  <div className={`w-9 h-9 flex items-center justify-center rounded-xl transition-all duration-200 ${
+                    active ? "bg-primary text-white" : "bg-surface-dark text-muted"
+                  }`}>
+                    <User className="w-4 h-4" />
+                  </div>
+                  <span className="text-[10px] font-medium">Admin</span>
+                </Link>
+              );
+            }
+            return (
+              <Link
+                key={item.href}
+                href={item.href!}
+                className={`flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl transition-all duration-200 ${
+                  active ? "text-primary" : "text-muted hover:text-foreground"
+                }`}
+              >
+                <item.icon className="w-5 h-5" />
+                <span className="text-[10px] font-medium">{item.label}</span>
+              </Link>
+            );
+          })}
         </div>
       </nav>
     </>

@@ -114,7 +114,7 @@ export default function Hero({ compact = false }: { compact?: boolean }) {
 
   if (compact) {
     return (
-      <section className="relative overflow-hidden pt-16 sm:pt-28 pb-3 sm:pb-6">
+      <section className="relative overflow-hidden pt-14 sm:pt-28 pb-2 sm:pb-6">
         <div className="absolute inset-0 bg-gradient-to-b from-primary/[0.04] via-transparent to-transparent sm:block" />
         <div className="absolute inset-0 opacity-[0.35]">
           <IslamicPattern />

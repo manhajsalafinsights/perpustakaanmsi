@@ -591,20 +591,21 @@ export default function BookDetailClient({ id }: { id: string }) {
                             {vol.title}
                           </p>
                         </div>
-                        <div className="flex items-center gap-2 flex-shrink-0">
+                        <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
                           {savedPage > 0 ? (
                             <button
                               onClick={() => handleOpenViewer(vol, savedPage)}
-                              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-accent rounded-xl hover:bg-accent/90 transition-colors"
+                              className="flex items-center gap-1 px-2.5 py-2 sm:px-3 sm:py-1.5 text-xs font-medium text-white bg-accent rounded-xl hover:bg-accent/90 transition-colors"
                             >
                               <BookOpen className="w-3.5 h-3.5" />
-                              Lanjut (hlm {savedPage})
+                              <span className="hidden sm:inline">Lanjut </span>
+                              <span>(hlm {savedPage})</span>
                             </button>
                           ) : null}
                           {isPaid ? (
                             <button
                               onClick={() => handleOpenViewer(vol)}
-                              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-primary rounded-xl hover:bg-primary-dark transition-colors"
+                              className="flex items-center gap-1 px-2.5 py-2 sm:px-3 sm:py-1.5 text-xs font-medium text-white bg-primary rounded-xl hover:bg-primary-dark transition-colors"
                             >
                               <Eye className="w-3.5 h-3.5" />
                               Preview
@@ -613,14 +614,14 @@ export default function BookDetailClient({ id }: { id: string }) {
                             <>
                               <button
                                 onClick={() => handleOpenViewer(vol)}
-                                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-primary rounded-xl hover:bg-primary-dark transition-colors"
+                                className="flex items-center gap-1 px-2.5 py-2 sm:px-3 sm:py-1.5 text-xs font-medium text-white bg-primary rounded-xl hover:bg-primary-dark transition-colors"
                               >
                                 <BookOpen className="w-3.5 h-3.5" />
                                 Baca
                               </button>
                               <button
                                 onClick={() => handleDownload(vol)}
-                                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-foreground glass rounded-xl hover:bg-surface-dark transition-colors"
+                                className="flex items-center gap-1 px-2.5 py-2 sm:px-3 sm:py-1.5 text-xs font-medium text-foreground glass rounded-xl hover:bg-surface-dark transition-colors"
                               >
                                 <Download className="w-3.5 h-3.5" />
                                 Download

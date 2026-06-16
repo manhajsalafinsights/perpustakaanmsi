@@ -69,18 +69,18 @@ export default function BookCard({ book, index = 0, onClick, isNew }: BookCardPr
               </div>
             )}
             {book.is_paid && (
-              <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 bg-accent/90 text-white text-[10px] font-bold rounded-lg shadow-sm backdrop-blur-sm">
-                <Lock className="w-2.5 h-2.5" />
+              <div className="absolute top-1.5 left-1.5 flex items-center gap-1 px-1.5 py-0.5 bg-accent/90 text-white text-[10px] font-bold rounded-md shadow-sm backdrop-blur-sm">
+                <Lock className="w-2 h-2" />
                 Rp {(hasPromo ? (book.promo_price || 0) : (book.price || 25000)).toLocaleString("id-ID")}
               </div>
             )}
             {hasPromo && book.promo_text && (
-              <div className="absolute top-2 right-2 px-2 py-0.5 bg-green-500 text-white text-[10px] font-bold rounded-lg shadow-sm">
+              <div className="absolute top-1.5 right-1.5 px-1.5 py-0.5 bg-green-500 text-white text-[10px] font-bold rounded-md shadow-sm">
                 {book.promo_text}
               </div>
             )}
             {!hasPromo && isNew && (
-              <div className="absolute top-2 right-2 px-2 py-0.5 bg-primary text-white text-[10px] font-bold rounded-lg shadow-sm">
+              <div className="absolute top-1.5 right-1.5 px-1.5 py-0.5 bg-primary text-white text-[10px] font-bold rounded-md shadow-sm">
                 NEW
               </div>
             )}

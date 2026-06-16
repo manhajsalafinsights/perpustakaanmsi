@@ -320,7 +320,7 @@ export default function HomeContent() {
       <Hero compact />
 
       <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 pb-8 sm:pb-12">
-        <div className="space-y-8 sm:space-y-12">
+        <div className="space-y-6 sm:space-y-12">
 
           <MiniStats totalBooks={books.length} totalVisitors={visitorCount} totalCategories={categories.length} totalFree={freeBooks.length} />
 
