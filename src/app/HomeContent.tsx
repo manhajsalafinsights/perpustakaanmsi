@@ -428,7 +428,7 @@ export default function HomeContent() {
           </motion.div>
           )}
 
-          {/* ── Ebook Gratis ── */}
+          {/* ── Buku Terbaru ── */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -437,21 +437,21 @@ export default function HomeContent() {
           >
             <div className="space-y-5">
               <SectionHeader
-                icon={Gift}
-                title="Ebook Gratis"
-                showAll={freeBooks.length > freeLimit}
-                isExpanded={!!expanded.free}
-                onToggle={() => toggleExpand("free")}
+                icon={Clock}
+                title="Buku Terbaru"
+                showAll={newBooks.length > defaultLimit}
+                isExpanded={!!expanded.baru}
+                onToggle={() => toggleExpand("baru")}
               />
               {loading ? (
-                <SectionSkeleton count={freeLimit} />
-              ) : freeBooks.length > 0 ? (
+                <SectionSkeleton />
+              ) : (
                 <div className={GRID_CLASSES}>
-                  {(expanded.free ? freeBooks : freeBooks.slice(0, freeLimit)).map((book, i) => (
-                    <BookCard key={book.id} book={book} index={i} />
+                  {(expanded.baru ? newBooks : newBooks.slice(0, defaultLimit)).map((book, i) => (
+                    <BookCard key={book.id} book={book} index={i} isNew={newestIds.has(book.id)} />
                   ))}
                 </div>
-              ) : null}
+              )}
             </div>
           </motion.div>
 
@@ -487,7 +487,7 @@ export default function HomeContent() {
             </div>
           </motion.div>
 
-          {/* ── Buku Terbaru ── */}
+          {/* ── Ebook Gratis ── */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -496,21 +496,21 @@ export default function HomeContent() {
           >
             <div className="space-y-5">
               <SectionHeader
-                icon={Clock}
-                title="Buku Terbaru"
-                showAll={newBooks.length > defaultLimit}
-                isExpanded={!!expanded.baru}
-                onToggle={() => toggleExpand("baru")}
+                icon={Gift}
+                title="Ebook Gratis"
+                showAll={freeBooks.length > freeLimit}
+                isExpanded={!!expanded.free}
+                onToggle={() => toggleExpand("free")}
               />
               {loading ? (
-                <SectionSkeleton />
-              ) : (
+                <SectionSkeleton count={freeLimit} />
+              ) : freeBooks.length > 0 ? (
                 <div className={GRID_CLASSES}>
-                  {(expanded.baru ? newBooks : newBooks.slice(0, defaultLimit)).map((book, i) => (
-                    <BookCard key={book.id} book={book} index={i} isNew={newestIds.has(book.id)} />
+                  {(expanded.free ? freeBooks : freeBooks.slice(0, freeLimit)).map((book, i) => (
+                    <BookCard key={book.id} book={book} index={i} />
                   ))}
                 </div>
-              )}
+              ) : null}
             </div>
           </motion.div>
 
