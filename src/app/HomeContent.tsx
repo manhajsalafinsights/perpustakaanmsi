@@ -480,22 +480,38 @@ export default function HomeContent() {
                 <h2 className="text-lg sm:text-xl font-bold text-foreground">Kategori Buku</h2>
               </div>
               {loading ? (
-                <div className="flex flex-wrap gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3">
                   {Array.from({ length: 6 }).map((_, i) => (
-                    <div key={i} className="h-8 w-20 rounded-full skeleton-shimmer" />
+                    <div key={i} className="rounded-xl p-3 skeleton-shimmer h-16" />
                   ))}
                 </div>
               ) : (
-                <div className="flex flex-wrap gap-2">
-                  {categories.slice(0, 6).map((cat) => (
-                    <Link
-                      key={cat}
-                      href={`/?category=${encodeURIComponent(cat)}`}
-                      className="px-3 py-1.5 bg-primary/10 hover:bg-primary/20 text-primary text-sm font-medium rounded-full transition-colors"
-                    >
-                      {cat}
-                    </Link>
-                  ))}
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3">
+                  {categories.slice(0, 6).map((cat, i) => {
+                    const colors = [
+                      { from: "from-emerald-500/20", to: "to-emerald-600/10", icon: BookOpen },
+                      { from: "from-blue-500/20", to: "to-blue-600/10", icon: Library },
+                      { from: "from-amber-500/20", to: "to-amber-600/10", icon: Star },
+                      { from: "from-rose-500/20", to: "to-rose-600/10", icon: BookOpen },
+                      { from: "from-violet-500/20", to: "to-violet-600/10", icon: Gem },
+                      { from: "from-teal-500/20", to: "to-teal-600/10", icon: Hash },
+                    ];
+                    const c = colors[i % colors.length];
+                    const Icon = c.icon;
+                    return (
+                      <Link key={cat} href={`/?category=${encodeURIComponent(cat)}`}>
+                        <motion.div
+                          whileHover={{ scale: 1.02, y: -1 }}
+                          className="glass rounded-xl p-2.5 sm:p-3 border border-border/40 hover:shadow-md transition-all duration-200 group cursor-pointer"
+                        >
+                          <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br ${c.from} ${c.to} flex items-center justify-center mb-1.5 group-hover:scale-110 transition-transform`}>
+                            <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
+                          </div>
+                          <h3 className="text-[11px] sm:text-xs font-semibold text-foreground group-hover:text-primary transition-colors leading-tight">{cat}</h3>
+                        </motion.div>
+                      </Link>
+                    );
+                  })}
                 </div>
               )}
             </div>
