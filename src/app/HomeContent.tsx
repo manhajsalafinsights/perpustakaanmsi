@@ -501,13 +501,13 @@ export default function HomeContent() {
                     return (
                       <Link key={cat} href={`/?category=${encodeURIComponent(cat)}`}>
                         <motion.div
-                          whileHover={{ scale: 1.02, y: -1 }}
-                          className="glass rounded-xl p-2.5 sm:p-3 border border-border/40 hover:shadow-md transition-all duration-200 group cursor-pointer"
+                          whileHover={{ scale: 1.02, x: 1 }}
+                          className="glass rounded-xl p-2 sm:p-2.5 border border-border/40 hover:shadow-md transition-all duration-200 group cursor-pointer flex items-center gap-2"
                         >
-                          <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br ${c.from} ${c.to} flex items-center justify-center mb-1.5 group-hover:scale-110 transition-transform`}>
-                            <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
+                          <div className={`w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-gradient-to-br ${c.from} ${c.to} flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform`}>
+                            <Icon className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-primary" />
                           </div>
-                          <h3 className="text-[11px] sm:text-xs font-semibold text-foreground group-hover:text-primary transition-colors leading-tight">{cat}</h3>
+                          <h3 className="text-[11px] sm:text-xs font-semibold text-foreground group-hover:text-primary transition-colors leading-tight truncate">{cat}</h3>
                         </motion.div>
                       </Link>
                     );
