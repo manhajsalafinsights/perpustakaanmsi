@@ -236,40 +236,37 @@ export default function Navbar() {
                     if (searchInput) searchInput.focus();
                     else window.scrollTo({ top: 0, behavior: "smooth" });
                   }}
-                  className="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl text-muted hover:text-foreground transition-all duration-200"
+                  className="flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl text-muted hover:text-foreground transition-all duration-150 active:scale-90"
                 >
-                  <Search className="w-5 h-5" />
+                  <div className="w-10 h-10 flex items-center justify-center rounded-xl">
+                    <Search className="w-5 h-5" />
+                  </div>
                   <span className="text-[10px] font-medium">Cari</span>
                 </button>
               );
             }
+            const sharedLinkClass = `flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl transition-all duration-150 active:scale-90 ${
+              active ? "text-primary" : "text-muted hover:text-foreground"
+            }`;
             if (item.isAdmin) {
               return (
-                <Link
-                  key="admin"
-                  href="/admin"
-                  className={`flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl transition-all duration-200 ${
-                    active ? "text-primary" : "text-muted hover:text-foreground"
-                  }`}
-                >
-                  <div className={`w-9 h-9 flex items-center justify-center rounded-xl transition-all duration-200 ${
-                    active ? "bg-primary text-white" : "bg-surface-dark text-muted"
+                <Link key="admin" href="/admin" className={sharedLinkClass}>
+                  <div className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all duration-200 ${
+                    active ? "bg-primary shadow-sm -translate-y-0.5" : "bg-surface-dark"
                   }`}>
-                    <User className="w-4 h-4" />
+                    <User className={`w-4 h-4 transition-all duration-200 ${active ? "scale-110 text-white" : "text-muted"}`} />
                   </div>
                   <span className="text-[10px] font-medium">Admin</span>
                 </Link>
               );
             }
             return (
-              <Link
-                key={item.href}
-                href={item.href!}
-                className={`flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl transition-all duration-200 ${
-                  active ? "text-primary" : "text-muted hover:text-foreground"
-                }`}
-              >
-                <item.icon className="w-5 h-5" />
+              <Link key={item.href} href={item.href!} className={sharedLinkClass}>
+                <div className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all duration-200 ${
+                  active ? "bg-primary/10 shadow-sm -translate-y-0.5" : ""
+                }`}>
+                  <item.icon className={`w-5 h-5 transition-all duration-200 ${active ? "scale-110" : ""}`} />
+                </div>
                 <span className="text-[10px] font-medium">{item.label}</span>
               </Link>
             );
