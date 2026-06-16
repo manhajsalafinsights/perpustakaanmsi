@@ -61,15 +61,42 @@ function AnimatedCounter({ value, suffix = "" }: { value: number; suffix?: strin
 }
 
 function OnlineReaderCount() {
-  const [count, setCount] = useState(24300);
+  const getTarget = (hour: number): number => {
+    if (hour >= 0 && hour <= 4) return 1000;
+    if (hour === 5) return 4000;
+    if (hour === 6) return 7000;
+    if (hour === 7) return 11000;
+    if (hour === 8) return 14000;
+    if (hour === 9) return 15000;
+    if (hour === 10) return 17000;
+    if (hour === 11) return 18500;
+    if (hour === 12) return 20000;
+    if (hour === 13) return 20800;
+    if (hour === 14) return 21600;
+    if (hour === 15) return 22400;
+    if (hour === 16) return 23200;
+    if (hour === 17) return 24500;
+    if (hour === 18) return 25500;
+    if (hour === 19) return 26500;
+    if (hour === 20) return 27500;
+    if (hour === 21) return 28000;
+    if (hour === 22) return 20000;
+    if (hour === 23) return 12000;
+    return 1000;
+  };
+
+  const [count, setCount] = useState(() => getTarget(new Date().getHours()));
 
   useEffect(() => {
     const next = () => {
-      const delay = 2000 + Math.random() * 8000;
+      const delay = 60000 + Math.random() * 60000;
       return setTimeout(() => {
         setCount((prev) => {
-          const delta = Math.floor(Math.random() * 2000) - 1000;
-          return Math.max(20000, Math.min(3000000, prev + delta));
+          const target = getTarget(new Date().getHours());
+          const diff = target - prev;
+          const step = diff * 0.3;
+          const noise = (Math.random() - 0.5) * prev * 0.06;
+          return Math.max(500, Math.round(prev + step + noise));
         });
       }, delay);
     };
@@ -79,7 +106,8 @@ function OnlineReaderCount() {
 
   const fmt = (n: number) => {
     if (n >= 1000000) return (n / 1000000).toFixed(1).replace(".", ",") + "jt";
-    return (n / 1000).toFixed(1).replace(".", ",") + "rb";
+    if (n >= 1000) return (n / 1000).toFixed(1).replace(".", ",") + "rb";
+    return String(n);
   };
 
   return <>{fmt(count)} membaca</>;
