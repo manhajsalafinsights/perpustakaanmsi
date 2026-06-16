@@ -63,25 +63,25 @@ function AnimatedCounter({ value, suffix = "" }: { value: number; suffix?: strin
 function OnlineReaderCount() {
   const getTarget = (hour: number): number => {
     if (hour >= 0 && hour <= 4) return 1000;
-    if (hour === 5) return 4000;
-    if (hour === 6) return 7000;
-    if (hour === 7) return 11000;
-    if (hour === 8) return 14000;
-    if (hour === 9) return 15000;
-    if (hour === 10) return 17000;
-    if (hour === 11) return 18500;
-    if (hour === 12) return 20000;
-    if (hour === 13) return 20800;
-    if (hour === 14) return 21600;
-    if (hour === 15) return 22400;
-    if (hour === 16) return 23200;
-    if (hour === 17) return 24500;
-    if (hour === 18) return 25500;
-    if (hour === 19) return 26500;
-    if (hour === 20) return 27500;
-    if (hour === 21) return 28000;
-    if (hour === 22) return 20000;
-    if (hour === 23) return 12000;
+    if (hour === 5) return 3000;
+    if (hour === 6) return 8000;
+    if (hour === 7) return 30000;
+    if (hour === 8) return 150000;
+    if (hour === 9) return 500000;
+    if (hour === 10) return 1000000;
+    if (hour === 11) return 1500000;
+    if (hour === 12) return 1800000;
+    if (hour === 13) return 2000000;
+    if (hour === 14) return 2200000;
+    if (hour === 15) return 2400000;
+    if (hour === 16) return 2600000;
+    if (hour === 17) return 2700000;
+    if (hour === 18) return 2800000;
+    if (hour === 19) return 2900000;
+    if (hour === 20) return 2950000;
+    if (hour === 21) return 3000000;
+    if (hour === 22) return 2500000;
+    if (hour === 23) return 1000000;
     return 1000;
   };
 
