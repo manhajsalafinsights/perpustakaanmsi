@@ -252,7 +252,7 @@ export default function Navbar() {
               return (
                 <Link key="admin" href="/admin" className={sharedLinkClass}>
                   <div className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all duration-200 ${
-                    active ? "bg-primary shadow-sm -translate-y-0.5" : "bg-surface-dark"
+                    active ? "bg-primary shadow-sm -translate-y-0.5" : ""
                   }`}>
                     <User className={`w-4 h-4 transition-all duration-200 ${active ? "scale-110 text-white" : "text-muted"}`} />
                   </div>
