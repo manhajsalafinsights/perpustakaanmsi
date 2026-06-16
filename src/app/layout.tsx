@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Suspense } from "react";
+import dynamic from "next/dynamic";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import FloatingPurchaseNotification from "@/components/FloatingPurchaseNotification";
 import { ThemeProvider } from "@/components/ThemeProvider";
+
+const FloatingPurchaseNotification = dynamic(() => import("@/components/FloatingPurchaseNotification"));
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -51,7 +53,9 @@ export default function RootLayout({
               </Suspense>
               <main className="flex-1">{children}</main>
               <Footer />
-              <FloatingPurchaseNotification />
+              <Suspense fallback={null}>
+                <FloatingPurchaseNotification />
+              </Suspense>
             </div>
           </ThemeProvider>
         </div>

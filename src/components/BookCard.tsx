@@ -58,6 +58,7 @@ export default function BookCard({ book, index = 0, onClick, isNew }: BookCardPr
                 src={book.cover_url}
                 alt={book.title}
                 fill
+                sizes="(max-width: 640px) 50vw, (max-width: 768px) 25vw, (max-width: 1024px) 16.67vw, (max-width: 1280px) 12.5vw, 10vw"
                 className="object-cover transition-all duration-700 group-hover:scale-110"
                 unoptimized
               />

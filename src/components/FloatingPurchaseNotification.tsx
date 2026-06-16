@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ShoppingCart } from "lucide-react";
+import { fetchBooks } from "@/lib/books-cache";
 
 const NAMES = [
   "Ahmad", "Siti", "Muhammad", "Nurul", "Abdullah", "Fatimah",
@@ -19,14 +20,11 @@ export default function FloatingPurchaseNotification() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    fetch("/api/books")
-      .then((r) => r.json())
-      .then((data) => {
-        if (Array.isArray(data)) {
-          setBooks(data.map((b: { title: string }) => b.title).filter(Boolean));
-        }
-      })
-      .catch(() => {});
+    fetchBooks().then((data) => {
+      if (Array.isArray(data)) {
+        setBooks(data.map((b: { title: string }) => b.title).filter(Boolean));
+      }
+    });
   }, []);
 
   useEffect(() => {

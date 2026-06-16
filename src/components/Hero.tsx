@@ -6,6 +6,7 @@ import { BookOpen, ArrowDown, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { Book } from "@/lib/types";
+import { fetchBooks } from "@/lib/books-cache";
 import IslamicPattern from "./IslamicPattern";
 
 function FloatingBook({ book, index, total }: { book: Book; index: number; total: number }) {
@@ -99,12 +100,9 @@ export default function Hero({ compact = false }: { compact?: boolean }) {
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    fetch("/api/books")
-      .then((r) => r.json())
-      .then((data) => {
-        setBooks(data || []);
-      })
-      .catch(() => {});
+    fetchBooks().then((data) => {
+      setBooks(data || []);
+    });
   }, []);
 
   useEffect(() => {
