@@ -12,6 +12,7 @@ import {
   Heart,
   Phone,
   BookMarked,
+  CheckCircle2,
   ChevronDown,
 } from "lucide-react";
 import { Book } from "@/lib/types";
@@ -94,24 +95,30 @@ function CollapsibleSection({
 
 export default function ProfilePage() {
   const [progressBooks, setProgressBooks] = useState<(Book & { progress: number })[]>([]);
+  const [completedBooks, setCompletedBooks] = useState<(Book & { progress: number })[]>([]);
   const [loadingProgress, setLoadingProgress] = useState(true);
 
   useEffect(() => {
-    const keys: { id: string; page: number }[] = [];
+    const progressKeys: { id: string; page: number }[] = [];
+    const completedIds: string[] = [];
+
     try {
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
         if (key?.startsWith("book_progress_")) {
           const id = key.replace("book_progress_", "");
           const page = parseInt(localStorage.getItem(key) || "0", 10);
-          if (page > 0) keys.push({ id, page });
+          if (page > 0) progressKeys.push({ id, page });
+        }
+        if (key?.startsWith("book_completed_")) {
+          completedIds.push(key.replace("book_completed_", ""));
         }
       }
     } catch {
       // localStorage not available
     }
 
-    if (keys.length === 0) {
+    if (progressKeys.length === 0 && completedIds.length === 0) {
       setLoadingProgress(false);
       return;
     }
@@ -119,17 +126,41 @@ export default function ProfilePage() {
     fetch("/api/books")
       .then((r) => r.json())
       .then((data) => {
-        const books = (data as Book[])
-          .filter((b) => keys.some((k) => k.id === b.id))
-          .map((b) => ({
-            ...b,
-            progress: keys.find((k) => k.id === b.id)?.page || 0,
-          }));
-        setProgressBooks(books);
+        const allBooks = data as Book[];
+        setProgressBooks(
+          allBooks
+            .filter((b) => progressKeys.some((k) => k.id === b.id) && !completedIds.includes(b.id))
+            .map((b) => ({
+              ...b,
+              progress: progressKeys.find((k) => k.id === b.id)?.page || 0,
+            }))
+        );
+        setCompletedBooks(
+          allBooks
+            .filter((b) => completedIds.includes(b.id))
+            .map((b) => ({
+              ...b,
+              progress: progressKeys.find((k) => k.id === b.id)?.page || 0,
+            }))
+        );
       })
-      .catch(() => setProgressBooks([]))
+      .catch(() => {
+        setProgressBooks([]);
+        setCompletedBooks([]);
+      })
       .finally(() => setLoadingProgress(false));
   }, []);
+
+  const markComplete = (e: React.MouseEvent, book: Book & { progress: number }) => {
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      localStorage.setItem(`book_completed_${book.id}`, "true");
+      localStorage.removeItem(`book_progress_${book.id}`);
+    } catch {}
+    setProgressBooks((prev) => prev.filter((b) => b.id !== book.id));
+    setCompletedBooks((prev) => [...prev, { ...book, progress: 0 }]);
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -150,15 +181,12 @@ export default function ProfilePage() {
             </div>
 
             {loadingProgress ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-                {Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i}>
-                    <div className="aspect-[3/4] skeleton-shimmer rounded-xl" />
-                    <div className="h-3 skeleton-shimmer rounded-lg w-3/4 mt-2" />
-                  </div>
+              <div className="space-y-3">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="flex items-center gap-3 p-3 skeleton-shimmer rounded-xl h-[64px]" />
                 ))}
               </div>
-            ) : progressBooks.length === 0 ? (
+            ) : progressBooks.length === 0 && completedBooks.length === 0 ? (
               <div className="text-center py-10">
                 <BookOpen className="w-10 h-10 text-muted/30 mx-auto mb-3" />
                 <p className="text-sm text-muted">Belum ada buku yang dibaca</p>
@@ -170,41 +198,82 @@ export default function ProfilePage() {
                 </Link>
               </div>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+              <div className="space-y-2">
                 {progressBooks.map((book) => (
                   <Link
                     key={book.id}
                     href={`/book/${book.id}`}
-                    className="group"
+                    className="flex items-center gap-3 p-3 bg-surface-dark rounded-xl border border-border/50 hover:border-primary/30 transition-all duration-200 group"
                   >
-                    <div className="relative aspect-[3/4] bg-surface-dark rounded-xl overflow-hidden border border-border/50 group-hover:border-primary/40 transition-all duration-300">
+                    <div className="relative w-10 h-14 sm:w-12 sm:h-16 shrink-0 rounded-lg overflow-hidden bg-surface">
                       {book.cover_url ? (
-                        <Image
-                          src={book.cover_url}
-                          alt={book.title}
-                          fill
-                          className="object-cover transition-all duration-500 group-hover:scale-105"
-                          unoptimized
-                        />
+                        <Image src={book.cover_url} alt={book.title} fill className="object-cover" unoptimized />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-accent/10">
-                          <BookOpen className="w-8 h-8 text-primary/30" />
+                          <BookOpen className="w-4 h-4 text-primary/30" />
                         </div>
                       )}
-                      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent p-2">
-                        <span className="text-[11px] font-bold text-white bg-accent/90 px-2 py-0.5 rounded-md">
-                          hlm {book.progress}
-                        </span>
-                      </div>
                     </div>
-                    <p className="text-xs font-medium text-foreground line-clamp-2 mt-1.5 leading-snug group-hover:text-primary transition-colors">
-                      {book.title}
-                    </p>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs sm:text-sm font-medium text-foreground truncate group-hover:text-primary transition-colors">
+                        {book.title}
+                      </p>
+                      {book.author && (
+                        <p className="text-[11px] text-muted truncate">{book.author}</p>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <span className="text-[11px] font-medium text-accent bg-accent/10 px-2 py-1 rounded-lg">
+                        hlm {book.progress}
+                      </span>
+                      <button
+                        onClick={(e) => markComplete(e, book)}
+                        className="p-1.5 rounded-lg text-muted/50 hover:text-green-500 hover:bg-green-500/10 transition-all duration-200"
+                        title="Tandai selesai"
+                      >
+                        <CheckCircle2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </Link>
                 ))}
               </div>
             )}
           </div>
+
+          {completedBooks.length > 0 && (
+            <CollapsibleSection icon={CheckCircle2} title={`Selesai Dibaca (${completedBooks.length})`}>
+              <div className="space-y-2 pt-5 sm:pt-6">
+                {completedBooks.map((book) => (
+                  <Link
+                    key={book.id}
+                    href={`/book/${book.id}`}
+                    className="flex items-center gap-3 p-3 bg-surface-dark rounded-xl border border-border/50 hover:border-primary/30 transition-all duration-200 group"
+                  >
+                    <div className="relative w-10 h-14 sm:w-12 sm:h-16 shrink-0 rounded-lg overflow-hidden bg-surface">
+                      {book.cover_url ? (
+                        <Image src={book.cover_url} alt={book.title} fill className="object-cover" unoptimized />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-accent/10">
+                          <BookOpen className="w-4 h-4 text-primary/30" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs sm:text-sm font-medium text-foreground truncate group-hover:text-primary transition-colors">
+                        {book.title}
+                      </p>
+                      {book.author && (
+                        <p className="text-[11px] text-muted truncate">{book.author}</p>
+                      )}
+                    </div>
+                    <span className="text-[11px] text-green-600 bg-green-500/10 px-2 py-1 rounded-lg font-medium shrink-0">
+                      Selesai
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </CollapsibleSection>
+          )}
 
           {/* ── Collapsible Sections ── */}
           <CollapsibleSection icon={Sparkles} title="Tentang Pengembang">
