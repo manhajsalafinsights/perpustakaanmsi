@@ -9,7 +9,6 @@ import {
   MapPin,
   BookOpen,
   Sparkles,
-  Heart,
   Phone,
   BookMarked,
   CheckCircle2,
@@ -323,102 +322,61 @@ export default function ProfilePage() {
                   saja dan kapan saja.
                 </p>
               </div>
+
+              <div className="border-t border-border pt-5 mt-5">
+                <h4 className="text-sm font-semibold text-foreground text-center mb-3">Teknologi</h4>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {["Next.js", "React", "TypeScript", "Tailwind CSS", "Supabase", "PostgreSQL", "Framer Motion", "Lucide Icons"].map((tech) => (
+                    <div key={tech} className="px-4 py-3 glass rounded-xl text-sm font-medium text-foreground text-center">
+                      {tech}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="border-t border-border pt-5 mt-5">
+                <h4 className="text-sm font-semibold text-foreground text-center mb-3">Kontak & Sosial Media</h4>
+                <div className="grid grid-cols-2 gap-3">
+                  <a href="https://www.instagram.com/yuliantoabuhanna?igsh=dXZkbWl1cjhqdG00" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-4 glass rounded-2xl hover:bg-pink-500/10 transition-colors group">
+                    <div className="w-10 h-10 bg-pink-500/15 rounded-xl flex items-center justify-center group-hover:bg-pink-500/25 transition-colors">
+                      <InstagramIcon className="w-5 h-5 text-pink-400" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-foreground">Instagram</p>
+                      <p className="text-xs text-muted">@yuliantoabuhanna</p>
+                    </div>
+                  </a>
+                  <a href="https://wa.me/6281297007070" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-4 glass rounded-2xl hover:bg-green-500/10 transition-colors group">
+                    <div className="w-10 h-10 bg-green-500/15 rounded-xl flex items-center justify-center group-hover:bg-green-500/25 transition-colors">
+                      <Phone className="w-5 h-5 text-green-400" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-foreground">WhatsApp</p>
+                      <p className="text-xs text-muted">081297007070</p>
+                    </div>
+                  </a>
+                  <a href="https://www.youtube.com/@yuvidotid" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-4 glass rounded-2xl hover:bg-red-500/10 transition-colors group">
+                    <div className="w-10 h-10 bg-red-500/15 rounded-xl flex items-center justify-center group-hover:bg-red-500/25 transition-colors">
+                      <YoutubeIcon className="w-5 h-5 text-red-400" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-foreground">YouTube</p>
+                      <p className="text-xs text-muted">@yuvidotid</p>
+                    </div>
+                  </a>
+                  <a href="https://id.linkedin.com/in/yuli-anto-abu-hanna-2129ab314" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-4 glass rounded-2xl hover:bg-blue-500/10 transition-colors group">
+                    <div className="w-10 h-10 bg-blue-500/15 rounded-xl flex items-center justify-center group-hover:bg-blue-500/25 transition-colors">
+                      <LinkedinIcon className="w-5 h-5 text-blue-400" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-foreground">LinkedIn</p>
+                      <p className="text-xs text-muted">Yuli Anto Abu Hanna</p>
+                    </div>
+                  </a>
+                </div>
+              </div>
             </div>
           </CollapsibleSection>
-
-          <CollapsibleSection icon={Code2} title="Teknologi">
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-5 sm:pt-6">
-              {[
-                "Next.js",
-                "React",
-                "TypeScript",
-                "Tailwind CSS",
-                "Supabase",
-                "PostgreSQL",
-                "Framer Motion",
-                "Lucide Icons",
-              ].map((tech) => (
-                <div
-                  key={tech}
-                  className="px-4 py-3 glass rounded-xl text-sm font-medium text-foreground text-center"
-                >
-                  {tech}
-                </div>
-              ))}
-            </div>
-          </CollapsibleSection>
-
-          <CollapsibleSection icon={Heart} title="Kontak & Sosial Media">
-            <div className="grid grid-cols-2 gap-3 pt-5 sm:pt-6">
-              <a
-                href="https://www.instagram.com/yuliantoabuhanna?igsh=dXZkbWl1cjhqdG00"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-3 p-4 glass rounded-2xl hover:bg-pink-500/10 transition-colors group"
-              >
-                <div className="w-10 h-10 bg-pink-500/15 rounded-xl flex items-center justify-center group-hover:bg-pink-500/25 transition-colors">
-                  <InstagramIcon className="w-5 h-5 text-pink-400" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-foreground">Instagram</p>
-                  <p className="text-xs text-muted">@yuliantoabuhanna</p>
-                </div>
-              </a>
-              <a
-                href="https://wa.me/6281297007070"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-3 p-4 glass rounded-2xl hover:bg-green-500/10 transition-colors group"
-              >
-                <div className="w-10 h-10 bg-green-500/15 rounded-xl flex items-center justify-center group-hover:bg-green-500/25 transition-colors">
-                  <Phone className="w-5 h-5 text-green-400" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-foreground">WhatsApp</p>
-                  <p className="text-xs text-muted">081297007070</p>
-                </div>
-              </a>
-              <a
-                href="https://www.youtube.com/@yuvidotid"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-3 p-4 glass rounded-2xl hover:bg-red-500/10 transition-colors group"
-              >
-                <div className="w-10 h-10 bg-red-500/15 rounded-xl flex items-center justify-center group-hover:bg-red-500/25 transition-colors">
-                  <YoutubeIcon className="w-5 h-5 text-red-400" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-foreground">YouTube</p>
-                  <p className="text-xs text-muted">@yuvidotid</p>
-                </div>
-              </a>
-              <a
-                href="https://id.linkedin.com/in/yuli-anto-abu-hanna-2129ab314"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-3 p-4 glass rounded-2xl hover:bg-blue-500/10 transition-colors group"
-              >
-                <div className="w-10 h-10 bg-blue-500/15 rounded-xl flex items-center justify-center group-hover:bg-blue-500/25 transition-colors">
-                  <LinkedinIcon className="w-5 h-5 text-blue-400" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-foreground">LinkedIn</p>
-                  <p className="text-xs text-muted">Yuli Anto Abu Hanna</p>
-                </div>
-              </a>
-            </div>
-          </CollapsibleSection>
-
-          {/* ── Back Link ── */}
-          <div className="text-center pt-2">
-            <Link
-              href="/"
-              className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-white font-semibold rounded-2xl hover:bg-primary-dark transition-colors shadow-lg shadow-primary/20"
-            >
-              <BookOpen className="w-5 h-5" />
-              Kembali ke Perpustakaan
-            </Link>
-          </div>
         </motion.div>
       </div>
     </div>
