@@ -361,7 +361,7 @@ export default function HomeContent() {
                     <Link
                       key={book.id}
                       href={`/book/${book.id}`}
-                      className="snap-start shrink-0 w-[140px] group"
+                      className="snap-start shrink-0 w-[160px] group"
                     >
                       <div className="relative bg-surface-dark rounded-2xl overflow-hidden border border-border/50 hover:border-primary/30 transition-all duration-300">
                         <div className="aspect-[3/4] relative">

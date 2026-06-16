@@ -129,8 +129,8 @@ export default function RecommendationForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
-      <div className="grid sm:grid-cols-2 gap-5">
+    <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
+      <div className="grid sm:grid-cols-2 gap-4 sm:gap-5">
         <div>
           <label className="block text-sm font-medium text-foreground mb-1.5">
             Judul Ebook <span className="text-red-400">*</span>
@@ -140,7 +140,7 @@ export default function RecommendationForm() {
             value={form.title}
             onChange={(e) => setForm({ ...form, title: e.target.value })}
             required
-            className="w-full px-4 py-3 bg-surface border border-border rounded-2xl text-sm text-foreground placeholder:text-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/60 transition-all"
+            className="w-full px-4 py-2.5 sm:py-3 bg-surface border border-border rounded-2xl text-sm text-foreground placeholder:text-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/60 transition-all"
             placeholder="Judul ebook"
           />
         </div>
@@ -153,7 +153,7 @@ export default function RecommendationForm() {
             value={form.file_url}
             onChange={(e) => setForm({ ...form, file_url: e.target.value })}
             required
-            className="w-full px-4 py-3 bg-surface border border-border rounded-2xl text-sm text-foreground placeholder:text-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/60 transition-all"
+            className="w-full px-4 py-2.5 sm:py-3 bg-surface border border-border rounded-2xl text-sm text-foreground placeholder:text-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/60 transition-all"
             placeholder="https://drive.google.com/..."
           />
         </div>
@@ -166,7 +166,7 @@ export default function RecommendationForm() {
             type="text"
             value={form.author}
             onChange={(e) => setForm({ ...form, author: e.target.value })}
-            className="w-full px-4 py-3 bg-surface border border-border rounded-2xl text-sm text-foreground placeholder:text-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/60 transition-all"
+            className="w-full px-4 py-2.5 sm:py-3 bg-surface border border-border rounded-2xl text-sm text-foreground placeholder:text-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/60 transition-all"
             placeholder="Nama penulis (pisahkan dengan koma)"
           />
         </div>
@@ -175,7 +175,7 @@ export default function RecommendationForm() {
           <select
             value={form.category}
             onChange={(e) => setForm({ ...form, category: e.target.value })}
-            className="w-full px-4 py-3 bg-surface border border-border rounded-2xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/60 transition-all appearance-none"
+            className="w-full px-4 py-2.5 sm:py-3 bg-surface border border-border rounded-2xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/60 transition-all appearance-none"
           >
             <option value="">Pilih kategori</option>
             {categories.map((cat) => (
@@ -191,7 +191,7 @@ export default function RecommendationForm() {
           value={form.description}
           onChange={(e) => setForm({ ...form, description: e.target.value })}
           rows={3}
-          className="w-full px-4 py-3 bg-surface border border-border rounded-2xl text-sm text-foreground placeholder:text-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/60 transition-all resize-none"
+          className="w-full px-4 py-2.5 sm:py-3 bg-surface border border-border rounded-2xl text-sm text-foreground placeholder:text-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/60 transition-all resize-none"
           placeholder="Deskripsi singkat ebook"
         />
       </div>
@@ -203,7 +203,7 @@ export default function RecommendationForm() {
           type="url"
           value={form.cover_url}
           onChange={(e) => setForm({ ...form, cover_url: e.target.value })}
-          className="w-full px-4 py-3 bg-surface border border-border rounded-2xl text-sm text-foreground placeholder:text-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/60 transition-all"
+          className="w-full px-4 py-2.5 sm:py-3 bg-surface border border-border rounded-2xl text-sm text-foreground placeholder:text-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/60 transition-all"
           placeholder="https://drive.google.com/... (opsional)"
         />
       </div>
@@ -215,7 +215,7 @@ export default function RecommendationForm() {
             type="text"
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
-            className="w-full px-4 py-3 bg-surface border border-border rounded-2xl text-sm text-foreground placeholder:text-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/60 transition-all"
+            className="w-full px-4 py-2.5 sm:py-3 bg-surface border border-border rounded-2xl text-sm text-foreground placeholder:text-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/60 transition-all"
             placeholder="Nama (opsional)"
           />
         </div>
@@ -225,7 +225,7 @@ export default function RecommendationForm() {
             type="email"
             value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })}
-            className="w-full px-4 py-3 bg-surface border border-border rounded-2xl text-sm text-foreground placeholder:text-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/60 transition-all"
+            className="w-full px-4 py-2.5 sm:py-3 bg-surface border border-border rounded-2xl text-sm text-foreground placeholder:text-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/60 transition-all"
             placeholder="email@contoh.com (opsional)"
           />
         </div>
@@ -240,7 +240,7 @@ export default function RecommendationForm() {
       <button
         type="submit"
         disabled={submitting || !form.title.trim() || !form.file_url.trim() || uploading}
-        className="w-full py-3.5 bg-primary text-white font-semibold rounded-2xl hover:bg-primary-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        className="w-full py-3 sm:py-3.5 bg-primary text-white font-semibold rounded-2xl hover:bg-primary-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
       >
         {uploading ? (
           <>
