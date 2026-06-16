@@ -164,7 +164,7 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 sm:pt-16 pb-10 sm:pb-16">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -172,7 +172,7 @@ export default function ProfilePage() {
           className="space-y-6 sm:space-y-8"
         >
           {/* ── Lanjutkan Membaca ── */}
-          <div className="glass rounded-3xl p-5 sm:p-8 shadow-sm">
+          <div className="glass rounded-3xl p-4 sm:p-8 shadow-sm">
             <div className="flex items-center gap-3 mb-5">
               <div className="w-10 h-10 bg-accent/10 rounded-xl flex items-center justify-center">
                 <BookMarked className="w-5 h-5 text-accent" />
