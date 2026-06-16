@@ -28,7 +28,7 @@ function FooterColumn({ title, defaultOpen = false, children }: { title: string;
 
 export default function Footer() {
   return (
-    <footer className="glass border-t border-border mt-8 sm:mt-12">
+    <footer className="hidden sm:block glass border-t border-border mt-8 sm:mt-12">
       <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <div className="flex flex-col sm:flex-row items-center sm:items-start sm:justify-between gap-4 sm:gap-6 mb-6 sm:mb-8">
           <div className="flex items-center gap-2.5">
