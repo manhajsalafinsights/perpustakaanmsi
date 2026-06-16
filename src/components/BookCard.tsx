@@ -75,7 +75,7 @@ export default function BookCard({ book, index = 0, onClick, isNew }: BookCardPr
               </div>
             )}
             {book.is_paid ? (
-              <div className="absolute top-1.5 right-1.5 flex items-center gap-1 px-1.5 py-0.5 bg-amber-500/90 text-white text-[10px] font-bold rounded-md shadow-sm backdrop-blur-sm">
+              <div className="absolute bottom-1.5 right-1.5 flex items-center gap-1 px-1.5 py-0.5 bg-amber-500/90 text-white text-[10px] font-bold rounded-md shadow-sm backdrop-blur-sm">
                 <Gem className="w-2.5 h-2.5" />
                 Premium
               </div>
