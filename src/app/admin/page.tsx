@@ -86,6 +86,7 @@ export default function AdminPage() {
   const [stats, setStats] = useState<AdminStats>({ totalBooks: 0, totalVisitors: 0 });
   const [statsLoading, setStatsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "published" | "scheduled" | "draft">("all");
 
   const [showModal, setShowModal] = useState(false);
   const [editingBook, setEditingBook] = useState<Book | null>(null);
@@ -641,9 +642,12 @@ export default function AdminPage() {
   };
 
   const filteredBooks = books.filter(
-    (b) =>
-      b.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      b.category.toLowerCase().includes(searchQuery.toLowerCase())
+    (b) => {
+      const matchSearch = b.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        b.category.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchStatus = statusFilter === "all" || b.status === statusFilter;
+      return matchSearch && matchStatus;
+    }
   );
 
   if (!isLoggedIn) {
@@ -795,6 +799,25 @@ export default function AdminPage() {
               Tambah Buku
             </button>
           </div>
+        </div>
+
+        <div className="flex items-center gap-1 px-4 sm:px-6 pb-4">
+          {(["all", "published", "scheduled", "draft"] as const).map((s) => (
+            <button
+              key={s}
+              onClick={() => setStatusFilter(s)}
+              className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
+                statusFilter === s
+                  ? "bg-primary text-white shadow-sm"
+                  : "text-muted hover:text-foreground hover:bg-surface-dark"
+              }`}
+            >
+              {s === "all" ? "All" : s === "published" ? "Live" : s === "scheduled" ? "Scheduled" : "Draft"}
+              <span className="ml-1.5 opacity-70">
+                ({s === "all" ? books.length : books.filter(b => b.status === s).length})
+              </span>
+            </button>
+          ))}
         </div>
 
         <div className="overflow-x-auto">
