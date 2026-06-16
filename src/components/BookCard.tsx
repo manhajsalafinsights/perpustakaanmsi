@@ -4,7 +4,7 @@ import { Book } from "@/lib/types";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Eye, Lock, ShoppingCart, MessageCircle, BookOpen } from "lucide-react";
+import { Eye, Lock, ShoppingCart, MessageCircle, BookOpen, Gem } from "lucide-react";
 
 function formatNumber(n: number): string {
   if (n >= 1000000) return (n / 1000000).toFixed(1).replace(/\.0$/, "") + "jt";
@@ -74,16 +74,16 @@ export default function BookCard({ book, index = 0, onClick, isNew }: BookCardPr
                 Rp {(hasPromo ? (book.promo_price || 0) : (book.price || 25000)).toLocaleString("id-ID")}
               </div>
             )}
-            {hasPromo && book.promo_text && (
-              <div className="absolute top-1.5 right-1.5 px-1.5 py-0.5 bg-green-500 text-white text-[10px] font-bold rounded-md shadow-sm">
-                {book.promo_text}
+            {book.is_paid ? (
+              <div className="absolute top-1.5 right-1.5 flex items-center gap-1 px-1.5 py-0.5 bg-amber-500/90 text-white text-[10px] font-bold rounded-md shadow-sm backdrop-blur-sm">
+                <Gem className="w-2.5 h-2.5" />
+                Premium
               </div>
-            )}
-            {!hasPromo && isNew && (
+            ) : isNew ? (
               <div className="absolute top-1.5 right-1.5 px-1.5 py-0.5 bg-primary text-white text-[10px] font-bold rounded-md shadow-sm">
                 NEW
               </div>
-            )}
+            ) : null}
           </div>
           <div className="p-2 sm:p-3">
             <h3 className="text-xs sm:text-sm font-semibold text-foreground line-clamp-2 mb-0.5 group-hover:text-primary transition-colors leading-snug">

@@ -18,10 +18,9 @@ import {
   BookOpen,
   Users,
   Gift,
-  BadgeDollarSign,
+  Gem,
   Star,
   Library,
-  Sparkles,
   Hash,
   ArrowRight,
   Clock,
@@ -120,32 +119,6 @@ function MiniStats({ totalBooks, totalVisitors, totalCategories, totalFree }: { 
   );
 }
 
-function FeaturedCategoryCard({ name, index }: { name: string; index: number }) {
-  const colors = [
-    { from: "from-emerald-500/20", to: "to-emerald-600/10", icon: BookOpen },
-    { from: "from-blue-500/20", to: "to-blue-600/10", icon: Library },
-    { from: "from-amber-500/20", to: "to-amber-600/10", icon: Star },
-    { from: "from-rose-500/20", to: "to-rose-600/10", icon: BookOpen },
-    { from: "from-violet-500/20", to: "to-violet-600/10", icon: Sparkles },
-    { from: "from-teal-500/20", to: "to-teal-600/10", icon: BookOpen },
-  ];
-  const color = colors[index % colors.length];
-
-  return (
-    <Link href={`/?category=${encodeURIComponent(name)}`}>
-      <motion.div
-        whileHover={{ scale: 1.02, y: -2 }}
-        className="glass rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-border/40 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 group cursor-pointer"
-      >
-        <div className={`w-8 h-8 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-gradient-to-br ${color.from} ${color.to} flex items-center justify-center mb-2 sm:mb-3 group-hover:scale-110 transition-transform duration-300`}>
-          <color.icon className="w-4 h-4 sm:w-6 sm:h-6 text-primary" />
-        </div>
-        <h3 className="text-xs sm:text-sm font-semibold text-foreground group-hover:text-primary transition-colors">{name}</h3>
-        <p className="text-[10px] sm:text-xs text-muted mt-0.5 sm:mt-1">Jelajahi buku {name.toLowerCase()}</p>
-      </motion.div>
-    </Link>
-  );
-}
 
 function SectionHeader({
   icon: Icon,
@@ -455,7 +428,7 @@ export default function HomeContent() {
             </div>
           </motion.div>
 
-          {/* ── Kategori Buku ── */}
+          {/* ── Ebook Premium ── */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -463,26 +436,67 @@ export default function HomeContent() {
             transition={{ duration: 0.5 }}
           >
             <div className="space-y-5">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
-                  <Layers className="w-5 h-5 text-primary" />
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-amber-500/15 rounded-xl flex items-center justify-center">
+                    <Gem className="w-5 h-5 text-amber-500" />
+                  </div>
+                  <h2 className="text-xl sm:text-2xl font-bold text-foreground">Ebook Premium</h2>
                 </div>
-                <h2 className="text-xl sm:text-2xl font-bold text-foreground">
-                  Kategori Buku
-                </h2>
+                {paidBooks.length > defaultLimit && (
+                  <button
+                    onClick={() => toggleExpand("berbayar")}
+                    className="flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary-light transition-colors group"
+                  >
+                    {expanded.berbayar ? "Tutup" : "Lihat Semua"}
+                    <ArrowRight className={`w-4 h-4 transition-transform ${expanded.berbayar ? "rotate-90" : "group-hover:translate-x-0.5"}`} />
+                  </button>
+                )}
               </div>
               {loading ? (
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                <SectionSkeleton />
+              ) : paidBooks.length > 0 ? (
+                <div className={GRID_CLASSES}>
+                  {(expanded.berbayar ? paidBooks : paidBooks.slice(0, defaultLimit)).map((book, i) => (
+                    <BookCard key={book.id} book={book} index={i} />
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          </motion.div>
+
+          {/* ── Kategori Buku ── */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+          >
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                  <Layers className="w-4 h-4 text-primary" />
+                </div>
+                <h2 className="text-lg sm:text-xl font-bold text-foreground">Kategori Buku</h2>
+              </div>
+              {loading ? (
+                <div className="flex flex-wrap gap-2">
                   {Array.from({ length: 6 }).map((_, i) => (
-                    <div key={i} className="glass rounded-2xl p-5 skeleton-shimmer h-28" />
+                    <div key={i} className="h-8 w-20 rounded-full skeleton-shimmer" />
                   ))}
                 </div>
               ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3">
-                {categories.slice(0, 6).map((cat, i) => (
-                  <FeaturedCategoryCard key={cat} name={cat} index={i} />
-                ))}
-              </div>
+                <div className="flex flex-wrap gap-2">
+                  {categories.slice(0, 6).map((cat) => (
+                    <Link
+                      key={cat}
+                      href={`/?category=${encodeURIComponent(cat)}`}
+                      className="px-3 py-1.5 bg-primary/10 hover:bg-primary/20 text-primary text-sm font-medium rounded-full transition-colors"
+                    >
+                      {cat}
+                    </Link>
+                  ))}
+                </div>
               )}
             </div>
           </motion.div>
@@ -561,33 +575,6 @@ export default function HomeContent() {
               ) : categoryPicks.length > 0 ? (
                 <div className={GRID_CLASSES}>
                   {(expanded.kategori ? categoryPicks : categoryPicks.slice(0, defaultLimit)).map((book, i) => (
-                    <BookCard key={book.id} book={book} index={i} />
-                  ))}
-                </div>
-              ) : null}
-            </div>
-          </motion.div>
-
-          {/* ── Ebook Berbayar ── */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-          >
-            <div className="space-y-5">
-              <SectionHeader
-                icon={BadgeDollarSign}
-                title="Ebook Berbayar"
-                showAll={paidBooks.length > defaultLimit}
-                isExpanded={!!expanded.berbayar}
-                onToggle={() => toggleExpand("berbayar")}
-              />
-              {loading ? (
-                <SectionSkeleton />
-              ) : paidBooks.length > 0 ? (
-                <div className={GRID_CLASSES}>
-                  {(expanded.berbayar ? paidBooks : paidBooks.slice(0, defaultLimit)).map((book, i) => (
                     <BookCard key={book.id} book={book} index={i} />
                   ))}
                 </div>
