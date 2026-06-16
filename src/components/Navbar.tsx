@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { Menu, X, User, Search, Command, Home, BookOpen, LayoutGrid } from "lucide-react";
+import { Menu, X, User, Search, Command, Home, BookOpen, LayoutGrid, Shield } from "lucide-react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import ThemeToggle from "./ThemeToggle";
@@ -161,7 +161,7 @@ export default function Navbar() {
                 href="/admin"
                 className="flex items-center gap-2 px-4 py-2.5 bg-primary text-white text-sm font-medium rounded-2xl hover:bg-primary-dark transition-all duration-300 shadow-sm hover:shadow-md hover:shadow-primary/10"
               >
-                <User className="w-4 h-4" />
+                <Shield className="w-4 h-4" />
                 Admin
               </Link>
             </div>
@@ -224,7 +224,7 @@ export default function Navbar() {
             { href: null, icon: Search, label: "Cari", isSearch: true },
             { href: "/rekomendasi", icon: BookOpen, label: "Rekomendasi" },
             { href: "/profile", icon: User, label: "Profil" },
-            { href: "/admin", icon: User, label: "Admin", isAdmin: true },
+            { href: "/admin", icon: Shield, label: "Admin", isAdmin: true },
           ].map((item) => {
             const active = item.href && pathname === item.href;
             if (item.isSearch) {
@@ -254,7 +254,7 @@ export default function Navbar() {
                   <div className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all duration-200 ${
                     active ? "bg-primary shadow-sm -translate-y-0.5" : ""
                   }`}>
-                    <User className={`w-4 h-4 transition-all duration-200 ${active ? "scale-110 text-white" : "text-muted"}`} />
+                    <Shield className={`w-4 h-4 transition-all duration-200 ${active ? "scale-110 text-white" : "text-muted"}`} />
                   </div>
                   <span className="text-[10px] font-medium">Admin</span>
                 </Link>
