@@ -57,18 +57,18 @@ export default function FloatingPurchaseNotification() {
           animate={{ opacity: 1, y: 0, x: 0 }}
           exit={{ opacity: 0, y: -20, x: 100 }}
           transition={{ type: "spring", damping: 20, stiffness: 200 }}
-          className="fixed top-24 sm:bottom-8 sm:top-auto right-4 sm:right-8 z-[100] max-w-sm pointer-events-none"
+          className="fixed top-28 sm:bottom-8 sm:top-auto right-3 sm:right-8 z-[100] max-w-[180px] sm:max-w-sm pointer-events-none"
         >
-          <div className="glass rounded-2xl p-4 border border-accent/20 shadow-xl">
-            <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center flex-shrink-0">
-                <ShoppingCart className="w-4 h-4 text-accent" />
+          <div className="glass rounded-lg sm:rounded-2xl p-2 sm:p-4 border border-accent/20 shadow-lg sm:shadow-xl">
+            <div className="flex items-start gap-1.5 sm:gap-3">
+              <div className="w-5 h-5 sm:w-8 sm:h-8 rounded-full bg-accent/20 flex items-center justify-center flex-shrink-0">
+                <ShoppingCart className="w-2.5 h-2.5 sm:w-4 sm:h-4 text-accent" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm text-foreground font-medium">
+                <p className="text-[11px] sm:text-sm text-foreground font-medium">
                   <span className="text-accent font-semibold">{current.name}</span> telah membeli
                 </p>
-                <p className="text-sm text-muted truncate mt-0.5">
+                <p className="hidden sm:block text-sm text-muted truncate mt-0.5">
                   &ldquo;{current.book}&rdquo;
                 </p>
               </div>
