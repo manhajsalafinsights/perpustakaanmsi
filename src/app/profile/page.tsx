@@ -1,19 +1,20 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
+import Link from "next/link";
 import {
   Code2,
   MapPin,
   BookOpen,
   Sparkles,
   Heart,
-  MessageCircle,
   Phone,
-  Tv,
-  Briefcase,
+  BookMarked,
+  ChevronDown,
 } from "lucide-react";
-import Link from "next/link";
+import { Book } from "@/lib/types";
 
 function InstagramIcon({ className }: { className?: string }) {
   return (
@@ -44,94 +45,220 @@ function YoutubeIcon({ className }: { className?: string }) {
   );
 }
 
+function CollapsibleSection({
+  icon: Icon,
+  title,
+  defaultOpen = false,
+  children,
+}: {
+  icon: React.ElementType;
+  title: string;
+  defaultOpen?: boolean;
+  children: React.ReactNode;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+
+  return (
+    <div className="glass rounded-3xl shadow-sm overflow-hidden">
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between p-5 sm:p-8 hover:bg-surface-dark/30 transition-colors duration-200"
+      >
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
+            <Icon className="w-5 h-5 text-primary" />
+          </div>
+          <h2 className="text-lg sm:text-xl font-bold text-foreground">{title}</h2>
+        </div>
+        <ChevronDown className={`w-5 h-5 text-muted transition-transform duration-300 ${open ? "rotate-180" : ""}`} />
+      </button>
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            key="content"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+            className="overflow-hidden"
+          >
+            <div className="px-5 sm:px-8 pb-5 sm:pb-8 border-t border-border">
+              {children}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
 export default function ProfilePage() {
+  const [progressBooks, setProgressBooks] = useState<(Book & { progress: number })[]>([]);
+  const [loadingProgress, setLoadingProgress] = useState(true);
+
+  useEffect(() => {
+    const keys: { id: string; page: number }[] = [];
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key?.startsWith("book_progress_")) {
+          const id = key.replace("book_progress_", "");
+          const page = parseInt(localStorage.getItem(key) || "0", 10);
+          if (page > 0) keys.push({ id, page });
+        }
+      }
+    } catch {
+      // localStorage not available
+    }
+
+    if (keys.length === 0) {
+      setLoadingProgress(false);
+      return;
+    }
+
+    fetch("/api/books")
+      .then((r) => r.json())
+      .then((data) => {
+        const books = (data as Book[])
+          .filter((b) => keys.some((k) => k.id === b.id))
+          .map((b) => ({
+            ...b,
+            progress: keys.find((k) => k.id === b.id)?.page || 0,
+          }));
+        setProgressBooks(books);
+      })
+      .catch(() => setProgressBooks([]))
+      .finally(() => setLoadingProgress(false));
+  }, []);
+
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-center space-y-6"
-        >
-          <div className="space-y-4">
-            <div className="w-36 h-36 mx-auto rounded-full overflow-hidden shadow-2xl shadow-primary/20 ring-4 ring-primary/20">
-              <Image
-                src="https://fxqghtotzvapeynaqngg.supabase.co/storage/v1/object/sign/Cover%20Buku/Fotoku.JPG?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV81YjY4OGEzNS05NzkwLTRiNDktYmRkNC1lYTNiYjFlNmM0YWEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJDb3ZlciBCdWt1L0ZvdG9rdS5KUEciLCJpYXQiOjE3NzgyNDg1MDAsImV4cCI6MTkzNTkyODUwMH0.8xuk8HUjxQECMkn9IJQibWGF5BtqIAx_zZL7zdl8JSw"
-                alt="Yulianto Abu Hanna"
-                width={144}
-                height={144}
-                className="w-full h-full object-cover"
-                unoptimized
-              />
-            </div>
-            <div>
-              <h1 className="text-3xl sm:text-4xl font-bold text-foreground">
-                Yulianto Abu Hanna
-              </h1>
-              <p className="text-lg text-muted mt-2">
-                Full-Stack Developer & Founder YAIAPPS
-              </p>
-            </div>
-          </div>
-
-          <p className="text-muted max-w-2xl mx-auto leading-relaxed">
-            Membangun solusi website untuk dakwah, pendidikan, dan berbagai
-            kebutuhan digital Indonesia.
-          </p>
-
-          <div className="flex items-center justify-center gap-3 flex-wrap">
-            <span className="inline-flex items-center gap-1.5 px-4 py-2 bg-primary/10 text-primary text-sm font-medium rounded-full">
-              <MapPin className="w-4 h-4" />
-              Indonesia
-            </span>
-            <span className="inline-flex items-center gap-1.5 px-4 py-2 bg-accent/10 text-accent text-sm font-medium rounded-full">
-              <BookOpen className="w-4 h-4" />
-              Literasi Digital
-            </span>
-            <span className="inline-flex items-center gap-1.5 px-4 py-2 bg-primary/10 text-primary text-sm font-medium rounded-full">
-              <Code2 className="w-4 h-4" />
-              Next.js + Supabase
-            </span>
-          </div>
-        </motion.div>
-
-        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="mt-16 space-y-8"
+          transition={{ duration: 0.4 }}
+          className="space-y-6 sm:space-y-8"
         >
-          <div className="glass rounded-3xl shadow-sm p-8">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
-                <Sparkles className="w-5 h-5 text-primary" />
+          {/* ── Lanjutkan Membaca ── */}
+          <div className="glass rounded-3xl p-5 sm:p-8 shadow-sm">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-10 h-10 bg-accent/10 rounded-xl flex items-center justify-center">
+                <BookMarked className="w-5 h-5 text-accent" />
               </div>
-              <h2 className="text-xl font-bold text-foreground">Tentang Proyek</h2>
+              <h2 className="text-lg sm:text-xl font-bold text-foreground">Lanjutkan Membaca</h2>
             </div>
-            <div className="space-y-4 text-muted leading-relaxed">
-              <p>
-                Perpustakaan Digital MSI adalah platform perpustakaan digital yang
-                dirancang untuk memberikan akses mudah ke berbagai koleksi buku
-                elektronik. Platform ini dibangun dengan teknologi modern untuk
-                memberikan pengalaman membaca yang nyaman dan menyenangkan.
-              </p>
-              <p>
-                Dengan antarmuka yang bersih dan modern, kami berkomitmen untuk
-                membuat literasi lebih mudah diakses oleh semua orang, di mana
-                saja dan kapan saja.
-              </p>
-            </div>
+
+            {loadingProgress ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i}>
+                    <div className="aspect-[3/4] skeleton-shimmer rounded-xl" />
+                    <div className="h-3 skeleton-shimmer rounded-lg w-3/4 mt-2" />
+                  </div>
+                ))}
+              </div>
+            ) : progressBooks.length === 0 ? (
+              <div className="text-center py-10">
+                <BookOpen className="w-10 h-10 text-muted/30 mx-auto mb-3" />
+                <p className="text-sm text-muted">Belum ada buku yang dibaca</p>
+                <Link
+                  href="/"
+                  className="inline-block mt-4 text-sm font-medium text-primary hover:text-primary-light transition-colors"
+                >
+                  Mulai membaca dari halaman utama
+                </Link>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+                {progressBooks.map((book) => (
+                  <Link
+                    key={book.id}
+                    href={`/book/${book.id}`}
+                    className="group"
+                  >
+                    <div className="relative aspect-[3/4] bg-surface-dark rounded-xl overflow-hidden border border-border/50 group-hover:border-primary/40 transition-all duration-300">
+                      {book.cover_url ? (
+                        <Image
+                          src={book.cover_url}
+                          alt={book.title}
+                          fill
+                          className="object-cover transition-all duration-500 group-hover:scale-105"
+                          unoptimized
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-accent/10">
+                          <BookOpen className="w-8 h-8 text-primary/30" />
+                        </div>
+                      )}
+                      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent p-2">
+                        <span className="text-[11px] font-bold text-white bg-accent/90 px-2 py-0.5 rounded-md">
+                          hlm {book.progress}
+                        </span>
+                      </div>
+                    </div>
+                    <p className="text-xs font-medium text-foreground line-clamp-2 mt-1.5 leading-snug group-hover:text-primary transition-colors">
+                      {book.title}
+                    </p>
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
 
-          <div className="glass rounded-3xl shadow-sm p-8">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-accent/10 rounded-xl flex items-center justify-center">
-                <Code2 className="w-5 h-5 text-accent" />
+          {/* ── Collapsible Sections ── */}
+          <CollapsibleSection icon={Sparkles} title="Tentang Pengembang">
+            <div className="text-center space-y-5 pt-5 sm:pt-6">
+              <div className="w-28 h-28 mx-auto rounded-full overflow-hidden shadow-xl shadow-primary/15 ring-4 ring-primary/15">
+                <Image
+                  src="https://fxqghtotzvapeynaqngg.supabase.co/storage/v1/object/sign/Cover%20Buku/Fotoku.JPG?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV81YjY4OGEzNS05NzkwLTRiNDktYmRkNC1lYTNiYjFlNmM0YWEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJDb3ZlciBCdWt1L0ZvdG9rdS5KUEciLCJpYXQiOjE3NzgyNDg1MDAsImV4cCI6MTkzNTkyODUwMH0.8xuk8HUjxQECMkn9IJQibWGF5BtqIAx_zZL7zdl8JSw"
+                  alt="Yulianto Abu Hanna"
+                  width={112}
+                  height={112}
+                  className="w-full h-full object-cover"
+                  unoptimized
+                />
               </div>
-              <h2 className="text-xl font-bold text-foreground">Teknologi</h2>
+              <div>
+                <h3 className="text-2xl font-bold text-foreground">Yulianto Abu Hanna</h3>
+                <p className="text-base text-muted mt-1">Full-Stack Developer & Founder YAIAPPS</p>
+              </div>
+              <p className="text-muted max-w-lg mx-auto leading-relaxed text-sm">
+                Membangun solusi website untuk dakwah, pendidikan, dan berbagai
+                kebutuhan digital Indonesia.
+              </p>
+              <div className="flex items-center justify-center gap-2 flex-wrap">
+                <span className="inline-flex items-center gap-1 px-3 py-1.5 bg-primary/10 text-primary text-xs font-medium rounded-full">
+                  <MapPin className="w-3.5 h-3.5" />
+                  Indonesia
+                </span>
+                <span className="inline-flex items-center gap-1 px-3 py-1.5 bg-accent/10 text-accent text-xs font-medium rounded-full">
+                  <BookOpen className="w-3.5 h-3.5" />
+                  Literasi Digital
+                </span>
+                <span className="inline-flex items-center gap-1 px-3 py-1.5 bg-primary/10 text-primary text-xs font-medium rounded-full">
+                  <Code2 className="w-3.5 h-3.5" />
+                  Next.js + Supabase
+                </span>
+              </div>
+              <div className="space-y-3 text-muted leading-relaxed text-sm text-left max-w-lg mx-auto border-t border-border pt-5">
+                <p>
+                  Perpustakaan Digital MSI adalah platform perpustakaan digital yang
+                  dirancang untuk memberikan akses mudah ke berbagai koleksi buku
+                  elektronik. Platform ini dibangun dengan teknologi modern untuk
+                  memberikan pengalaman membaca yang nyaman dan menyenangkan.
+                </p>
+                <p>
+                  Dengan antarmuka yang bersih dan modern, kami berkomitmen untuk
+                  membuat literasi lebih mudah diakses oleh semua orang, di mana
+                  saja dan kapan saja.
+                </p>
+              </div>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          </CollapsibleSection>
+
+          <CollapsibleSection icon={Code2} title="Teknologi">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-5 sm:pt-6">
               {[
                 "Next.js",
                 "React",
@@ -150,16 +277,10 @@ export default function ProfilePage() {
                 </div>
               ))}
             </div>
-          </div>
+          </CollapsibleSection>
 
-          <div className="glass rounded-3xl shadow-sm p-8">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
-                <Heart className="w-5 h-5 text-primary" />
-              </div>
-              <h2 className="text-xl font-bold text-foreground">Kontak & Sosial Media</h2>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
+          <CollapsibleSection icon={Heart} title="Kontak & Sosial Media">
+            <div className="grid grid-cols-2 gap-3 pt-5 sm:pt-6">
               <a
                 href="https://www.instagram.com/yuliantoabuhanna?igsh=dXZkbWl1cjhqdG00"
                 target="_blank"
@@ -217,9 +338,10 @@ export default function ProfilePage() {
                 </div>
               </a>
             </div>
-          </div>
+          </CollapsibleSection>
 
-          <div className="text-center pt-8">
+          {/* ── Back Link ── */}
+          <div className="text-center pt-2">
             <Link
               href="/"
               className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-white font-semibold rounded-2xl hover:bg-primary-dark transition-colors shadow-lg shadow-primary/20"
