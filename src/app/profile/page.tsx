@@ -228,10 +228,10 @@ export default function ProfilePage() {
                       </span>
                       <button
                         onClick={(e) => markComplete(e, book)}
-                        className="p-1.5 rounded-lg text-muted/50 hover:text-green-500 hover:bg-green-500/10 transition-all duration-200"
-                        title="Tandai selesai"
+                        className="flex items-center gap-1 px-2 py-1.5 text-[11px] font-medium text-green-600 bg-green-500/10 rounded-lg hover:bg-green-500/20 transition-all duration-200"
                       >
-                        <CheckCircle2 className="w-4 h-4" />
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        Selesai
                       </button>
                     </div>
                   </Link>
