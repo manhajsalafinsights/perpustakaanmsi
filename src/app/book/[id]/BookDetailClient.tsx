@@ -40,7 +40,7 @@ import {
   Share2,
 } from "lucide-react";
 
-const WA_NUMBER = "62895393039750";
+const WA_NUMBER = "6281297007070";
 const MAX_FREE_PAGES = 10;
 
 function ShareButtons({ title }: { title: string }) {
