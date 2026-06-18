@@ -107,6 +107,13 @@ export default function AdminPage() {
     promo_price: 0,
     promo_text: "",
   });
+
+  const randStat = (max = 1) => {
+    const digits = Math.floor(Math.random() * 5) + 1;
+    const n = Math.random() * Math.pow(10, digits);
+    return Math.floor(n * max + 1);
+  };
+
   const [volumes, setVolumes] = useState<{ title: string; file_url: string }[]>([
     { title: "Jilid 1", file_url: "" },
   ]);
@@ -1342,9 +1349,9 @@ export default function AdminPage() {
                       onClick={() =>
                         setForm({
                           ...form,
-                          views: Math.floor(Math.random() * 500000) + 1000,
-                          purchased: Math.floor(Math.random() * 50000) + 10,
-                          downloads: Math.floor(Math.random() * 100000) + 50,
+                          views: randStat(),
+                          purchased: randStat(0.1),
+                          downloads: randStat(0.3),
                         })
                       }
                       className="text-xs text-muted hover:text-foreground transition-colors underline underline-offset-2"
