@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import BookDetailClient from "./BookDetailClient";
 
 export async function generateMetadata({
@@ -8,8 +9,13 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { id } = await params;
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
-    const res = await fetch(`${baseUrl}/api/books?id=${id}`, {
+    const h = await headers();
+    const host = h.get("x-forwarded-host") || h.get("host") || "perpustakaanmsi.vercel.app";
+    const protocol = h.get("x-forwarded-proto") || "https";
+    const siteUrl = process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : `${protocol}://${host}`;
+    const res = await fetch(`${siteUrl}/api/books?id=${id}`, {
       cache: "no-store",
     });
     if (res.ok) {
@@ -21,7 +27,7 @@ export async function generateMetadata({
           title: book.title,
           description: book.description?.slice(0, 160) || "",
           images: book.cover_url
-            ? [{ url: `${baseUrl}/api/og-image?url=${encodeURIComponent(book.cover_url)}` }]
+            ? [{ url: `${siteUrl}/api/og-image?url=${encodeURIComponent(book.cover_url)}` }]
             : [],
           type: "book",
         },

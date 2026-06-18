@@ -7,7 +7,15 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const res = await fetch(url);
+    const res = await fetch(url, {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        Accept: "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+        "Accept-Language": "id-ID,id;q=0.9,en;q=0.8",
+      },
+      redirect: "follow",
+    });
     if (!res.ok) throw new Error("fetch failed");
 
     const contentType = res.headers.get("Content-Type") || "image/jpeg";
@@ -16,6 +24,7 @@ export async function GET(request: NextRequest) {
       headers: {
         "Content-Type": contentType,
         "Cache-Control": "public, max-age=86400, s-maxage=86400",
+        "Access-Control-Allow-Origin": "*",
       },
     });
   } catch {
