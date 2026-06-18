@@ -20,7 +20,9 @@ export async function generateMetadata({
         openGraph: {
           title: book.title,
           description: book.description?.slice(0, 160) || "",
-          images: book.cover_url ? [{ url: book.cover_url }] : [],
+          images: book.cover_url
+            ? [{ url: `${baseUrl}/api/og-image?url=${encodeURIComponent(book.cover_url)}` }]
+            : [],
           type: "book",
         },
       };
