@@ -11,6 +11,8 @@ export async function GET() {
     ALTER TABLE books ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'published';
     ALTER TABLE books ADD COLUMN IF NOT EXISTS scheduled_at TIMESTAMPTZ;
     ALTER TABLE books ADD COLUMN IF NOT EXISTS published_at TIMESTAMPTZ;
+    ALTER TABLE books ADD COLUMN IF NOT EXISTS page_count INTEGER DEFAULT 0;
+    ALTER TABLE book_volumes ADD COLUMN IF NOT EXISTS page_count INTEGER DEFAULT 0;
   `;
 
   const { error } = await supabase.rpc("exec_sql", { sql });

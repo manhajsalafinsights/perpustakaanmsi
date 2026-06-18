@@ -100,6 +100,7 @@ export default function AdminPage() {
     is_paid: false,
     status: "published",
     scheduled_at: "",
+    page_count: 0,
     views: 0,
     purchased: 0,
     downloads: 0,
@@ -114,7 +115,7 @@ export default function AdminPage() {
     return Math.floor(n * max + 1);
   };
 
-  const [volumes, setVolumes] = useState<{ title: string; file_url: string }[]>([
+  const [volumes, setVolumes] = useState<{ title: string; file_url: string; page_count?: number }[]>([
     { title: "Jilid 1", file_url: "" },
   ]);
   const [formSubmitting, setFormSubmitting] = useState(false);
@@ -355,11 +356,12 @@ export default function AdminPage() {
         }
       } catch (e) { console.error("text extract error:", e); }
 
+      const totalPages = pdfDoc.numPages;
       await pdfDoc.destroy();
-      return { title, author, translator, description, titleFound, authorFound, translatorFound, descFound };
+      return { title, author, translator, description, totalPages, titleFound, authorFound, translatorFound, descFound };
     } catch (e) {
       console.error("extractClientSide error:", e);
-      return { title: "", author: "", translator: "", description: "", titleFound: false, authorFound: false, translatorFound: false, descFound: false };
+      return { title: "", author: "", translator: "", description: "", totalPages: 0, titleFound: false, authorFound: false, translatorFound: false, descFound: false };
     }
   };
 
@@ -387,6 +389,13 @@ export default function AdminPage() {
       filledFields.push("deskripsi");
       setForm((prev) => ({ ...prev, description: client.description }));
     }
+    if (client.totalPages > 0) {
+      filledFields.push("halaman");
+      setForm((prev) => ({ ...prev, page_count: client.totalPages }));
+      setVolumes((prev) =>
+        prev.map((v) => v.file_url === url ? { ...v, page_count: client.totalPages } : v)
+      );
+    }
 
     setExtracting(false);
     if (filledFields.length > 0) {
@@ -399,7 +408,7 @@ export default function AdminPage() {
   const openAddModal = () => {
     setEditingBook(null);
     setExtractMsg(null);
-    setForm({ title: "", description: "", cover_url: "", category: "", author: "", translator: "", is_paid: false, status: "published", scheduled_at: "", views: 0, purchased: 0, downloads: 0, price: 25000, promo_price: 0, promo_text: "" });
+    setForm({ title: "", description: "", cover_url: "", category: "", author: "", translator: "", is_paid: false, status: "published", scheduled_at: "", page_count: 0, views: 0, purchased: 0, downloads: 0, price: 25000, promo_price: 0, promo_text: "" });
     setVolumes([{ title: "Jilid 1", file_url: "" }]);
     setCustomCategory("");
     setUseCustomCategory(false);
@@ -424,6 +433,7 @@ export default function AdminPage() {
       price: book.price || 25000,
       promo_price: book.promo_price || 0,
       promo_text: book.promo_text || "",
+      page_count: book.page_count || 0,
     });
 
     try {
@@ -1400,6 +1410,18 @@ export default function AdminPage() {
                       placeholder="0"
                     />
                   </div>
+                </div>
+
+                <div className="mt-3">
+                  <label className="block text-xs text-muted mb-1">Jumlah Halaman</label>
+                  <input
+                    type="number"
+                    min={0}
+                    value={form.page_count}
+                    onChange={(e) => setForm({ ...form, page_count: parseInt(e.target.value) || 0 })}
+                    className="w-full px-4 py-3 bg-surface border border-border rounded-2xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                    placeholder="0"
+                  />
                 </div>
 
                 <div className="flex gap-3 pt-2">

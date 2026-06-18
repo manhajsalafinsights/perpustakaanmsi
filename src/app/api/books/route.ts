@@ -115,6 +115,7 @@ export async function POST(request: NextRequest) {
         price: bookData.price || 25000,
         promo_price: bookData.promo_price || null,
         promo_text: bookData.promo_text || "",
+        page_count: bookData.page_count || 0,
         views: bookData.views ?? randomViewCount(),
         purchased: bookData.purchased || 0,
         downloads: bookData.downloads || 0,
@@ -129,10 +130,11 @@ export async function POST(request: NextRequest) {
 
   if (volumes && volumes.length > 0) {
     try {
-      const volumeRows = volumes.map((v: { title: string; file_url: string }) => ({
+      const volumeRows = volumes.map((v: { title: string; file_url: string; page_count?: number }) => ({
         book_id: data.id,
         title: v.title || "Jilid 1",
         file_url: v.file_url || "",
+        page_count: v.page_count || 0,
       }));
 
       await db().from("book_volumes").insert(volumeRows);

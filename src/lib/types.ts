@@ -3,6 +3,7 @@ export interface BookVolume {
   book_id: string;
   title: string;
   file_url: string;
+  page_count?: number;
   created_at: string;
 }
 
@@ -25,6 +26,7 @@ export interface Book {
   price: number;
   promo_price: number | null;
   promo_text: string;
+  page_count?: number;
   comment_count: number | { count: number };
   created_at: string;
   volumes?: BookVolume[];

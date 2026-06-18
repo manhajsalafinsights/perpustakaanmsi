@@ -558,6 +558,12 @@ export default function BookDetailClient({ id }: { id: string }) {
                         })}
                       </span>
                     </div>
+                    {(book.page_count ?? 0) > 0 && (
+                      <div className="flex items-center gap-1 text-[11px] text-muted">
+                        <FileText className="w-3.5 h-3.5" />
+                        <span>{book.page_count} hlm</span>
+                      </div>
+                    )}
                     {(book.views > 0 || book.downloads > 0 || book.purchased > 0) && (
                       <div className="flex items-center gap-3">
                         {book.views > 0 && (
