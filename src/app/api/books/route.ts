@@ -79,10 +79,11 @@ export async function GET(request: NextRequest) {
 
 function randomViewCount(): number {
   const rand = Math.random();
-  if (rand < 0.4) return Math.floor(Math.random() * 999);
-  if (rand < 0.7) return Math.floor(Math.random() * 9000) + 1000;
-  if (rand < 0.9) return Math.floor(Math.random() * 90000) + 10000;
-  return Math.floor(Math.random() * 900000) + 100000;
+  if (rand < 0.2) return Math.floor(Math.random() * 999) + 50;
+  if (rand < 0.45) return Math.floor(Math.random() * 9000) + 1000;
+  if (rand < 0.7) return Math.floor(Math.random() * 90000) + 10000;
+  if (rand < 0.9) return Math.floor(Math.random() * 900000) + 100000;
+  return Math.floor(Math.random() * 5000000) + 1000000;
 }
 
 export async function POST(request: NextRequest) {

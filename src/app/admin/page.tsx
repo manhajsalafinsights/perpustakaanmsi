@@ -1342,9 +1342,9 @@ export default function AdminPage() {
                       onClick={() =>
                         setForm({
                           ...form,
-                          views: Math.floor(Math.random() * 9000) + 1000,
-                          purchased: Math.floor(Math.random() * 500) + 10,
-                          downloads: Math.floor(Math.random() * 1000) + 50,
+                          views: Math.floor(Math.random() * 500000) + 1000,
+                          purchased: Math.floor(Math.random() * 50000) + 10,
+                          downloads: Math.floor(Math.random() * 100000) + 50,
                         })
                       }
                       className="text-xs text-muted hover:text-foreground transition-colors underline underline-offset-2"
