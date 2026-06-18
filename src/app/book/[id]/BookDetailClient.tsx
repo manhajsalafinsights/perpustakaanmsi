@@ -37,10 +37,71 @@ import {
   SkipBack,
   SkipForward,
   AlertCircle,
+  Share2,
 } from "lucide-react";
 
 const WA_NUMBER = "62895393039750";
 const MAX_FREE_PAGES = 10;
+
+function ShareButtons({ title }: { title: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const share = (item: { label: string; action: (url: string, text: string) => void }) => {
+    const url = window.location.href;
+    const text = `📖 ${title}
+
+Baca dan download ebook islami gratis di:`;
+    item.action(url, text);
+  };
+
+  const platforms = [
+    {
+      label: "WhatsApp",
+      action: (url: string, text: string) =>
+        window.open(`https://wa.me/?text=${encodeURIComponent(text + "\n\n" + url)}`, "_blank"),
+    },
+    {
+      label: "X",
+      action: (url: string, text: string) =>
+        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text + "\n\n" + url)}`, "_blank"),
+    },
+    {
+      label: "Facebook",
+      action: (url: string, text: string) =>
+        window.open(`https://facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(text)}`, "_blank"),
+    },
+    {
+      label: "Telegram",
+      action: (url: string, text: string) =>
+        window.open(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`, "_blank"),
+    },
+  ];
+
+  return (
+    <div className="flex items-center gap-1.5 mt-3 flex-wrap">
+      <Share2 className="w-3 h-3 text-muted" />
+      {platforms.map((item) => (
+        <button
+          key={item.label}
+          onClick={() => share(item)}
+          className="px-2 py-0.5 text-[11px] font-medium text-muted bg-surface-dark rounded-lg hover:bg-border hover:text-foreground transition-colors"
+        >
+          {item.label}
+        </button>
+      ))}
+      <button
+        onClick={async () => {
+          await navigator.clipboard.writeText(window.location.href);
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2000);
+        }}
+        className="px-2 py-0.5 text-[11px] font-medium text-muted bg-surface-dark rounded-lg hover:bg-border hover:text-foreground transition-colors"
+      >
+        {copied ? "Tersalin!" : "Salin Tautan"}
+      </button>
+    </div>
+  );
+}
 
 function getEmbedUrl(url: string): string {
   if (!url) return "";
@@ -519,6 +580,7 @@ export default function BookDetailClient({ id }: { id: string }) {
                         )}
                       </div>
                     )}
+                    <ShareButtons title={book.title} />
                   </div>
                 </div>
               </div>
