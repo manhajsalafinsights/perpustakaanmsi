@@ -77,6 +77,14 @@ export async function GET(request: NextRequest) {
   return NextResponse.json(data);
 }
 
+function randomViewCount(): number {
+  const rand = Math.random();
+  if (rand < 0.4) return Math.floor(Math.random() * 999);
+  if (rand < 0.7) return Math.floor(Math.random() * 9000) + 1000;
+  if (rand < 0.9) return Math.floor(Math.random() * 90000) + 10000;
+  return Math.floor(Math.random() * 900000) + 100000;
+}
+
 export async function POST(request: NextRequest) {
   const body = await request.json();
   const { volumes, ...bookData } = body;
@@ -106,7 +114,7 @@ export async function POST(request: NextRequest) {
         price: bookData.price || 25000,
         promo_price: bookData.promo_price || null,
         promo_text: bookData.promo_text || "",
-        views: bookData.views || 0,
+        views: bookData.views ?? randomViewCount(),
         purchased: bookData.purchased || 0,
         downloads: bookData.downloads || 0,
       },

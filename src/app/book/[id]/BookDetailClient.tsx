@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef, Fragment } from "react";
 import { Book, BookVolume } from "@/lib/types";
+import { formatNumber } from "@/lib/format";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -37,12 +38,6 @@ import {
   SkipForward,
   AlertCircle,
 } from "lucide-react";
-
-function formatNumber(n: number): string {
-  if (n >= 1000000) return (n / 1000000).toFixed(1).replace(/\.0$/, "") + "jt";
-  if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, "") + "rb";
-  return String(n);
-}
 
 const WA_NUMBER = "62895393039750";
 const MAX_FREE_PAGES = 10;

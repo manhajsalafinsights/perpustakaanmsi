@@ -26,7 +26,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: fetchError.message }, { status: 404 });
   }
 
-  const newValue = (Number(current?.[type]) || 0) + 1;
+  const increment = type === "views" ? Math.floor(Math.random() * 5) + 1 : 1;
+  const newValue = (Number(current?.[type]) || 0) + increment;
 
   const { data: updated, error: updateError } = await client
     .from("books")

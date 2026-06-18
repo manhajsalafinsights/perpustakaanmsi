@@ -1333,9 +1333,25 @@ export default function AdminPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-foreground mb-1.5">
-                    Statistik Buku
-                  </label>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-sm font-medium text-foreground">
+                      Statistik Buku
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setForm({
+                          ...form,
+                          views: Math.floor(Math.random() * 9000) + 1000,
+                          purchased: Math.floor(Math.random() * 500) + 10,
+                          downloads: Math.floor(Math.random() * 1000) + 50,
+                        })
+                      }
+                      className="text-xs text-muted hover:text-foreground transition-colors underline underline-offset-2"
+                    >
+                      Acak
+                    </button>
+                  </div>
                   <div className="flex gap-3">
                     <div className="flex-1">
                       <label className="block text-xs text-muted mb-1">Jumlah Dibaca</label>

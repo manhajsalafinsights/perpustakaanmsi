@@ -1,16 +1,11 @@
 "use client";
 
 import { Book } from "@/lib/types";
+import { formatNumber } from "@/lib/format";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Eye, Lock, ShoppingCart, MessageCircle, BookOpen, Gem } from "lucide-react";
-
-function formatNumber(n: number): string {
-  if (n >= 1000000) return (n / 1000000).toFixed(1).replace(/\.0$/, "") + "jt";
-  if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, "") + "rb";
-  return String(n);
-}
 
 function getCommentCount(book: Book): number {
   if (!book.comment_count) return 0;

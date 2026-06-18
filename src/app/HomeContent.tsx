@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Book } from "@/lib/types";
+import { formatNumber } from "@/lib/format";
 import Hero from "@/components/Hero";
 import BookCard from "@/components/BookCard";
 import BookRequestModal from "@/components/BookRequestModal";
@@ -62,26 +63,26 @@ function AnimatedCounter({ value, suffix = "" }: { value: number; suffix?: strin
 
 function OnlineReaderCount() {
   const getTarget = (hour: number): number => {
-    if (hour >= 0 && hour <= 4) return 1000;
-    if (hour === 5) return 4000;
-    if (hour === 6) return 7000;
-    if (hour === 7) return 11000;
-    if (hour === 8) return 14000;
-    if (hour === 9) return 15000;
-    if (hour === 10) return 17000;
-    if (hour === 11) return 18500;
-    if (hour === 12) return 20000;
-    if (hour === 13) return 21000;
-    if (hour === 14) return 22000;
-    if (hour === 15) return 23000;
-    if (hour === 16) return 24000;
-    if (hour === 17) return 25000;
-    if (hour === 18) return 26000;
-    if (hour === 19) return 27000;
-    if (hour === 20) return 28000;
-    if (hour === 21) return 29000;
-    if (hour === 22) return 20000;
-    if (hour === 23) return 10000;
+    if (hour >= 0 && hour <= 4) return 1247;
+    if (hour === 5) return 4321;
+    if (hour === 6) return 7688;
+    if (hour === 7) return 11234;
+    if (hour === 8) return 14567;
+    if (hour === 9) return 15892;
+    if (hour === 10) return 17345;
+    if (hour === 11) return 18923;
+    if (hour === 12) return 20456;
+    if (hour === 13) return 21567;
+    if (hour === 14) return 22789;
+    if (hour === 15) return 23456;
+    if (hour === 16) return 24789;
+    if (hour === 17) return 25678;
+    if (hour === 18) return 26789;
+    if (hour === 19) return 27567;
+    if (hour === 20) return 26456;
+    if (hour === 21) return 20789;
+    if (hour === 22) return 15432;
+    if (hour === 23) return 8765;
     return 1000;
   };
 
@@ -89,14 +90,14 @@ function OnlineReaderCount() {
 
   useEffect(() => {
     const next = () => {
-      const delay = 60000 + Math.random() * 60000;
+      const delay = 15000 + Math.random() * 15000;
       return setTimeout(() => {
         setCount((prev) => {
           const target = getTarget(new Date().getHours());
           const diff = target - prev;
           const step = diff * 0.3;
           const noise = (Math.random() - 0.5) * prev * 0.06;
-          return Math.max(500, Math.round(prev + step + noise));
+          return Math.max(500, prev + step + noise);
         });
       }, delay);
     };
@@ -104,13 +105,7 @@ function OnlineReaderCount() {
     return () => clearTimeout(timer);
   }, [count]);
 
-  const fmt = (n: number) => {
-    if (n >= 1000000) return (n / 1000000).toFixed(1).replace(".", ",") + "jt";
-    if (n >= 1000) return (n / 1000).toFixed(1).replace(".", ",") + "rb";
-    return String(n);
-  };
-
-  return <>{fmt(count)} membaca</>;
+  return <>{formatNumber(count)} membaca</>;
 }
 
 function MiniStats({ totalBooks, totalVisitors, totalCategories, totalFree }: { totalBooks: number; totalVisitors: number; totalCategories: number; totalFree: number }) {
