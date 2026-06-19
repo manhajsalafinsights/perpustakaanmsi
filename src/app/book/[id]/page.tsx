@@ -10,7 +10,7 @@ export async function generateMetadata({
   const { id } = await params;
   try {
     const h = await headers();
-    const host = h.get("x-forwarded-host") || h.get("host") || "perpustakaanmsi.vercel.app";
+    const host = h.get("x-forwarded-host") || h.get("host") || process.env.NEXT_PUBLIC_BASE_URL || "pustaka.manhajsalafinsights.com";
     const protocol = h.get("x-forwarded-proto") || "https";
     const siteUrl = process.env.VERCEL_URL
       ? `https://${process.env.VERCEL_URL}`
