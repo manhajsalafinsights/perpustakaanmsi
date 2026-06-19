@@ -34,7 +34,7 @@ export const metadata: Metadata = {
   publisher: "Manhaj Salaf Insights",
   icons: { icon: "/favicon.ico", apple: "/favicon.ico" },
   verification: {
-    google: "",
+    google: "Op2VLbWKeFI5MS8bNCKAo3G_MSypF34LwMQxrdwQMB4",
   },
   openGraph: {
     type: "website",
