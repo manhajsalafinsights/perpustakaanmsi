@@ -932,11 +932,17 @@ export default function AdminPage() {
                   </td>
                   <td className="px-6 py-4 hidden md:table-cell">
                     <span className="text-sm text-muted">
-                      {new Date(book.created_at).toLocaleDateString("id-ID", {
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                      })}
+                      {new Date(
+                      book.status === "published" && book.published_at
+                        ? book.published_at
+                        : book.status === "scheduled" && book.scheduled_at
+                          ? book.scheduled_at
+                          : book.created_at
+                    ).toLocaleDateString("id-ID", {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                    })}
                     </span>
                   </td>
                   <td className="px-6 py-4">
