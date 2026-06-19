@@ -19,10 +19,40 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const BASE_URL = 'https://pustaka.manhajsalafinsights.com'
+
 export const metadata: Metadata = {
-  title: "Perpustakaan MSI - Perpustakaan Digital Islami",
+  metadataBase: new URL(BASE_URL),
+  title: {
+    default: "Perpustakaan MSI - Perpustakaan Digital Islami",
+    template: "%s - Perpustakaan MSI",
+  },
   description: "Temani hatimu dengan membaca. Perpustakaan digital islami untuk menuntut ilmu agama dengan mudah.",
-  keywords: "perpustakaan, digital, islami, buku, baca online, ilmu agama",
+  keywords: ["perpustakaan", "digital", "islami", "buku", "baca online", "ilmu agama", "ebook islam", "koleksi buku islam"],
+  authors: [{ name: "Manhaj Salaf Insights" }],
+  creator: "Manhaj Salaf Insights",
+  publisher: "Manhaj Salaf Insights",
+  icons: { icon: "/favicon.ico", apple: "/favicon.ico" },
+  verification: {
+    google: "",
+  },
+  openGraph: {
+    type: "website",
+    locale: "id_ID",
+    url: BASE_URL,
+    siteName: "Perpustakaan MSI",
+    title: "Perpustakaan MSI - Perpustakaan Digital Islami",
+    description: "Temani hatimu dengan membaca. Perpustakaan digital islami untuk menuntut ilmu agama dengan mudah.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Perpustakaan MSI - Perpustakaan Digital Islami",
+    description: "Temani hatimu dengan membaca. Perpustakaan digital islami untuk menuntut ilmu agama dengan mudah.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
   other: {
     "color-scheme": "light dark",
   },
