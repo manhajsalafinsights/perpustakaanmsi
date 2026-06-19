@@ -158,7 +158,10 @@ export default function BookDetailClient({ id }: { id: string }) {
       requestAnimationFrame(() => setFlipAngle(dir > 0 ? -80 : 80));
     });
     setTimeout(() => {
-      setCurrentPage(p => Math.max(1, Math.min(numPagesRef.current, p + dir)));
+      setCurrentPage(p => {
+        const maxPage = isPaid ? Math.min(numPagesRef.current, MAX_FREE_PAGES) : numPagesRef.current;
+        return Math.max(1, Math.min(maxPage, p + dir));
+      });
       flipRef.current = false;
       setFlipAngle(0);
     }, 500);
@@ -380,7 +383,7 @@ export default function BookDetailClient({ id }: { id: string }) {
   const handleOpenViewer = (vol?: BookVolume, startPage?: number) => {
     setSelectedVolume(vol || null);
     setShowViewer(true);
-    setCurrentPage(startPage || 1);
+    setCurrentPage(startPage ? (isPaid ? Math.min(startPage, MAX_FREE_PAGES) : startPage) : 1);
     setPdfError(false);
     setPdfLoading(true);
   };
@@ -947,7 +950,7 @@ export default function BookDetailClient({ id }: { id: string }) {
                         <div className="absolute inset-0 flex justify-center">
                           <div style={{ boxShadow: "inset 4px 0 12px rgba(0,0,0,0.12)" }}>
                             <Page
-                              pageNumber={Math.max(1, Math.min(numPagesRef.current, currentPage + flipDir))}
+                              pageNumber={Math.max(1, Math.min(isPaid ? Math.min(numPagesRef.current, MAX_FREE_PAGES) : numPagesRef.current, currentPage + flipDir))}
                               width={typeof window !== "undefined" ? Math.min(window.innerWidth - 48, 900) : 800}
                               renderTextLayer={false}
                               renderAnnotationLayer={false}
@@ -963,7 +966,7 @@ export default function BookDetailClient({ id }: { id: string }) {
                         boxShadow: `${flipDir > 0 ? -flipAngle : flipAngle}px 4px 20px rgba(0,0,0,0.18)`,
                       }}>
                         <Page
-                          pageNumber={currentPage}
+                          pageNumber={isPaid ? Math.min(currentPage, MAX_FREE_PAGES) : currentPage}
                           width={typeof window !== "undefined" ? Math.min(window.innerWidth - 48, 900) : 800}
                           renderTextLayer={false}
                           renderAnnotationLayer={false}
