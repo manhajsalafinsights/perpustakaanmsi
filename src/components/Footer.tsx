@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import Image from "next/image";
 import { Heart, ChevronDown } from "lucide-react";
 
@@ -27,6 +28,9 @@ function FooterColumn({ title, defaultOpen = false, children }: { title: string;
 }
 
 export default function Footer() {
+  const pathname = usePathname();
+  if (pathname.startsWith("/admin")) return null;
+
   return (
     <footer className="hidden sm:block glass border-t border-border mt-8 sm:mt-12">
       <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
