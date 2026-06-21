@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+import { supabase, createServiceClient } from "@/lib/supabase";
 import { hashPassword, generateToken, verifyAdmin } from "@/lib/auth";
 
 export async function POST(request: NextRequest) {
@@ -30,12 +30,20 @@ export async function POST(request: NextRequest) {
 
   // Upgrade plaintext password ke hash (transisi keamanan)
   if (data.password === password) {
-    await supabase.from("admins").update({ password: hashed }).eq("id", data.id);
+    const svc = createServiceClient();
+    await svc.from("admins").update({ password: hashed }).eq("id", data.id);
   }
 
   const token = generateToken();
 
-  await supabase.from("admins").update({ token }).eq("id", data.id);
+  const svc = createServiceClient();
+  const { error: updateErr } = await svc.from("admins").update({ token }).eq("id", data.id);
+  if (updateErr) {
+    return NextResponse.json(
+      { error: "Gagal menyimpan token: " + updateErr.message },
+      { status: 500 }
+    );
+  }
 
   return NextResponse.json({
     success: true,
@@ -101,7 +109,8 @@ export async function PATCH(request: NextRequest) {
   }
 
   const hashedNew = hashPassword(newPassword);
-  const { error } = await supabase.from("admins").update({ password: hashedNew }).eq("id", admin.id);
+  const svc = createServiceClient();
+  const { error } = await svc.from("admins").update({ password: hashedNew }).eq("id", admin.id);
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -136,7 +145,8 @@ export async function DELETE(request: NextRequest) {
     );
   }
 
-  const { error } = await supabase.from("admins").delete().eq("id", id);
+  const svc = createServiceClient();
+  const { error } = await svc.from("admins").delete().eq("id", id);
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
