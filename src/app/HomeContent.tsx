@@ -435,7 +435,7 @@ export default function HomeContent() {
               <SectionHeader
                 icon={Clock}
                 title="Buku Terbaru"
-                showAll={newBooks.length > defaultLimit}
+                showAll={newBooks.length > 10}
                 isExpanded={!!expanded.baru}
                 onToggle={() => toggleExpand("baru")}
               />
@@ -444,7 +444,9 @@ export default function HomeContent() {
               ) : (
                 <div className={GRID_CLASSES}>
                   {(expanded.baru ? newBooks : newBooks.slice(0, defaultLimit)).map((book, i) => (
-                    <BookCard key={book.id} book={book} index={i} isNew={newestIds.has(book.id)} />
+                    <div key={book.id} className={!expanded.baru && i >= 10 ? 'max-md:hidden' : ''}>
+                      <BookCard book={book} index={i} isNew={newestIds.has(book.id)} />
+                    </div>
                   ))}
                 </div>
               )}
