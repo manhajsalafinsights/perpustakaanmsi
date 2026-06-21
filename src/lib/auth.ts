@@ -10,7 +10,7 @@ export function generateToken(): string {
 }
 
 export async function verifyAdmin(request: Request) {
-  const auth = request.headers.get('authorization');
+  const auth = request.headers.get('authorization')?.replace('Bearer ', '');
   if (!auth) return null;
   const { data } = await supabase
     .from('admins')
