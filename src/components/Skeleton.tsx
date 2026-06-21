@@ -12,7 +12,7 @@ export function BookCardSkeleton() {
   );
 }
 
-const GRID_CLASSES = "book-grid";
+const GRID_CLASSES = "grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10 gap-3 sm:gap-4";
 
 export function BookGridSkeleton({ count = 20 }: { count?: number }) {
   return (

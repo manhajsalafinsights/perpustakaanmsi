@@ -23,18 +23,6 @@
   --font-mono: var(--font-geist-mono);
 }
 
-.book-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 0.75rem;
-}
-
-@media (min-width: 640px) {
-  .book-grid {
-    gap: 1rem;
-  }
-}
-
 .dark {
   --color-background: #07111F;
   --color-foreground: #F8FAFC;
