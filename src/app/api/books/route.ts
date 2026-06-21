@@ -50,29 +50,46 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(data);
   }
 
-  let query = supabase
-    .from("books")
-    .select(selectQuery)
-    .order("created_at", { ascending: false });
+  const page = parseInt(searchParams.get("page") || "0");
+  const limit = parseInt(searchParams.get("limit") || "0");
+
+  let base = supabase.from("books").select(selectQuery, page ? { count: "exact" } : undefined);
 
   if (!isAdmin) {
-    query = query.in("status", ["published", "scheduled"]);
+    base = base.in("status", ["published", "scheduled"]);
   }
 
   if (search) {
-    query = query.or(
+    base = base.or(
       `title.ilike.%${search}%,description.ilike.%${search}%,category.ilike.%${search}%`
     );
   }
 
   if (category) {
-    query = query.eq("category", category);
+    base = base.eq("category", category);
   }
 
-  const { data, error } = await query;
+  base = base.order("created_at", { ascending: false });
+
+  if (page && limit) {
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
+    base = base.range(from, to);
+  }
+
+  const { data, error, count } = await base;
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  if (page) {
+    return NextResponse.json({
+      data,
+      total: count || 0,
+      page,
+      totalPages: limit ? Math.ceil((count || 0) / limit) : 1,
+    });
   }
 
   return NextResponse.json(data);
