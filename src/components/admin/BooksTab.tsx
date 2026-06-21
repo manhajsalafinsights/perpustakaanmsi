@@ -13,7 +13,7 @@ export default function BooksTab() {
   const [categories, setCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"published" | "scheduled">("published");
+  const [bookFilter, setBookFilter] = useState<"published" | "scheduled" | "berbayar">("published");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
@@ -34,7 +34,11 @@ export default function BooksTab() {
     try {
       const params = new URLSearchParams({ admin: "true", page: String(p), limit: "20" });
       if (searchQuery) params.set("search", searchQuery);
-      if (statusFilter) params.set("status", statusFilter);
+      if (bookFilter === "berbayar") {
+        params.set("is_paid", "true");
+      } else {
+        params.set("status", bookFilter);
+      }
       const res = await fetch(`/api/books?${params}`);
       if (res.ok) {
         const json = await res.json();
@@ -55,7 +59,7 @@ export default function BooksTab() {
         }
       }
     } catch { /* ignore */ } finally { setLoading(false); }
-  }, [searchQuery, statusFilter]);
+  }, [searchQuery, bookFilter]);
 
   useEffect(() => {
     fetchBooks(page);
@@ -105,16 +109,19 @@ export default function BooksTab() {
       </div>
 
       <div className="flex items-center gap-1 px-4 sm:px-6 pb-4">
-        {(["published", "scheduled"] as const).map((s) => (
+        {[
+          { id: "published" as const, label: "Live" },
+          { id: "scheduled" as const, label: "Scheduled" },
+          { id: "berbayar" as const, label: "Berbayar" },
+        ].map((t) => (
           <button
-            key={s}
-            onClick={() => { setStatusFilter(s); setPage(1); }}
+            key={t.id}
+            onClick={() => { setBookFilter(t.id); setPage(1); }}
             className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
-              statusFilter === s ? "bg-primary text-white shadow-sm" : "text-muted hover:text-foreground hover:bg-surface-dark"
+              bookFilter === t.id ? "bg-primary text-white shadow-sm" : "text-muted hover:text-foreground hover:bg-surface-dark"
             }`}
           >
-            {s === "published" ? "Live" : "Scheduled"}
-            <span className="ml-1.5 opacity-70">({books.filter((b) => b.status === s).length})</span>
+            {t.label}
           </button>
         ))}
       </div>
