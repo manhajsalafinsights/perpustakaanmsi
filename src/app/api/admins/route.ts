@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+import { createServiceClient } from "@/lib/supabase";
 import { verifyAdmin, hashPassword } from "@/lib/auth";
 
 export async function POST(request: NextRequest) {
@@ -24,7 +24,8 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const { data, error } = await supabase
+  const svc = createServiceClient();
+  const { data, error } = await svc
     .from("admins")
     .insert([{ name, email, password: hashPassword(password), is_super: false }])
     .select("id, name, email, is_super, created_at")

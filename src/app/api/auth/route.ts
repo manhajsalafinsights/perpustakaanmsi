@@ -63,7 +63,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { data, error } = await supabase
+  const svc = createServiceClient();
+  const { data, error } = await svc
     .from("admins")
     .select("id, name, email, is_super, created_at")
     .order("created_at", { ascending: true });
