@@ -28,7 +28,7 @@ import {
   Eye,
 } from "lucide-react";
 
-const GRID_CLASSES = "grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10 gap-3 sm:gap-4";
+const GRID_CLASSES = "grid grid-cols-2 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10 gap-3 sm:gap-4";
 
 function AnimatedCounter({ value, suffix = "" }: { value: number; suffix?: string }) {
   const [count, setCount] = useState(0);
@@ -336,7 +336,7 @@ export default function HomeContent() {
                 onToggle={() => {}}
               />
               {/* Mobile: horizontal scroll */}
-              <div className="relative md:hidden">
+              <div className="relative lg:hidden">
                 <div
                   ref={(el) => {
                     if (!el) return;
@@ -389,7 +389,7 @@ export default function HomeContent() {
                 <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background to-transparent opacity-[var(--scroll-end,1)] transition-opacity" />
               </div>
               {/* Desktop: grid */}
-              <div className="hidden md:grid md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10 gap-3 sm:gap-4">
+              <div className="hidden lg:grid lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10 gap-3 sm:gap-4">
                 {upcomingBooks.slice(0, 10).map((book) => (
                   <Link key={book.id} href={`/book/${book.id}`} className="group">
                     <div className="relative bg-surface-dark rounded-2xl overflow-hidden border border-border/50 hover:border-primary/30 transition-all duration-300">
@@ -444,7 +444,7 @@ export default function HomeContent() {
               ) : (
                 <div className={GRID_CLASSES}>
                   {(expanded.baru ? newBooks : newBooks.slice(0, defaultLimit)).map((book, i) => (
-                    <div key={book.id} className={!expanded.baru && i >= 10 ? 'max-md:hidden' : ''}>
+                    <div key={book.id} className={!expanded.baru && i >= 10 ? 'max-lg:hidden' : ''}>
                       <BookCard book={book} index={i} isNew={newestIds.has(book.id)} />
                     </div>
                   ))}
