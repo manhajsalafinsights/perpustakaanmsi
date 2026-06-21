@@ -832,23 +832,6 @@ export default function AdminPage() {
       )}
 
       <div className="glass rounded-2xl shadow-sm overflow-hidden">
-        <div className="p-6 border-b border-border/50 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
-              <ShieldCheck className="w-5 h-5 text-primary" />
-            </div>
-            <div>
-              <h2 className="text-lg font-bold text-foreground">Ganti Password</h2>
-              <p className="text-xs text-muted">Ubah password akun admin anda</p>
-            </div>
-          </div>
-        </div>
-        <div className="p-6">
-          <ChangePasswordForm />
-        </div>
-      </div>
-
-      <div className="glass rounded-2xl shadow-sm overflow-hidden">
         <div className="p-6 border-b border-border/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <h2 className="text-lg font-bold text-foreground">Koleksi Buku</h2>
           <div className="flex items-center gap-3 w-full sm:w-auto">
@@ -1510,7 +1493,6 @@ export default function AdminPage() {
         </>
       )}
 
-      {isSuper && (
       <div className="glass rounded-2xl shadow-sm overflow-hidden">
         <div className="p-6 border-b border-border/50 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -1522,6 +1504,7 @@ export default function AdminPage() {
               <p className="text-xs text-muted">{admins.length} admin terdaftar</p>
             </div>
           </div>
+          {isSuper && (
           <button
             onClick={() => {
               setAdminForm({ name: "", email: "", password: "" });
@@ -1532,8 +1515,10 @@ export default function AdminPage() {
             <UserPlus className="w-4 h-4" />
             Tambah Admin
           </button>
+          )}
         </div>
 
+        {isSuper && (
         <div className="divide-y divide-border/50">
           {admins.map((admin) => (
             <div
@@ -1567,8 +1552,13 @@ export default function AdminPage() {
             </div>
           ))}
         </div>
+        )}
+
+        <div className="border-t border-border/50 p-6">
+          <h3 className="text-sm font-semibold text-foreground mb-4">Ganti Password</h3>
+          <ChangePasswordForm />
+        </div>
       </div>
-      )}
 
       {showAdminModal && (
         <>
