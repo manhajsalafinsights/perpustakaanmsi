@@ -67,6 +67,49 @@ export async function GET(request: NextRequest) {
   return NextResponse.json(data);
 }
 
+export async function PATCH(request: NextRequest) {
+  const admin = await verifyAdmin(request);
+  if (!admin) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { currentPassword, newPassword } = await request.json();
+
+  if (!currentPassword || !newPassword) {
+    return NextResponse.json({ error: "Current password dan new password wajib diisi" }, { status: 400 });
+  }
+
+  if (newPassword.length < 6) {
+    return NextResponse.json({ error: "Password baru minimal 6 karakter" }, { status: 400 });
+  }
+
+  const { data: adminData } = await supabase
+    .from("admins")
+    .select("password")
+    .eq("id", admin.id)
+    .single();
+
+  if (!adminData) {
+    return NextResponse.json({ error: "Admin tidak ditemukan" }, { status: 404 });
+  }
+
+  const hashedCurrent = hashPassword(currentPassword);
+  const isMatch = adminData.password === hashedCurrent || adminData.password === currentPassword;
+
+  if (!isMatch) {
+    return NextResponse.json({ error: "Password saat ini salah" }, { status: 403 });
+  }
+
+  const hashedNew = hashPassword(newPassword);
+  const { error } = await supabase.from("admins").update({ password: hashedNew }).eq("id", admin.id);
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json({ success: true, message: "Password berhasil diubah" });
+}
+
 export async function DELETE(request: NextRequest) {
   const admin = await verifyAdmin(request);
   if (!admin) {

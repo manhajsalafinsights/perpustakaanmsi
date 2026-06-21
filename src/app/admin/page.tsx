@@ -26,6 +26,7 @@ import {
 import Link from "next/link";
 import { Book, BookVolume } from "@/lib/types";
 import { StatsSkeleton } from "@/components/Skeleton";
+import ChangePasswordForm from "@/components/ChangePasswordForm";
 
 interface AdminStats {
   totalBooks: number;
@@ -795,6 +796,23 @@ export default function AdminPage() {
           </div>
         </div>
       )}
+
+      <div className="glass rounded-2xl shadow-sm overflow-hidden">
+        <div className="p-6 border-b border-border/50 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
+              <ShieldCheck className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-foreground">Ganti Password</h2>
+              <p className="text-xs text-muted">Ubah password akun admin anda</p>
+            </div>
+          </div>
+        </div>
+        <div className="p-6">
+          <ChangePasswordForm />
+        </div>
+      </div>
 
       <div className="glass rounded-2xl shadow-sm overflow-hidden">
         <div className="p-6 border-b border-border/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
