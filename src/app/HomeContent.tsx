@@ -308,7 +308,7 @@ export default function HomeContent() {
     );
   }
 
-  const defaultLimit = 27;
+  const defaultLimit = 24;
   const freeLimit = 20;
 
   return (
@@ -335,13 +335,63 @@ export default function HomeContent() {
                 isExpanded={false}
                 onToggle={() => {}}
               />
-              <div className="book-grid">
-                {upcomingBooks.slice(0, 9).map((book) => (
-                  <Link
-                    key={book.id}
-                    href={`/book/${book.id}`}
-                    className="group"
-                  >
+              {/* Mobile: horizontal scroll */}
+              <div className="relative md:hidden">
+                <div
+                  ref={(el) => {
+                    if (!el) return;
+                    const handleScroll = () => {
+                      const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 8;
+                      el.style.setProperty("--scroll-end", atEnd ? "1" : "0");
+                    };
+                    el.addEventListener("scroll", handleScroll, { passive: true });
+                    handleScroll();
+                  }}
+                  className="flex gap-3 overflow-x-auto snap-x snap-mandatory hide-scrollbar pb-1"
+                  style={{
+                    maskImage: "linear-gradient(to right, black calc(100% - 48px), transparent 100%)",
+                    WebkitMaskImage: "linear-gradient(to right, black calc(100% - 48px), transparent 100%)",
+                  }}
+                >
+                  {upcomingBooks.slice(0, 10).map((book) => (
+                    <Link
+                      key={book.id}
+                      href={`/book/${book.id}`}
+                      className="snap-start shrink-0 w-[160px] group"
+                    >
+                      <div className="relative bg-surface-dark rounded-2xl overflow-hidden border border-border/50 hover:border-primary/30 transition-all duration-300">
+                        <div className="aspect-[3/4] relative">
+                          {book.cover_url ? (
+                            <img src={book.cover_url} alt={book.title} className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-primary/10">
+                              <BookOpen className="w-8 h-8 text-primary" />
+                            </div>
+                          )}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                          {book.scheduled_at && (
+                            <div className="absolute top-2 left-2">
+                              <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-white bg-amber-600/90 px-2 py-1 rounded-lg backdrop-blur-sm">
+                                <Clock className="w-3 h-3" />
+                                {new Date(book.scheduled_at).toLocaleDateString("id-ID", { day: "numeric", month: "short" })}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                        <div className="p-3">
+                          <p className="text-xs font-medium text-foreground line-clamp-2 leading-relaxed">{book.title}</p>
+                          <p className="text-[10px] text-muted mt-1">{book.author}</p>
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+                <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background to-transparent opacity-[var(--scroll-end,1)] transition-opacity" />
+              </div>
+              {/* Desktop: 10 items */}
+              <div className="book-grid max-md:hidden">
+                {upcomingBooks.slice(0, 10).map((book) => (
+                  <Link key={book.id} href={`/book/${book.id}`} className="group">
                     <div className="relative bg-surface-dark rounded-2xl overflow-hidden border border-border/50 hover:border-primary/30 transition-all duration-300">
                       <div className="aspect-[3/4] relative">
                         {book.cover_url ? (
