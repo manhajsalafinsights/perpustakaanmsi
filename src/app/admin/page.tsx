@@ -209,6 +209,14 @@ export default function AdminPage() {
         if (adminsRes.ok) {
           const adminsData = await adminsRes.json();
           setAdmins(adminsData);
+        } else if (adminsRes.status === 401) {
+          // Token invalid (mungkin hash password berubah), redirect ke login
+          sessionStorage.removeItem("admin_token");
+          sessionStorage.removeItem("admin_is_super");
+          document.cookie = "admin_token=; path=/; max-age=0";
+          setIsLoggedIn(false);
+          setIsSuper(false);
+          return;
         }
         if (commentsRes.ok) {
           setComments(await commentsRes.json());
@@ -256,12 +264,16 @@ export default function AdminPage() {
     }
   };
 
-  const handleLogout = () => {
+  const forceLogout = () => {
     sessionStorage.removeItem("admin_token");
     sessionStorage.removeItem("admin_is_super");
     document.cookie = "admin_token=; path=/; max-age=0";
     setIsLoggedIn(false);
     setIsSuper(false);
+  };
+
+  const handleLogout = () => {
+    forceLogout();
   };
 
   const normalizeTitle = (s: string) =>
@@ -508,6 +520,9 @@ export default function AdminPage() {
           const uniqueCategories = [...new Set(booksData.map((b: Book) => b.category).filter(Boolean) as string[])];
           setCategories(uniqueCategories);
         }
+      } else if (res.status === 401) {
+        alert("Sesi habis, silakan login ulang");
+        forceLogout();
       } else {
         const err = await res.json().catch(() => ({}));
         alert("Gagal menyimpan: " + (err.error || "Unknown error"));
@@ -527,6 +542,9 @@ export default function AdminPage() {
       if (res.ok) {
         setBooks((prev) => prev.filter((b) => b.id !== id));
         setStats((prev) => ({ ...prev, totalBooks: prev.totalBooks - 1 }));
+      } else if (res.status === 401) {
+        alert("Sesi habis, silakan login ulang");
+        forceLogout();
       }
     } catch {
       // ignore
@@ -548,6 +566,9 @@ export default function AdminPage() {
         setAdminForm({ name: "", email: "", password: "" });
         const adminsRes = await fetch("/api/auth", { headers: getHeaders() });
         if (adminsRes.ok) setAdmins(await adminsRes.json());
+      } else if (res.status === 401) {
+        alert("Sesi habis, silakan login ulang");
+        forceLogout();
       }
     } catch {
       // ignore
@@ -564,9 +585,8 @@ export default function AdminPage() {
     }
     try {
       const res = await fetch(`/api/auth?id=${id}`, { method: "DELETE", headers: getHeaders() });
-      if (res.ok) {
-        setAdmins((prev) => prev.filter((a) => a.id !== id));
-      }
+      if (res.ok) setAdmins((prev) => prev.filter((a) => a.id !== id));
+      else if (res.status === 401) forceLogout();
     } catch {
       // ignore
     }
@@ -587,6 +607,9 @@ export default function AdminPage() {
       const res = await fetch(`/api/comments?id=${id}`, { method: "DELETE", headers: getHeaders() });
       if (res.ok) {
         setComments((prev) => prev.filter((c) => c.id !== id));
+      } else if (res.status === 401) {
+        alert("Sesi habis, silakan login ulang");
+        forceLogout();
       }
     } catch {
       // ignore
@@ -595,11 +618,11 @@ export default function AdminPage() {
 
   const handleUpdateRequestStatus = async (id: string, status: string) => {
     try {
-    const res = await fetch("/api/book-requests", {
-      method: "PUT",
-      headers: getHeaders({ "Content-Type": "application/json" }),
-      body: JSON.stringify({ id, status }),
-    });
+      const res = await fetch("/api/book-requests", {
+        method: "PUT",
+        headers: getHeaders({ "Content-Type": "application/json" }),
+        body: JSON.stringify({ id, status }),
+      });
       if (res.ok) {
         const updated = await res.json();
         setBookRequests((prev) => prev.map((r) => (r.id === id ? updated : r)));
@@ -618,6 +641,9 @@ export default function AdminPage() {
       });
       if (res.ok) {
         setBookRequests((prev) => prev.filter((r) => r.id !== id));
+      } else if (res.status === 401) {
+        alert("Sesi habis, silakan login ulang");
+        forceLogout();
       }
     } catch {
       // ignore
@@ -639,7 +665,12 @@ export default function AdminPage() {
         }
       } else {
         const data = await res.json();
-        alert(data.error || "Gagal memproses rekomendasi");
+        if (res.status === 401) {
+          alert("Sesi habis, silakan login ulang");
+          forceLogout();
+        } else {
+          alert(data.error || "Gagal memproses rekomendasi");
+        }
       }
     } catch {
       alert("Terjadi kesalahan");
@@ -655,6 +686,9 @@ export default function AdminPage() {
       });
       if (res.ok) {
         setRecommendations((prev) => prev.filter((r) => r.id !== id));
+      } else if (res.status === 401) {
+        alert("Sesi habis, silakan login ulang");
+        forceLogout();
       }
     } catch {
       // ignore
