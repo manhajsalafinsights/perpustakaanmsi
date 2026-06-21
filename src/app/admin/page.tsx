@@ -111,10 +111,10 @@ export default function AdminPage() {
 
   return (
     <AdminLayout activeTab={activeTab} onTabChange={setActiveTab} onLogout={handleLogout}>
-      {activeTab === "dashboard" && <DashboardTab />}
-      {activeTab === "buku" && <BooksTab />}
-      {activeTab === "konten" && <KontenTab isSuper={isSuper} />}
-      {activeTab === "admin" && <AdminSettingsTab isSuper={isSuper} />}
+      <div style={{ display: activeTab === "dashboard" ? "block" : "none" }}><DashboardTab /></div>
+      <div style={{ display: activeTab === "buku" ? "block" : "none" }}><BooksTab /></div>
+      <div style={{ display: activeTab === "konten" ? "block" : "none" }}><KontenTab isSuper={isSuper} /></div>
+      <div style={{ display: activeTab === "admin" ? "block" : "none" }}><AdminSettingsTab isSuper={isSuper} /></div>
     </AdminLayout>
   );
 }
