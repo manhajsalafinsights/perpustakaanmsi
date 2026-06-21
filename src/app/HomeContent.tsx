@@ -533,7 +533,7 @@ export default function HomeContent() {
                 <SectionSkeleton />
               ) : categoryPicks.length > 0 ? (
                 <div className={GRID_CLASSES}>
-                  {(expanded.kategori ? categoryPicks : categoryPicks.slice(0, defaultLimit)).map((book, i) => (
+                  {(expanded.kategori ? categoryPicks : categoryPicks.slice(0, defaultLimit + 1)).map((book, i) => (
                     <BookCard key={book.id} book={book} index={i} />
                   ))}
                 </div>
