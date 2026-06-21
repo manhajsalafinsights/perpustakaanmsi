@@ -389,7 +389,7 @@ export default function HomeContent() {
                 <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background to-transparent opacity-[var(--scroll-end,1)] transition-opacity" />
               </div>
               {/* Desktop: 10 items */}
-              <div className="book-grid max-md:hidden">
+              <div className="hidden md:grid md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10 gap-3 sm:gap-4">
                 {upcomingBooks.slice(0, 10).map((book) => (
                   <Link key={book.id} href={`/book/${book.id}`} className="group">
                     <div className="relative bg-surface-dark rounded-2xl overflow-hidden border border-border/50 hover:border-primary/30 transition-all duration-300">
