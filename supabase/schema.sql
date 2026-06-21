@@ -11,6 +11,12 @@
 
 -- UPDATE admins SET is_super = true WHERE email = 'yulianto90an@gmail.com';
 
+-- ============================================
+-- AUTH MIGRATION (2026-06-21): Hash passwords + token column
+-- ============================================
+-- ALTER TABLE admins ADD COLUMN IF NOT EXISTS token TEXT;
+-- UPDATE admins SET password = encode(sha256(password::bytea), 'hex') WHERE password !~ '^[a-f0-9]{64}$';
+
 -- INSERT INTO admins (name, email, password, is_super)
 -- SELECT 'Super Admin', 'yulianto90an@gmail.com', '15070712Yuli@', true
 -- WHERE NOT EXISTS (SELECT 1 FROM admins WHERE email = 'yulianto90an@gmail.com');

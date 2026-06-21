@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase, createServiceClient } from "@/lib/supabase";
+import { verifyAdmin } from "@/lib/auth";
 
 const db = () => {
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -87,6 +88,10 @@ function randomViewCount(): number {
 }
 
 export async function POST(request: NextRequest) {
+  const admin = await verifyAdmin(request);
+  if (!admin) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   const body = await request.json();
   const { volumes, ...bookData } = body;
 
@@ -158,6 +163,10 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
+  const admin = await verifyAdmin(request);
+  if (!admin) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   const body = await request.json();
   const { id, volumes, ...updates } = body;
 
@@ -219,6 +228,10 @@ export async function PUT(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
+  const admin = await verifyAdmin(request);
+  if (!admin) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   const { searchParams } = new URL(request.url);
   const id = searchParams.get("id");
 

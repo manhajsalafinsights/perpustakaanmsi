@@ -1,24 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase, createServiceClient } from "@/lib/supabase";
+import { verifyAdmin } from "@/lib/auth";
 
 const db = () => {
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   return serviceKey ? createServiceClient() : supabase;
 };
-
-async function verifyAdmin(request: NextRequest) {
-  const auth = request.headers.get("authorization");
-  if (!auth) return null;
-  const decoded = Buffer.from(auth, "base64").toString();
-  const [email] = decoded.split(":");
-  if (!email) return null;
-  const { data } = await supabase
-    .from("admins")
-    .select("id, name, email, is_super")
-    .eq("email", email)
-    .single();
-  return data;
-}
 
 export async function POST(request: NextRequest) {
   const body = await request.json();

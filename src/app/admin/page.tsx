@@ -137,6 +137,13 @@ export default function AdminPage() {
   const [recommendationLoading, setRecommendationLoading] = useState(false);
   const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set());
 
+  const getHeaders = (headers?: Record<string, string>): Record<string, string> => {
+    const token = sessionStorage.getItem("admin_token");
+    const base: Record<string, string> = { Authorization: `Bearer ${token}` };
+    if (headers) Object.assign(base, headers);
+    return base;
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -153,6 +160,7 @@ export default function AdminPage() {
         const data = await res.json();
         sessionStorage.setItem("admin_token", data.token);
         sessionStorage.setItem("admin_is_super", String(data.admin.is_super));
+        document.cookie = `admin_token=${data.token}; path=/; max-age=86400; SameSite=Lax`;
         setIsLoggedIn(true);
         setIsSuper(data.admin.is_super);
       } else {
@@ -183,10 +191,9 @@ export default function AdminPage() {
         const [booksRes, visitorRes, adminsRes, commentsRes] = await Promise.all([
           fetch("/api/books?admin=true"),
           fetch("/api/visitor"),
-          fetch("/api/auth"),
+          fetch("/api/auth", { headers: getHeaders() }),
           fetch("/api/comments?book_id=all"),
         ]);
-        const token = sessionStorage.getItem("admin_token");
         if (booksRes.ok) {
           const booksData = await booksRes.json();
           setBooks(booksData);
@@ -215,9 +222,8 @@ export default function AdminPage() {
     const fetchBookRequests = async () => {
       setBookRequestLoading(true);
       try {
-        const token = sessionStorage.getItem("admin_token");
         const res = await fetch("/api/book-requests", {
-          headers: { authorization: token || "" },
+          headers: getHeaders(),
         });
         if (res.ok) {
           setBookRequests(await res.json());
@@ -236,9 +242,8 @@ export default function AdminPage() {
   const fetchBookRecommendations = async () => {
     setRecommendationLoading(true);
     try {
-      const token = sessionStorage.getItem("admin_token");
       const res = await fetch("/api/book-recommendations", {
-        headers: { authorization: token || "" },
+        headers: getHeaders(),
       });
       if (res.ok) {
         setRecommendations(await res.json());
@@ -253,6 +258,7 @@ export default function AdminPage() {
   const handleLogout = () => {
     sessionStorage.removeItem("admin_token");
     sessionStorage.removeItem("admin_is_super");
+    document.cookie = "admin_token=; path=/; max-age=0";
     setIsLoggedIn(false);
     setIsSuper(false);
   };
@@ -487,7 +493,7 @@ export default function AdminPage() {
 
       const res = await fetch(url, {
         method,
-        headers: { "Content-Type": "application/json" },
+        headers: getHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify(body),
       });
 
@@ -516,7 +522,7 @@ export default function AdminPage() {
     if (!confirm("Yakin ingin menghapus buku ini?")) return;
 
     try {
-      const res = await fetch(`/api/books?id=${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/books?id=${id}`, { method: "DELETE", headers: getHeaders() });
       if (res.ok) {
         setBooks((prev) => prev.filter((b) => b.id !== id));
         setStats((prev) => ({ ...prev, totalBooks: prev.totalBooks - 1 }));
@@ -533,13 +539,13 @@ export default function AdminPage() {
     try {
       const res = await fetch("/api/admins", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...adminForm, requester_is_super: isSuper }),
+        headers: getHeaders({ "Content-Type": "application/json" }),
+        body: JSON.stringify(adminForm),
       });
       if (res.ok) {
         setShowAdminModal(false);
         setAdminForm({ name: "", email: "", password: "" });
-        const adminsRes = await fetch("/api/auth");
+        const adminsRes = await fetch("/api/auth", { headers: getHeaders() });
         if (adminsRes.ok) setAdmins(await adminsRes.json());
       }
     } catch {
@@ -556,7 +562,7 @@ export default function AdminPage() {
       return;
     }
     try {
-      const res = await fetch(`/api/auth?id=${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/auth?id=${id}`, { method: "DELETE", headers: getHeaders() });
       if (res.ok) {
         setAdmins((prev) => prev.filter((a) => a.id !== id));
       }
@@ -577,7 +583,7 @@ export default function AdminPage() {
   const handleDeleteComment = async (id: string) => {
     if (!confirm("Yakin ingin menghapus komentar ini?")) return;
     try {
-      const res = await fetch(`/api/comments?id=${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/comments?id=${id}`, { method: "DELETE", headers: getHeaders() });
       if (res.ok) {
         setComments((prev) => prev.filter((c) => c.id !== id));
       }
@@ -588,12 +594,11 @@ export default function AdminPage() {
 
   const handleUpdateRequestStatus = async (id: string, status: string) => {
     try {
-      const token = sessionStorage.getItem("admin_token");
-      const res = await fetch("/api/book-requests", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json", authorization: token || "" },
-        body: JSON.stringify({ id, status }),
-      });
+    const res = await fetch("/api/book-requests", {
+      method: "PUT",
+      headers: getHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify({ id, status }),
+    });
       if (res.ok) {
         const updated = await res.json();
         setBookRequests((prev) => prev.map((r) => (r.id === id ? updated : r)));
@@ -606,10 +611,9 @@ export default function AdminPage() {
   const handleDeleteRequest = async (id: string) => {
     if (!confirm("Yakin ingin menghapus usulan ini?")) return;
     try {
-      const token = sessionStorage.getItem("admin_token");
       const res = await fetch(`/api/book-requests?id=${id}`, {
         method: "DELETE",
-        headers: { authorization: token || "" },
+        headers: getHeaders(),
       });
       if (res.ok) {
         setBookRequests((prev) => prev.filter((r) => r.id !== id));
@@ -621,10 +625,9 @@ export default function AdminPage() {
 
   const handleUpdateRecommendation = async (id: string, status: string) => {
     try {
-      const token = sessionStorage.getItem("admin_token");
       const res = await fetch("/api/book-recommendations", {
         method: "PUT",
-        headers: { "Content-Type": "application/json", authorization: token || "" },
+        headers: getHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({ id, status }),
       });
       if (res.ok) {
@@ -645,10 +648,9 @@ export default function AdminPage() {
   const handleDeleteRecommendation = async (id: string) => {
     if (!confirm("Yakin ingin menghapus rekomendasi ini?")) return;
     try {
-      const token = sessionStorage.getItem("admin_token");
       const res = await fetch(`/api/book-recommendations?id=${id}`, {
         method: "DELETE",
-        headers: { authorization: token || "" },
+        headers: getHeaders(),
       });
       if (res.ok) {
         setRecommendations((prev) => prev.filter((r) => r.id !== id));

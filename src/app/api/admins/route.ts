@@ -1,10 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
+import { verifyAdmin, hashPassword } from "@/lib/auth";
 
 export async function POST(request: NextRequest) {
+  const admin = await verifyAdmin(request);
+  if (!admin) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const { name, email, password, requester_is_super } = await request.json();
 
-  if (!requester_is_super) {
+  if (!admin.is_super) {
     return NextResponse.json(
       { error: "Hanya admin utama yang bisa menambah admin" },
       { status: 403 }
@@ -20,7 +26,7 @@ export async function POST(request: NextRequest) {
 
   const { data, error } = await supabase
     .from("admins")
-    .insert([{ name, email, password, is_super: false }])
+    .insert([{ name, email, password: hashPassword(password), is_super: false }])
     .select("id, name, email, is_super, created_at")
     .single();
 
