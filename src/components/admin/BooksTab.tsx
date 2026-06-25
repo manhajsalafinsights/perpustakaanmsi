@@ -51,7 +51,7 @@ export default function BooksTab() {
           setTotal(json.length);
           setTotalPages(1);
         }
-        const catsRes = await fetch("/api/books?admin=true&page=1&limit=1");
+        const catsRes = await fetch("/api/books?admin=true");
         if (catsRes.ok) {
           const catsJson = await catsRes.json();
           const allBooks = catsJson.data || catsJson;
@@ -73,8 +73,13 @@ export default function BooksTab() {
       if (res.ok) {
         setBooks((prev) => prev.filter((b) => b.id !== confirmDelete.id));
         setTotal((prev) => prev - 1);
+      } else {
+        const err = await res.json().catch(() => ({}));
+        alert("Gagal menghapus: " + (err.error || "Unknown error"));
       }
-    } catch { /* ignore */ } finally {
+    } catch (e) {
+      alert("Gagal menghapus: " + (e instanceof Error ? e.message : String(e)));
+    } finally {
       setDeleteLoading(false);
       setConfirmDelete(null);
     }

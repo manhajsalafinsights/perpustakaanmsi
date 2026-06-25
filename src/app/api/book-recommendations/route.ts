@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const status = searchParams.get("status") || "";
 
-  let query = supabase
+  let query = db()
     .from("book_recommendations")
     .select("*")
     .order("created_at", { ascending: false });
@@ -88,7 +88,7 @@ export async function PUT(request: NextRequest) {
   }
 
   if (status === "approved") {
-    const { data: rec, error: recError } = await supabase
+    const { data: rec, error: recError } = await db()
       .from("book_recommendations")
       .select("*")
       .eq("id", id)
@@ -115,6 +115,12 @@ export async function PUT(request: NextRequest) {
           file_url: rec.file_url,
           category: rec.category || "Umum",
           author: rec.author || "",
+          translator: "",
+          is_paid: false,
+          status: "published",
+          scheduled_at: null,
+          published_at: new Date().toISOString(),
+          page_count: 0,
           price: 25000,
           promo_price: null,
           promo_text: "",
@@ -130,7 +136,7 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: bookError.message }, { status: 500 });
     }
 
-    await db()
+    const { error: volError } = await db()
       .from("book_volumes")
       .insert([
         {
@@ -138,8 +144,11 @@ export async function PUT(request: NextRequest) {
           title: "Jilid 1",
           file_url: rec.file_url,
         },
-      ])
-      .then(() => {});
+      ]);
+
+    if (volError) {
+      return NextResponse.json({ error: volError.message }, { status: 500 });
+    }
 
     const { data: updated, error: updateError } = await db()
       .from("book_recommendations")

@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServiceClient, supabase } from "@/lib/supabase";
+import { createServiceClient } from "@/lib/supabase";
+import { verifyAdmin } from "@/lib/auth";
 
 const BUCKET = "Cover Buku";
 
 export async function POST(request: NextRequest) {
   try {
-    const { verifyAdmin } = await import("@/lib/auth");
     const admin = await verifyAdmin(request);
     if (!admin) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

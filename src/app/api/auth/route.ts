@@ -5,7 +5,8 @@ import { hashPassword, generateToken, verifyAdmin } from "@/lib/auth";
 export async function POST(request: NextRequest) {
   const { email, password } = await request.json();
 
-  const { data, error } = await supabase
+  const svc = createServiceClient();
+  const { data, error } = await svc
     .from("admins")
     .select("*")
     .eq("email", email)
@@ -30,13 +31,11 @@ export async function POST(request: NextRequest) {
 
   // Upgrade plaintext password ke hash (transisi keamanan)
   if (data.password === password) {
-    const svc = createServiceClient();
     await svc.from("admins").update({ password: hashed }).eq("id", data.id);
   }
 
   const token = generateToken();
 
-  const svc = createServiceClient();
   const { error: updateErr } = await svc.from("admins").update({ token }).eq("id", data.id);
   if (updateErr) {
     return NextResponse.json(
@@ -92,7 +91,8 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ error: "Password baru minimal 6 karakter" }, { status: 400 });
   }
 
-  const { data: adminData } = await supabase
+  const svc = createServiceClient();
+  const { data: adminData } = await svc
     .from("admins")
     .select("password")
     .eq("id", admin.id)
@@ -110,7 +110,6 @@ export async function PATCH(request: NextRequest) {
   }
 
   const hashedNew = hashPassword(newPassword);
-  const svc = createServiceClient();
   const { error } = await svc.from("admins").update({ password: hashedNew }).eq("id", admin.id);
 
   if (error) {
@@ -126,6 +125,10 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  if (!admin.is_super) {
+    return NextResponse.json({ error: "Hanya admin utama yang bisa menghapus admin" }, { status: 403 });
+  }
+
   const { searchParams } = new URL(request.url);
   const id = searchParams.get("id");
 
@@ -133,7 +136,8 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: "ID is required" }, { status: 400 });
   }
 
-  const { data: target } = await supabase
+  const svc = createServiceClient();
+  const { data: target } = await svc
     .from("admins")
     .select("is_super")
     .eq("id", id)
@@ -146,7 +150,6 @@ export async function DELETE(request: NextRequest) {
     );
   }
 
-  const svc = createServiceClient();
   const { error } = await svc.from("admins").delete().eq("id", id);
 
   if (error) {

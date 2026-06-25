@@ -21,6 +21,7 @@ export async function GET(request: NextRequest) {
   const includeVolumes = searchParams.get("include_volumes") === "true";
   const isAdmin = searchParams.get("admin") === "true";
   const isPaid = searchParams.get("is_paid"); // "true" or undefined
+  const status = searchParams.get("status") || "";
 
   let selectQuery = "*, comments(count)";
   if (includeVolumes) {
@@ -72,6 +73,10 @@ export async function GET(request: NextRequest) {
 
   if (isPaid === "true") {
     base = base.eq("is_paid", true);
+  }
+
+  if (isAdmin && status) {
+    base = base.eq("status", status);
   }
 
   base = base.order("created_at", { ascending: false });

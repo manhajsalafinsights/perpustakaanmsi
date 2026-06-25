@@ -166,10 +166,13 @@ function RequestsSection({ isSuper }: { isSuper: boolean }) {
   const handleDelete = async () => {
     if (!confirmDelete) return;
     setDeleteLoading(true);
-    const res = await fetch(`/api/book-requests?id=${confirmDelete.id}`, { method: "DELETE", headers: getHeaders() });
-    if (res.ok) setRequests((prev) => prev.filter((r) => r.id !== confirmDelete.id));
-    setDeleteLoading(false);
-    setConfirmDelete(null);
+    try {
+      const res = await fetch(`/api/book-requests?id=${confirmDelete.id}`, { method: "DELETE", headers: getHeaders() });
+      if (res.ok) setRequests((prev) => prev.filter((r) => r.id !== confirmDelete.id));
+    } catch { /* ignore */ } finally {
+      setDeleteLoading(false);
+      setConfirmDelete(null);
+    }
   };
 
   return (
@@ -272,10 +275,13 @@ function RecommendationsSection() {
   const handleDelete = async () => {
     if (!confirmDelete) return;
     setDeleteLoading(true);
-    const res = await fetch(`/api/book-recommendations?id=${confirmDelete.id}`, { method: "DELETE", headers: getHeaders() });
-    if (res.ok) setRecommendations((prev) => prev.filter((r) => r.id !== confirmDelete.id));
-    setDeleteLoading(false);
-    setConfirmDelete(null);
+    try {
+      const res = await fetch(`/api/book-recommendations?id=${confirmDelete.id}`, { method: "DELETE", headers: getHeaders() });
+      if (res.ok) setRecommendations((prev) => prev.filter((r) => r.id !== confirmDelete.id));
+    } catch { /* ignore */ } finally {
+      setDeleteLoading(false);
+      setConfirmDelete(null);
+    }
   };
 
   return (

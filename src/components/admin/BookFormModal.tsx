@@ -194,6 +194,9 @@ export default function BookFormModal({ open, editingBook, categories, onClose, 
     e.preventDefault();
     const validVolumes = volumes.filter((v) => v.file_url.trim());
     if (validVolumes.length === 0) { alert("Minimal satu jilid harus memiliki link download!"); return; }
+    if (form.is_paid && form.promo_price > 0 && form.promo_price >= form.price) {
+      alert("Harga promo harus lebih kecil dari harga normal!"); return;
+    }
     setSubmitting(true);
     let cover = form.cover_url;
     if (!cover && validVolumes[0]?.file_url) {
@@ -242,7 +245,7 @@ export default function BookFormModal({ open, editingBook, categories, onClose, 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-foreground mb-1.5">Judul Buku *</label>
-              <input type="text" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })}
+              <input type="text" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required
                 className="w-full px-4 py-3 bg-surface border border-border rounded-2xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary" placeholder="Masukkan judul buku" />
             </div>
             <div>
@@ -384,7 +387,7 @@ export default function BookFormModal({ open, editingBook, categories, onClose, 
             <div>
               <div className="flex items-center justify-between mb-1.5">
                 <label className="block text-sm font-medium text-foreground">Statistik Buku</label>
-                <button type="button" onClick={() => setForm({ ...form, views: randomViewCount(), purchased: randomViewCount() * 0.1, downloads: randomViewCount() * 0.3 })}
+                <button type="button" onClick={() => { const v = randomViewCount(); const p = Math.floor(v * 0.3 * Math.random()); setForm({ ...form, views: v, purchased: p, downloads: Math.floor(Math.random() * (p + 1)) }); }}
                   className="text-xs text-muted hover:text-foreground transition-colors underline underline-offset-2">Acak</button>
               </div>
               <div className="flex gap-3">

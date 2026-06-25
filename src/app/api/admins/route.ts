@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { name, email, password, requester_is_super } = await request.json();
+  const { name, email, password } = await request.json();
 
   if (!admin.is_super) {
     return NextResponse.json(

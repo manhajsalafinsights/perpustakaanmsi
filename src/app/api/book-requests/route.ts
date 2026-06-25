@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabase, createServiceClient } from "@/lib/supabase";
 import { verifyAdmin } from "@/lib/auth";
 
+const db = () => {
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  return serviceKey ? createServiceClient() : supabase;
+};
+
 export async function POST(request: NextRequest) {
   const body = await request.json();
   const { title, author, description, name, email } = body;
@@ -41,7 +46,7 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const status = searchParams.get("status") || "";
 
-  let query = supabase
+  let query = db()
     .from("book_requests")
     .select("*")
     .order("created_at", { ascending: false });
@@ -76,9 +81,9 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ error: "Status tidak valid" }, { status: 400 });
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db()
     .from("book_requests")
-    .update({ status, updated_by: admin.id })
+    .update({ status })
     .eq("id", id)
     .select()
     .single();
@@ -103,7 +108,7 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: "ID is required" }, { status: 400 });
   }
 
-  const { error } = await supabase.from("book_requests").delete().eq("id", id);
+  const { error } = await db().from("book_requests").delete().eq("id", id);
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
