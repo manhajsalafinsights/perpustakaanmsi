@@ -24,6 +24,21 @@ export default function AdminPage() {
     if (token) {
       setIsLoggedIn(true);
       setIsSuper(sessionStorage.getItem("admin_is_super") === "true");
+      return;
+    }
+    const cookies = document.cookie.split("; ").find((c) => c.startsWith("admin_token="));
+    if (cookies) {
+      const cookieToken = cookies.split("=")[1];
+      fetch("/api/auth", {
+        headers: { Authorization: `Bearer ${cookieToken}` },
+      })
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (data && Array.isArray(data)) {
+            sessionStorage.setItem("admin_token", cookieToken);
+            setIsLoggedIn(true);
+          }
+        });
     }
   }, []);
 
