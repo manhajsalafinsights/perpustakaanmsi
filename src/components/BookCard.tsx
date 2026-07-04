@@ -81,7 +81,7 @@ export default function BookCard({ book, index = 0, onClick, isNew }: BookCardPr
               </div>
             ) : null}
           </div>
-          <div className="p-2 sm:p-3">
+          <div className="p-2 sm:p-3 flex flex-col min-h-[150px] sm:min-h-[165px]">
             <h3 className="text-xs sm:text-sm font-semibold text-foreground line-clamp-2 mb-0.5 group-hover:text-primary transition-colors leading-snug">
               {book.title}
             </h3>
@@ -102,7 +102,7 @@ export default function BookCard({ book, index = 0, onClick, isNew }: BookCardPr
                 )}
               </div>
             )}
-            <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+            <div className="flex items-center gap-1.5 mt-auto pt-1.5 flex-wrap">
               <span className="text-[10px] font-medium text-primary bg-primary/10 px-1.5 py-0.5 rounded-full">
                 {book.category}
               </span>
