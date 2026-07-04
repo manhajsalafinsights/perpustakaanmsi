@@ -3,12 +3,12 @@
 import { useState, useEffect, useCallback, useRef, Fragment } from "react";
 import { Book, BookVolume } from "@/lib/types";
 import { formatNumber } from "@/lib/format";
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Document, Page, pdfjs } from "react-pdf";
-import "react-pdf/dist/Page/AnnotationLayer.css";
-import "react-pdf/dist/Page/TextLayer.css";
+
+const PdfViewer = dynamic(() => import("./PdfViewer"), { ssr: false });
 
 let activeUtterance: SpeechSynthesisUtterance | null = null;
 
@@ -182,9 +182,6 @@ export default function BookDetailClient({ id }: { id: string }) {
   ttsSpRef.current = ttsSpeed;
   numPagesRef.current = numPages;
 
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-expect-error - worker entry has no type declarations
-  useEffect(() => { import("react-pdf/dist/pdf.worker.entry"); }, []);
   useEffect(() => { window.speechSynthesis?.getVoices(); }, []);
 
   useEffect(() => {
@@ -197,6 +194,7 @@ export default function BookDetailClient({ id }: { id: string }) {
         setTtsStatus("extracting");
         setTtsMsg(`Mengekstrak halaman ${currentPage}...`);
         const proxyUrl = `/api/pdf-proxy?url=${encodeURIComponent(url)}`;
+        const { pdfjs } = await import("react-pdf");
         const doc = await pdfjs.getDocument(proxyUrl).promise;
         if (dead) return;
         const pg = await doc.getPage(currentPage);
@@ -303,12 +301,9 @@ export default function BookDetailClient({ id }: { id: string }) {
           }
           setVolumes(bookVolumes);
 
-          const allRes = await fetch("/api/books");
-          if (allRes.ok) {
-            const all = await allRes.json();
-            const related = all
-              .filter((b: Book) => b.category === data.category && b.id !== data.id)
-              .slice(0, 4);
+          const relRes = await fetch(`/api/books?category=${encodeURIComponent(data.category)}&exclude=${data.id}&related_limit=4`);
+          if (relRes.ok) {
+            const related = await relRes.json();
             setRelatedBooks(related);
           }
 
@@ -939,41 +934,17 @@ export default function BookDetailClient({ id }: { id: string }) {
                       <Loader2 className="w-8 h-8 text-primary animate-spin" />
                     </div>
                   )}
-                  <Document
+                  <PdfViewer
                     file={`/api/pdf-proxy?url=${encodeURIComponent(selectedVolume?.file_url || book?.file_url || "")}`}
+                    currentPage={currentPage}
+                    flipDir={flipDir}
+                    flipAngle={flipAngle}
+                    isPaid={isPaid}
+                    maxFreePages={MAX_FREE_PAGES}
+                    numPages={numPages}
                     onLoadSuccess={({ numPages: pages }) => { setNumPages(pages); numPagesRef.current = pages; setPdfLoading(false); }}
                     onLoadError={() => { setPdfError(true); setPdfLoading(false); }}
-                    loading={null}
-                  >
-                    <div className="relative flex justify-center px-4" style={{ perspective: "2000px" }}>
-                      {flipDir !== 0 && (
-                        <div className="absolute inset-0 flex justify-center">
-                          <div style={{ boxShadow: "inset 4px 0 12px rgba(0,0,0,0.12)" }}>
-                            <Page
-                              pageNumber={Math.max(1, Math.min(isPaid ? Math.min(numPagesRef.current, MAX_FREE_PAGES) : numPagesRef.current, currentPage + flipDir))}
-                              width={typeof window !== "undefined" ? Math.min(window.innerWidth - 48, 900) : 800}
-                              renderTextLayer={false}
-                              renderAnnotationLayer={false}
-                            />
-                          </div>
-                        </div>
-                      )}
-                      <div style={{
-                        transform: `perspective(2000px) rotateY(${flipAngle}deg) translateX(${flipAngle / 4}px)`,
-                        transition: "transform 0.45s cubic-bezier(0.22, 1, 0.36, 1)",
-                        transformOrigin: flipDir > 0 ? "left" : "right",
-                        backfaceVisibility: "hidden",
-                        boxShadow: `${flipDir > 0 ? -flipAngle : flipAngle}px 4px 20px rgba(0,0,0,0.18)`,
-                      }}>
-                        <Page
-                          pageNumber={isPaid ? Math.min(currentPage, MAX_FREE_PAGES) : currentPage}
-                          width={typeof window !== "undefined" ? Math.min(window.innerWidth - 48, 900) : 800}
-                          renderTextLayer={false}
-                          renderAnnotationLayer={false}
-                        />
-                      </div>
-                    </div>
-                  </Document>
+                  />
                 </div>
                 <div className="flex-shrink-0 grid grid-cols-3 items-center px-2 py-1.5 border-t border-border bg-background/95 backdrop-blur-sm">
                   <button

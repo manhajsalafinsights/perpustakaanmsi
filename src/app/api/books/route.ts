@@ -18,6 +18,8 @@ export async function GET(request: NextRequest) {
   const search = searchParams.get("search") || "";
   const category = searchParams.get("category") || "";
   const id = searchParams.get("id") || "";
+  const exclude = searchParams.get("exclude") || "";
+  const relatedLimit = parseInt(searchParams.get("related_limit") || "0");
   const includeVolumes = searchParams.get("include_volumes") === "true";
   const isAdmin = searchParams.get("admin") === "true";
   const isPaid = searchParams.get("is_paid"); // "true" or undefined
@@ -71,6 +73,10 @@ export async function GET(request: NextRequest) {
     base = base.eq("category", category);
   }
 
+  if (exclude) {
+    base = base.neq("id", exclude);
+  }
+
   if (isPaid === "true") {
     base = base.eq("is_paid", true);
   }
@@ -80,6 +86,10 @@ export async function GET(request: NextRequest) {
   }
 
   base = base.order("created_at", { ascending: false });
+
+  if (relatedLimit > 0) {
+    base = base.limit(relatedLimit);
+  }
 
   if (page && limit) {
     const from = (page - 1) * limit;
