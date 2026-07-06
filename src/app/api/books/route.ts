@@ -221,6 +221,13 @@ export async function PUT(request: NextRequest) {
     updates.published_at = new Date().toISOString();
   }
 
+  if (!updates.scheduled_at || updates.status !== "scheduled") {
+    updates.scheduled_at = null;
+  }
+  if (!updates.promo_price) {
+    updates.promo_price = null;
+  }
+
   const { data, error } = await db()
     .from("books")
     .update(updates)
