@@ -424,35 +424,6 @@ export default function HomeContent() {
           </motion.div>
           )}
 
-          {/* ── Buku Terbaru ── */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-          >
-            <div className="space-y-5">
-              <SectionHeader
-                icon={Clock}
-                title="Buku Terbaru"
-                showAll={newBooks.length > 10}
-                isExpanded={!!expanded.baru}
-                onToggle={() => toggleExpand("baru")}
-              />
-              {loading ? (
-                <SectionSkeleton />
-              ) : (
-                <div className={GRID_CLASSES}>
-                  {(expanded.baru ? newBooks : newBooks.slice(0, defaultLimit)).map((book, i) => (
-                    <div key={book.id} className={!expanded.baru && i >= 10 ? 'max-lg:hidden' : ''}>
-                      <BookCard book={book} index={i} isNew={newestIds.has(book.id)} />
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </motion.div>
-
           {/* ── Ebook Premium ── */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
@@ -487,6 +458,35 @@ export default function HomeContent() {
                   ))}
                 </div>
               ) : null}
+            </div>
+          </motion.div>
+
+          {/* ── Buku Terbaru ── */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+          >
+            <div className="space-y-5">
+              <SectionHeader
+                icon={Clock}
+                title="Buku Terbaru"
+                showAll={newBooks.length > 10}
+                isExpanded={!!expanded.baru}
+                onToggle={() => toggleExpand("baru")}
+              />
+              {loading ? (
+                <SectionSkeleton />
+              ) : (
+                <div className={GRID_CLASSES}>
+                  {(expanded.baru ? newBooks : newBooks.slice(0, defaultLimit)).map((book, i) => (
+                    <div key={book.id} className={!expanded.baru && i >= 10 ? 'max-lg:hidden' : ''}>
+                      <BookCard book={book} index={i} isNew={newestIds.has(book.id)} />
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </motion.div>
 
