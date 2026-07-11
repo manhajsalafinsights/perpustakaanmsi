@@ -320,6 +320,43 @@ export default function HomeContent() {
 
           <MiniStats totalBooks={books.length} totalVisitors={visitorCount} totalCategories={categories.length} totalFree={freeBooks.length} />
 
+          {/* ── Ebook Premium ── */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+          >
+            <div className="space-y-5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-amber-500/15 rounded-xl flex items-center justify-center">
+                    <Gem className="w-5 h-5 text-amber-500" />
+                  </div>
+                  <h2 className="text-xl sm:text-2xl font-bold text-foreground">Ebook Premium</h2>
+                </div>
+                {paidBooks.length > defaultLimit && (
+                  <button
+                    onClick={() => toggleExpand("berbayar")}
+                    className="flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary-light transition-colors group"
+                  >
+                    {expanded.berbayar ? "Tutup" : "Lihat Semua"}
+                    <ArrowRight className={`w-4 h-4 transition-transform ${expanded.berbayar ? "rotate-90" : "group-hover:translate-x-0.5"}`} />
+                  </button>
+                )}
+              </div>
+              {loading ? (
+                <SectionSkeleton />
+              ) : paidBooks.length > 0 ? (
+                <div className={GRID_CLASSES}>
+                  {(expanded.berbayar ? paidBooks : paidBooks.slice(0, defaultLimit)).map((book, i) => (
+                    <BookCard key={book.id} book={book} index={i} />
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          </motion.div>
+
           {upcomingBooks.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 16 }}
@@ -423,43 +460,6 @@ export default function HomeContent() {
             </div>
           </motion.div>
           )}
-
-          {/* ── Ebook Premium ── */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-          >
-            <div className="space-y-5">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-amber-500/15 rounded-xl flex items-center justify-center">
-                    <Gem className="w-5 h-5 text-amber-500" />
-                  </div>
-                  <h2 className="text-xl sm:text-2xl font-bold text-foreground">Ebook Premium</h2>
-                </div>
-                {paidBooks.length > defaultLimit && (
-                  <button
-                    onClick={() => toggleExpand("berbayar")}
-                    className="flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary-light transition-colors group"
-                  >
-                    {expanded.berbayar ? "Tutup" : "Lihat Semua"}
-                    <ArrowRight className={`w-4 h-4 transition-transform ${expanded.berbayar ? "rotate-90" : "group-hover:translate-x-0.5"}`} />
-                  </button>
-                )}
-              </div>
-              {loading ? (
-                <SectionSkeleton />
-              ) : paidBooks.length > 0 ? (
-                <div className={GRID_CLASSES}>
-                  {(expanded.berbayar ? paidBooks : paidBooks.slice(0, defaultLimit)).map((book, i) => (
-                    <BookCard key={book.id} book={book} index={i} />
-                  ))}
-                </div>
-              ) : null}
-            </div>
-          </motion.div>
 
           {/* ── Buku Terbaru ── */}
           <motion.div
