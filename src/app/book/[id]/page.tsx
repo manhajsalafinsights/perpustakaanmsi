@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
+import { notFound } from "next/navigation";
+import { supabase } from "@/lib/supabase";
 import BookDetailClient from "./BookDetailClient";
 
 export async function generateMetadata({
@@ -47,5 +49,16 @@ export default async function BookDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+
+  const { data } = await supabase
+    .from("books")
+    .select("id")
+    .eq("id", id)
+    .single();
+
+  if (!data) {
+    notFound();
+  }
+
   return <BookDetailClient id={id} />;
 }

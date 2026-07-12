@@ -324,14 +324,17 @@ export default function BookDetailClient({ id }: { id: string }) {
     load();
   }, [id, fetchComments]);
 
-  const bookPrice = book?.price || 25000;
-  const bookPromoPrice = book?.promo_price || 0;
+  const bookPrice = book?.price ?? 25000;
+  const bookPromoPrice = book?.promo_price ?? 0;
   const bookPromoText = book?.promo_text || "";
   const hasPromo = bookPromoPrice > 0 && bookPromoPrice < bookPrice;
   const activePrice = hasPromo ? bookPromoPrice : bookPrice;
   const priceFormatted = activePrice.toLocaleString("id-ID");
-  const isPaid = book?.is_paid || false;
-  const isScheduled = book?.status === "scheduled" && book?.scheduled_at && new Date(book.scheduled_at) > new Date();
+  const isPaid = !!book?.is_paid;
+  const isScheduled =
+    book?.status === "scheduled" &&
+    !!book?.scheduled_at &&
+    new Date(book.scheduled_at) > new Date();
 
   const handleDownload = (vol?: BookVolume) => {
     const url = vol?.file_url || book?.file_url;
@@ -562,24 +565,26 @@ export default function BookDetailClient({ id }: { id: string }) {
                         <span>{book.page_count} hlm</span>
                       </div>
                     )}
-                    {(book.views > 0 || book.downloads > 0 || book.purchased > 0) && (
+                    {((book.views ?? 0) > 0 ||
+                      (book.downloads ?? 0) > 0 ||
+                      (book.purchased ?? 0) > 0) && (
                       <div className="flex items-center gap-3">
-                        {book.views > 0 && (
+                        {(book.views ?? 0) > 0 && (
                           <div className="flex items-center gap-1 text-[11px] text-muted">
                             <Eye className="w-3.5 h-3.5" />
-                            <span>{formatNumber(book.views)}</span>
+                            <span>{formatNumber(book.views!)}</span>
                           </div>
                         )}
-                        {book.downloads > 0 && (
+                        {(book.downloads ?? 0) > 0 && (
                           <div className="flex items-center gap-1 text-[11px] text-muted">
                             <Download className="w-3.5 h-3.5" />
-                            <span>{formatNumber(book.downloads)}</span>
+                            <span>{formatNumber(book.downloads!)}</span>
                           </div>
                         )}
-                        {book.purchased > 0 && (
+                        {(book.purchased ?? 0) > 0 && (
                           <div className="flex items-center gap-1 text-[11px] text-muted">
                             <ShoppingCart className="w-3.5 h-3.5" />
-                            <span>{formatNumber(book.purchased)}</span>
+                            <span>{formatNumber(book.purchased!)}</span>
                           </div>
                         )}
                       </div>
