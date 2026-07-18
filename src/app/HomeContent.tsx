@@ -227,9 +227,11 @@ export default function HomeContent() {
   const liveBooks = books.filter(
     (b) => b.status !== "scheduled" || !b.scheduled_at || new Date(b.scheduled_at) <= new Date()
   );
-  const upcomingBooks = books.filter(
-    (b) => b.status === "scheduled" && b.scheduled_at && new Date(b.scheduled_at) > new Date()
-  );
+  const upcomingBooks = books
+    .filter(
+      (b) => b.status === "scheduled" && b.scheduled_at && new Date(b.scheduled_at) > new Date()
+    )
+    .sort((a, b) => new Date(a.scheduled_at!).getTime() - new Date(b.scheduled_at!).getTime());
   const trendingBooks = [...liveBooks].sort((a, b) => (b.views || 0) - (a.views || 0));
   const newBooks = [...liveBooks].sort(
     (a, b) =>
