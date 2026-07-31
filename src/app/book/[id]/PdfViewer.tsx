@@ -1,8 +1,9 @@
 "use client";
-import { Document, Page } from "react-pdf";
+import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
-import { useEffect } from "react";
+
+pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
 
 interface PdfViewerProps {
   file: string;
@@ -20,9 +21,6 @@ export default function PdfViewer({
   file, currentPage, flipDir, flipAngle, isPaid, maxFreePages,
   numPages, onLoadSuccess, onLoadError,
 }: PdfViewerProps) {
-  // @ts-expect-error - worker entry has no type declarations
-  useEffect(() => { import("react-pdf/dist/pdf.worker.entry"); }, []);
-
   const getPageWidth = () =>
     typeof window !== "undefined" ? Math.min(window.innerWidth - 48, 900) : 800;
 

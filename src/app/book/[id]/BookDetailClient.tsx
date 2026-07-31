@@ -195,6 +195,7 @@ export default function BookDetailClient({ id }: { id: string }) {
         setTtsMsg(`Mengekstrak halaman ${currentPage}...`);
         const proxyUrl = `/api/pdf-proxy?url=${encodeURIComponent(url)}`;
         const { pdfjs } = await import("react-pdf");
+        pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
         const doc = await pdfjs.getDocument(proxyUrl).promise;
         if (dead) return;
         const pg = await doc.getPage(currentPage);
