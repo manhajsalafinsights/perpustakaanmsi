@@ -8,6 +8,21 @@ const db = () => {
   return serviceKey ? createServiceClient() : supabase;
 };
 
+function stripPaidUrls(
+  book: Record<string, unknown> | null,
+  includeVolumes: boolean
+): Record<string, unknown> | null {
+  if (!book || !book.is_paid) return book;
+  const cleaned: Record<string, unknown> = { ...book, file_url: undefined };
+  if (includeVolumes && Array.isArray(cleaned.volumes)) {
+    cleaned.volumes = (cleaned.volumes as Record<string, unknown>[]).map((v) => ({
+      ...v,
+      file_url: undefined,
+    }));
+  }
+  return cleaned;
+}
+
 export async function GET(request: NextRequest) {
   await db()
     .from("books")
@@ -22,10 +37,13 @@ export async function GET(request: NextRequest) {
   const exclude = searchParams.get("exclude") || "";
   const relatedLimit = parseInt(searchParams.get("related_limit") || "0");
   const includeVolumes = searchParams.get("include_volumes") === "true";
-  const isAdmin = searchParams.get("admin") === "true";
   const isPaid = searchParams.get("is_paid"); // "true" or undefined
   const status = searchParams.get("status") || "";
   const featured = searchParams.get("featured") === "true";
+  let isAdmin = searchParams.get("admin") === "true";
+  if (isAdmin) {
+    isAdmin = (await verifyAdmin(request)) !== null;
+  }
 
   let selectQuery = "*, comments(count)";
   if (includeVolumes) {
@@ -33,11 +51,16 @@ export async function GET(request: NextRequest) {
   }
 
   if (id) {
-    const { data, error } = await supabase
+    let query = supabase
       .from("books")
       .select("*, comments(count)")
-      .eq("id", id)
-      .single();
+      .eq("id", id);
+
+    if (!isAdmin) {
+      query = query.in("status", ["published", "scheduled"]);
+    }
+
+    const { data, error } = await query.single();
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 404 });
@@ -53,7 +76,9 @@ export async function GET(request: NextRequest) {
       (data as Record<string, unknown>).volumes = volumes || [];
     }
 
-    return NextResponse.json(data);
+    return NextResponse.json(
+      isAdmin ? data : stripPaidUrls(data as Record<string, unknown>, includeVolumes)
+    );
   }
 
   const page = parseInt(searchParams.get("page") || "0");
@@ -114,19 +139,26 @@ export async function GET(request: NextRequest) {
   }
 
   if (featured) {
-    return NextResponse.json((data as unknown as Book[] | null)?.[0] ?? null);
+    const first = (data as unknown as Book[] | null)?.[0] ?? null;
+    return NextResponse.json(
+      isAdmin ? first : stripPaidUrls(first as Record<string, unknown> | null, includeVolumes)
+    );
   }
+
+  const sanitized = isAdmin
+    ? data
+    : (data as unknown as Record<string, unknown>[]).map((b) => stripPaidUrls(b, includeVolumes));
 
   if (page) {
     return NextResponse.json({
-      data,
+      data: sanitized,
       total: count || 0,
       page,
       totalPages: limit ? Math.ceil((count || 0) / limit) : 1,
     });
   }
 
-  return NextResponse.json(data);
+  return NextResponse.json(sanitized);
 }
 
 function randomViewCount(): number {

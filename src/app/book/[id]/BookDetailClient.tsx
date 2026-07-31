@@ -43,12 +43,16 @@ import {
 const WA_NUMBER = "62881080002626";
 const MAX_FREE_PAGES = 10;
 
-function ShareButtons({ title }: { title: string }) {
+function ShareButtons({ title, isPaid }: { title: string; isPaid?: boolean }) {
   const [copied, setCopied] = useState(false);
 
   const share = (item: { label: string; action: (url: string, text: string) => void }) => {
     const url = window.location.href;
-    const text = `📖 ${title}
+    const text = isPaid
+      ? `📖 ${title}
+
+Beli ebook islami pilihan di:`
+      : `📖 ${title}
 
 Baca dan download ebook islami gratis di:`;
     item.action(url, text);
@@ -186,14 +190,14 @@ export default function BookDetailClient({ id }: { id: string }) {
 
   useEffect(() => {
     if (ttsKey === 0) return;
-    const url = selectedVolume?.file_url || book?.file_url || "";
-    if (!url) { setTtsMsg("Tidak ada file PDF"); setTtsStatus("error"); return; }
+    const vid = selectedVolume && selectedVolume.id !== "legacy" ? selectedVolume.id : "";
+    const proxyUrl = `/api/pdf-proxy?book_id=${book?.id || ""}${vid ? `&volume_id=${vid}` : ""}`;
+    if (!book?.id) { setTtsMsg("Tidak ada file PDF"); setTtsStatus("error"); return; }
     let dead = false;
     (async () => {
       try {
         setTtsStatus("extracting");
         setTtsMsg(`Mengekstrak halaman ${currentPage}...`);
-        const proxyUrl = `/api/pdf-proxy?url=${encodeURIComponent(url)}`;
         const { pdfjs } = await import("react-pdf");
         pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
         const doc = await pdfjs.getDocument(proxyUrl).promise;
@@ -297,8 +301,8 @@ export default function BookDetailClient({ id }: { id: string }) {
           setBook(data);
 
           const bookVolumes = data.volumes || [];
-          if (bookVolumes.length === 0 && data.file_url) {
-            bookVolumes.push({ id: "legacy", book_id: data.id, title: "Full Book", file_url: data.file_url, created_at: data.created_at });
+          if (bookVolumes.length === 0 && (data.file_url || data.is_paid)) {
+            bookVolumes.push({ id: "legacy", book_id: data.id, title: "Full Book", file_url: data.file_url || "", created_at: data.created_at });
           }
           setVolumes(bookVolumes);
 
@@ -590,7 +594,7 @@ export default function BookDetailClient({ id }: { id: string }) {
                         )}
                       </div>
                     )}
-                    <ShareButtons title={book.title} />
+                    <ShareButtons title={book.title} isPaid={isPaid} />
                   </div>
                 </div>
               </div>
@@ -710,7 +714,7 @@ export default function BookDetailClient({ id }: { id: string }) {
                 </div>
               )}
 
-              {isPaid && (
+              {isPaid && !isScheduled && (
                 <button
                   onClick={handleBuyWhatsApp}
                   className="w-full flex items-center justify-center gap-2.5 px-6 py-3.5 bg-green-600 text-white font-semibold rounded-2xl hover:bg-green-700 transition-colors duration-300 shadow-lg shadow-green-600/15 mb-4 sm:mb-6"
@@ -859,7 +863,7 @@ export default function BookDetailClient({ id }: { id: string }) {
       </div>
 
       {/* PDF Viewer Modal */}
-      {showViewer && (selectedVolume?.file_url || book?.file_url) && (
+      {showViewer && (selectedVolume || book) && (
         <div className="fixed inset-0 z-[100] bg-background flex flex-col">
           <div className="flex flex-col gap-2 px-3 py-2 sm:px-4 sm:py-3 border-b border-border flex-shrink-0">
             <div className="flex items-center justify-between">
@@ -911,16 +915,20 @@ export default function BookDetailClient({ id }: { id: string }) {
             {pdfError ? (
               <div className="flex flex-col items-center justify-center h-full text-center px-6 py-20">
                 <FileText className="w-12 h-12 text-muted mb-3" />
-                <p className="text-sm text-muted">Gagal memuat PDF. Coba buka melalui Google Drive.</p>
-                <a
-                  href={getEmbedUrl(selectedVolume?.file_url || book?.file_url || "")}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-3 inline-flex items-center gap-2 px-4 py-2 bg-primary text-white text-sm font-medium rounded-xl hover:bg-primary-dark transition-colors"
-                >
-                  <BookOpen className="w-4 h-4" />
-                  Buka di Google Drive
-                </a>
+                <p className="text-sm text-muted">
+                  {isPaid ? "Gagal memuat preview PDF. Coba lagi beberapa saat." : "Gagal memuat PDF. Coba buka melalui Google Drive."}
+                </p>
+                {!isPaid && (
+                  <a
+                    href={getEmbedUrl(selectedVolume?.file_url || book?.file_url || "")}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-3 inline-flex items-center gap-2 px-4 py-2 bg-primary text-white text-sm font-medium rounded-xl hover:bg-primary-dark transition-colors"
+                  >
+                    <BookOpen className="w-4 h-4" />
+                    Buka di Google Drive
+                  </a>
+                )}
               </div>
             ) : (
               <div className="h-full flex flex-col">
@@ -941,7 +949,7 @@ export default function BookDetailClient({ id }: { id: string }) {
                     </div>
                   )}
                   <PdfViewer
-                    file={`/api/pdf-proxy?url=${encodeURIComponent(selectedVolume?.file_url || book?.file_url || "")}`}
+                    file={`/api/pdf-proxy?book_id=${book?.id || ""}${selectedVolume && selectedVolume.id !== "legacy" ? `&volume_id=${selectedVolume.id}` : ""}`}
                     currentPage={currentPage}
                     flipDir={flipDir}
                     flipAngle={flipAngle}

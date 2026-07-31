@@ -39,7 +39,7 @@ export default function BooksTab() {
       } else {
         params.set("status", bookFilter);
       }
-      const res = await fetch(`/api/books?${params}`);
+      const res = await fetch(`/api/books?${params}`, { headers: getHeaders() });
       if (res.ok) {
         const json = await res.json();
         if (json.data) {
@@ -51,7 +51,7 @@ export default function BooksTab() {
           setTotal(json.length);
           setTotalPages(1);
         }
-        const catsRes = await fetch("/api/books?admin=true");
+        const catsRes = await fetch("/api/books?admin=true", { headers: getHeaders() });
         if (catsRes.ok) {
           const catsJson = await catsRes.json();
           const allBooks = catsJson.data || catsJson;

@@ -89,7 +89,7 @@ export default function BookFormModal({ open, editingBook, categories, onClose, 
 
   const loadVolumes = async (book: Book) => {
     try {
-      const res = await fetch(`/api/books?id=${book.id}&include_volumes=true`);
+      const res = await fetch(`/api/books?id=${book.id}&include_volumes=true`, { headers: getHeaders() });
       if (res.ok) {
         const data = await res.json();
         if (data.volumes?.length > 0) {
@@ -108,7 +108,7 @@ export default function BookFormModal({ open, editingBook, categories, onClose, 
       const pdfjs = await import("pdfjs-dist");
       pdfjs.GlobalWorkerOptions.workerSrc = new URL("pdfjs-dist/build/pdf.worker.min.mjs", import.meta.url).toString();
       const proxyUrl = `/api/pdf-proxy?url=${encodeURIComponent(url)}`;
-      const pdfDoc = await pdfjs.getDocument(proxyUrl).promise;
+      const pdfDoc = await pdfjs.getDocument({ url: proxyUrl, httpHeaders: getHeaders() }).promise;
       let title = "", author = "", translator = "", description = "";
       let titleFound = false, authorFound = false, translatorFound = false, descFound = false;
       try {
