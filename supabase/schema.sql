@@ -42,8 +42,12 @@ CREATE TABLE IF NOT EXISTS books (
   price INTEGER DEFAULT 25000,
   promo_price INTEGER,
   promo_text TEXT DEFAULT '',
+  is_featured BOOLEAN DEFAULT false,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Hanya 1 buku yang boleh menjadi unggulan (spotlight) pada satu waktu
+CREATE UNIQUE INDEX IF NOT EXISTS idx_books_one_featured ON books ((is_featured)) WHERE is_featured;
 
 -- Tabel Jilid Buku (1 buku memiliki banyak jilid)
 CREATE TABLE IF NOT EXISTS book_volumes (
@@ -120,6 +124,10 @@ CREATE POLICY "Public can insert book_recommendations" ON book_recommendations
 
 CREATE POLICY "Public can read book_recommendations" ON book_recommendations
   FOR SELECT USING (true);
+
+-- MIGRATION: Tambah kolom is_featured (buku unggulan / spotlight)
+-- ALTER TABLE books ADD COLUMN IF NOT EXISTS is_featured BOOLEAN DEFAULT false;
+-- CREATE UNIQUE INDEX IF NOT EXISTS idx_books_one_featured ON books ((is_featured)) WHERE is_featured;
 
 -- ============================================
 -- MIGRATION: Tambah kolom translator

@@ -19,6 +19,8 @@ export async function GET(request: NextRequest) {
     ALTER TABLE books ADD COLUMN IF NOT EXISTS page_count INTEGER DEFAULT 0;
     ALTER TABLE book_volumes ADD COLUMN IF NOT EXISTS page_count INTEGER DEFAULT 0;
     ALTER TABLE admins ADD COLUMN IF NOT EXISTS token TEXT;
+    ALTER TABLE books ADD COLUMN IF NOT EXISTS is_featured BOOLEAN DEFAULT false;
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_books_one_featured ON books ((is_featured)) WHERE is_featured;
     UPDATE admins SET password = encode(sha256(password::bytea), 'hex') WHERE password !~ '^[a-f0-9]{64}$';
   `;
 

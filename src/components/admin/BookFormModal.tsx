@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
-  Plus, Trash2, X, FileText, Tag, BookOpen, Loader2,
+  Plus, Trash2, X, FileText, Tag, BookOpen, Loader2, Star,
 } from "lucide-react";
 import { Book } from "@/lib/types";
 
@@ -34,6 +34,7 @@ export default function BookFormModal({ open, editingBook, categories, onClose, 
     title: "", description: "", cover_url: "", category: "", author: "", translator: "",
     is_paid: false, status: "published", scheduled_at: "", page_count: 0,
     views: 0, purchased: 0, downloads: 0, price: 25000, promo_price: 0, promo_text: "",
+    is_featured: false,
   });
   const [volumes, setVolumes] = useState<Volume[]>([{ title: "Jilid 1", file_url: "" }]);
   const [submitting, setSubmitting] = useState(false);
@@ -69,6 +70,7 @@ export default function BookFormModal({ open, editingBook, categories, onClose, 
         promo_price: editingBook.promo_price || 0,
         promo_text: editingBook.promo_text || "",
         page_count: editingBook.page_count || 0,
+        is_featured: editingBook.is_featured || false,
       });
       setUseCustomCategory(!categories.includes(editingBook.category));
       setCustomCategory(!categories.includes(editingBook.category) ? editingBook.category : "");
@@ -76,7 +78,8 @@ export default function BookFormModal({ open, editingBook, categories, onClose, 
     } else {
       setForm({ title: "", description: "", cover_url: "", category: "", author: "", translator: "",
         is_paid: false, status: "published", scheduled_at: "", page_count: 0,
-        views: 0, purchased: 0, downloads: 0, price: 25000, promo_price: 0, promo_text: "" });
+        views: 0, purchased: 0, downloads: 0, price: 25000, promo_price: 0, promo_text: "",
+        is_featured: false });
       setVolumes([{ title: "Jilid 1", file_url: "" }]);
       setCustomCategory("");
       setUseCustomCategory(false);
@@ -355,6 +358,29 @@ export default function BookFormModal({ open, editingBook, categories, onClose, 
                     className="w-full px-4 py-3 bg-surface border border-border rounded-2xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary" />
                 </div>
               )}
+            </div>
+            <div>
+              <div className={`rounded-2xl border p-4 transition-all ${form.is_featured ? "border-amber-500/40 bg-amber-500/10" : "border-border bg-surface"}`}>
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${form.is_featured ? "bg-amber-500 text-white" : "bg-amber-500/10 text-amber-500"}`}>
+                      <Star className="w-5 h-5" fill={form.is_featured ? "currentColor" : "none"} />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">Buku Unggulan (Spotlight)</p>
+                      <p className="text-xs text-muted mt-0.5">Buku ini tampil menonjol di halaman utama. Hanya 1 buku yang bisa diunggulkan.</p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setForm({ ...form, is_featured: !form.is_featured })}
+                    className={`relative w-12 h-7 rounded-full transition-colors flex-shrink-0 ${form.is_featured ? "bg-amber-500" : "bg-border"}`}
+                    aria-pressed={form.is_featured}
+                  >
+                    <span className={`absolute top-1 w-5 h-5 bg-white rounded-full shadow transition-all ${form.is_featured ? "left-6" : "left-1"}`} />
+                  </button>
+                </div>
+              </div>
             </div>
             <div>
               <label className="block text-sm font-medium text-foreground mb-1.5">Status Buku</label>

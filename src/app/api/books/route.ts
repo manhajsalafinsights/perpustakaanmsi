@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase, createServiceClient } from "@/lib/supabase";
 import { verifyAdmin } from "@/lib/auth";
+import { Book } from "@/lib/types";
 
 const db = () => {
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -24,6 +25,7 @@ export async function GET(request: NextRequest) {
   const isAdmin = searchParams.get("admin") === "true";
   const isPaid = searchParams.get("is_paid"); // "true" or undefined
   const status = searchParams.get("status") || "";
+  const featured = searchParams.get("featured") === "true";
 
   let selectQuery = "*, comments(count)";
   if (includeVolumes) {
@@ -85,7 +87,15 @@ export async function GET(request: NextRequest) {
     base = base.eq("status", status);
   }
 
+  if (featured) {
+    base = base.eq("is_featured", true);
+  }
+
   base = base.order("created_at", { ascending: false });
+
+  if (featured) {
+    base = base.limit(1);
+  }
 
   if (relatedLimit > 0) {
     base = base.limit(relatedLimit);
@@ -101,6 +111,10 @@ export async function GET(request: NextRequest) {
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  if (featured) {
+    return NextResponse.json((data as unknown as Book[] | null)?.[0] ?? null);
   }
 
   if (page) {
@@ -139,6 +153,10 @@ export async function POST(request: NextRequest) {
     if (m) cover = `https://drive.google.com/thumbnail?id=${m[1]}&sz=w800`;
   }
 
+  if (bookData.is_featured) {
+    await db().from("books").update({ is_featured: false }).eq("is_featured", true);
+  }
+
   const { data, error } = await db()
     .from("books")
     .insert([
@@ -161,6 +179,7 @@ export async function POST(request: NextRequest) {
         views: bookData.views ?? randomViewCount(),
         purchased: bookData.purchased || 0,
         downloads: bookData.downloads || 0,
+        is_featured: bookData.is_featured || false,
       },
     ])
     .select()
@@ -226,6 +245,10 @@ export async function PUT(request: NextRequest) {
   }
   if (!updates.promo_price) {
     updates.promo_price = null;
+  }
+
+  if (updates.is_featured === true) {
+    await db().from("books").update({ is_featured: false }).eq("is_featured", true);
   }
 
   const { data, error } = await db()

@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import {
-  Search, Plus, Pencil, Trash2, BookOpen, Clock, Loader2,
+  Search, Plus, Pencil, Trash2, BookOpen, Clock, Loader2, Star,
 } from "lucide-react";
 import { Book } from "@/lib/types";
 import Pagination from "./Pagination";
@@ -89,6 +89,32 @@ export default function BooksTab() {
     fetchBooks(page);
   };
 
+  const [featuredLoading, setFeaturedLoading] = useState<string | null>(null);
+
+  const handleToggleFeatured = async (book: Book) => {
+    if (featuredLoading) return;
+    setFeaturedLoading(book.id);
+    try {
+      const res = await fetch("/api/books", {
+        method: "PUT",
+        headers: getHeaders({ "Content-Type": "application/json" }),
+        body: JSON.stringify({ id: book.id, is_featured: !book.is_featured }),
+      });
+      if (res.ok) {
+        fetchBooks(page);
+      } else if (res.status === 401) {
+        alert("Sesi habis, silakan login ulang");
+      } else {
+        const err = await res.json().catch(() => ({}));
+        alert("Gagal mengunggulkan: " + (err.error || "Unknown error"));
+      }
+    } catch (e) {
+      alert("Gagal mengunggulkan: " + (e instanceof Error ? e.message : String(e)));
+    } finally {
+      setFeaturedLoading(null);
+    }
+  };
+
   return (
     <div className="glass rounded-2xl shadow-sm overflow-hidden">
       <div className="p-6 border-b border-border/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -166,7 +192,14 @@ export default function BooksTab() {
                             )}
                           </div>
                           <div className="min-w-0">
-                            <p className="text-sm font-medium text-foreground truncate max-w-[200px]">{book.title}</p>
+                            <p className="text-sm font-medium text-foreground truncate max-w-[200px] flex items-center gap-1.5">
+                              {book.title}
+                              {book.is_featured && (
+                                <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-amber-600 bg-amber-500/10 px-1.5 py-0.5 rounded-full flex-shrink-0">
+                                  <Star className="w-2.5 h-2.5" fill="currentColor" /> Unggulan
+                                </span>
+                              )}
+                            </p>
                             <p className="text-xs text-muted truncate max-w-[200px]">{book.description}</p>
                           </div>
                         </div>
@@ -210,6 +243,18 @@ export default function BooksTab() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center justify-end gap-1">
+                          <button
+                            onClick={() => handleToggleFeatured(book)}
+                            disabled={!!featuredLoading}
+                            title={book.is_featured ? "Batalkan unggulan" : "Jadikan buku unggulan"}
+                            className={`p-2 rounded-lg transition-all disabled:opacity-50 ${book.is_featured ? "text-amber-500 hover:bg-amber-500/10" : "text-muted hover:text-amber-500 hover:bg-amber-500/10"}`}
+                          >
+                            {featuredLoading === book.id ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Star className="w-4 h-4" fill={book.is_featured ? "currentColor" : "none"} />
+                            )}
+                          </button>
                           <button onClick={() => { setEditingBook(book); setShowModal(true); }}
                             className="p-2 text-muted hover:text-primary hover:bg-primary/10 rounded-lg transition-all">
                             <Pencil className="w-4 h-4" />

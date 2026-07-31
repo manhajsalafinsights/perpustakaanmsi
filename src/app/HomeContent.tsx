@@ -7,6 +7,7 @@ import { formatNumber } from "@/lib/format";
 import Hero from "@/components/Hero";
 import BookCard from "@/components/BookCard";
 import BookRequestModal from "@/components/BookRequestModal";
+import FeaturedBookBanner from "@/components/FeaturedBookBanner";
 import {
   BookGridSkeleton,
   SectionSkeleton,
@@ -233,6 +234,7 @@ export default function HomeContent() {
     )
     .sort((a, b) => new Date(a.scheduled_at!).getTime() - new Date(b.scheduled_at!).getTime());
   const trendingBooks = [...liveBooks].sort((a, b) => (b.views || 0) - (a.views || 0));
+  const featuredBook = books.find((b) => b.is_featured);
   const newBooks = [...liveBooks].sort(
     (a, b) =>
       new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
@@ -321,6 +323,8 @@ export default function HomeContent() {
         <div className="space-y-6 sm:space-y-12">
 
           <MiniStats totalBooks={books.length} totalVisitors={visitorCount} totalCategories={categories.length} totalFree={freeBooks.length} />
+
+          {featuredBook && <FeaturedBookBanner book={featuredBook} />}
 
           {/* ── Ebook Premium ── */}
           <motion.div
