@@ -4,10 +4,10 @@ Catatan update terakhir yang dilakukan di website ini. Baru paling atas = paling
 
 Format: `YYYY-MM-DD` — ringkasan singkat
 
-## ⚠️ PENDING — BELUM COMMIT/PUSH/DEPLOY (kerjakan saat sesi lanjut)
+## ⚠️ PENDING — COMMIT/PUSH SELESAI, TUNGGU DEPLOY & VERIFIKASI
 **Bug:** Admin Buku → Berbayar → Edit → crash "This page couldn't load".
 
-**Status:** FIX SUDAH DIBUAT DI FILE LOKAL, TAPI BELUM DI-COMMIT/PUSH/DEPLOY.
+**Status:** FIX SUDAH DI-COMMIT & PUSH (`b20a734`), TUNGGU DEPLOY & VERIFIKASI.
 
 **Akar masalah:**
 - `loadVolumes` di `src/components/admin/BookFormModal.tsx` panggil `/api/books?id=...&include_volumes=true` **tanpa** `admin=true`
@@ -21,13 +21,11 @@ Format: `YYYY-MM-DD` — ringkasan singkat
 4. `:340` render → `(v.file_url || "").trim()`
 
 **Langkah yang harus dikerjakan:**
-1. `git add src/components/admin/BookFormModal.tsx CHANGELOG.md`
-2. `git commit -m "fix: edit buku berbayar di admin crash (file_url undefined di loadVolumes)"`
-3. `git push`
-4. Deploy (mis. `vercel --prod` / trigger auto-deploy)
-5. Verifikasi di `https://pustaka.manhajsalafinsights.com/admin` → Buku → Berbayar → Edit
-6. (Opsional) Jalankan `npx tsc --noEmit` sebelum push
-7. Setelah sukses & terverifikasi: update/rapikan entry PENDING ini
+1. ✅ `npx tsc --noEmit` — OK
+2. ✅ `git add` + `git commit` (`b20a734`) + `git push`
+3. ⏳ Deploy (mis. `vercel --prod` / trigger auto-deploy)
+4. ⏳ Verifikasi di `https://pustaka.manhajsalafinsights.com/admin` → Buku → Berbayar → Edit
+5. ⏳ Setelah terverifikasi: update/rapikan entry PENDING ini (hapus blok PENDING)
 
 **⚠️ JANGAN di-stage:** `src/app/api/pdf-proxy/route.ts` (perubahan lama tak terkait), `cdp-driver.mjs`, `inspect-tmp.mjs`, `test-q.mjs` (file debug)
 
