@@ -89,11 +89,11 @@ export default function BookFormModal({ open, editingBook, categories, onClose, 
 
   const loadVolumes = async (book: Book) => {
     try {
-      const res = await fetch(`/api/books?id=${book.id}&include_volumes=true`, { headers: getHeaders() });
+      const res = await fetch(`/api/books?id=${book.id}&include_volumes=true&admin=true`, { headers: getHeaders() });
       if (res.ok) {
         const data = await res.json();
         if (data.volumes?.length > 0) {
-          setVolumes(data.volumes.map((v: Volume) => ({ title: v.title, file_url: v.file_url })));
+          setVolumes(data.volumes.map((v: Volume) => ({ title: v.title, file_url: v.file_url || "" })));
           return;
         }
       }
@@ -195,7 +195,7 @@ export default function BookFormModal({ open, editingBook, categories, onClose, 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const validVolumes = volumes.filter((v) => v.file_url.trim());
+    const validVolumes = volumes.filter((v) => (v.file_url || "").trim());
     if (validVolumes.length === 0) { alert("Minimal satu jilid harus memiliki link download!"); return; }
     if (form.is_paid && form.promo_price > 0 && form.promo_price >= form.price) {
       alert("Harga promo harus lebih kecil dari harga normal!"); return;
@@ -337,7 +337,7 @@ export default function BookFormModal({ open, editingBook, categories, onClose, 
                   </motion.div>
                 ))}
               </div>
-              {volumes.filter((v) => v.file_url.trim()).length === 0 && (
+              {volumes.filter((v) => (v.file_url || "").trim()).length === 0 && (
                 <p className="text-xs text-red-400 mt-1">Minimal satu jilid harus memiliki link download</p>
               )}
             </div>
