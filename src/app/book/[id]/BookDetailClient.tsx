@@ -38,6 +38,8 @@ import {
   SkipForward,
   AlertCircle,
   Share2,
+  Heart,
+  HeartHandshake,
 } from "lucide-react";
 
 const WA_NUMBER = "62881080002626";
@@ -147,6 +149,9 @@ export default function BookDetailClient({ id }: { id: string }) {
   const [savedPage, setSavedPage] = useState(0);
   const [saveFeedback, setSaveFeedback] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentMode, setPaymentMode] = useState<"buy" | "donate">("buy");
+  const [donationAmount, setDonationAmount] = useState(10000);
+  const [customDonation, setCustomDonation] = useState("");
   const [ttsKey, setTtsKey] = useState(0);
   const showTTS = ttsKey > 0;
   const [flipDir, setFlipDir] = useState(0);
@@ -163,7 +168,7 @@ export default function BookDetailClient({ id }: { id: string }) {
     });
     setTimeout(() => {
       setCurrentPage(p => {
-        const maxPage = isPaid ? Math.min(numPagesRef.current, MAX_FREE_PAGES) : numPagesRef.current;
+        const maxPage = isPaid ? Math.min(numPagesRef.current, MAX_FREE_PAGES + 1) : numPagesRef.current;
         return Math.max(1, Math.min(maxPage, p + dir));
       });
       flipRef.current = false;
@@ -336,6 +341,12 @@ export default function BookDetailClient({ id }: { id: string }) {
   const activePrice = hasPromo ? bookPromoPrice : bookPrice;
   const priceFormatted = activePrice.toLocaleString("id-ID");
   const isPaid = !!book?.is_paid;
+  const showPreviewEnd =
+    isPaid && currentPage > MAX_FREE_PAGES && numPages > MAX_FREE_PAGES;
+  const getDonationAmount = () => {
+    const custom = parseInt(customDonation, 10);
+    return custom > 0 ? custom : donationAmount;
+  };
   const isScheduled =
     book?.status === "scheduled" &&
     !!book?.scheduled_at &&
@@ -359,11 +370,41 @@ export default function BookDetailClient({ id }: { id: string }) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id: book.id, type: "purchased" }),
     }).catch(() => {});
+    setPaymentMode("buy");
+    setShowPaymentModal(true);
+  };
+
+  const handleDonateClick = () => {
+    setDonationAmount(10000);
+    setCustomDonation("");
+    setPaymentMode("donate");
     setShowPaymentModal(true);
   };
 
   const handlePaymentConfirm = () => {
     if (!book) return;
+    if (paymentMode === "donate") {
+      const amount = getDonationAmount();
+      const msg = [
+        "Assalamu'alaikum, saya ingin memberi dukungan untuk penulis buku:",
+        "",
+        "*" + book.title + "*",
+        "Nominal: Rp " + amount.toLocaleString("id-ID"),
+        "",
+        "Berikut bukti transfernya.",
+      ].join("\n");
+      setShowPaymentModal(false);
+      fetch("/api/books/stats", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: book.id, type: "donations" }),
+      }).catch(() => {});
+      window.open(
+        "https://wa.me/" + WA_NUMBER + "?text=" + encodeURIComponent(msg),
+        "_blank"
+      );
+      return;
+    }
     const price = activePrice.toLocaleString("id-ID");
     const promoLine = hasPromo
       ? "\nHarga Normal: ~~Rp " + bookPrice.toLocaleString("id-ID") + "~~"
@@ -572,7 +613,8 @@ export default function BookDetailClient({ id }: { id: string }) {
                     )}
                     {((book.views ?? 0) > 0 ||
                       (book.downloads ?? 0) > 0 ||
-                      (book.purchased ?? 0) > 0) && (
+                      (book.purchased ?? 0) > 0 ||
+                      (book.donations ?? 0) > 0) && (
                       <div className="flex items-center gap-3">
                         {(book.views ?? 0) > 0 && (
                           <div className="flex items-center gap-1 text-[11px] text-muted">
@@ -590,6 +632,12 @@ export default function BookDetailClient({ id }: { id: string }) {
                           <div className="flex items-center gap-1 text-[11px] text-muted">
                             <ShoppingCart className="w-3.5 h-3.5" />
                             <span>{formatNumber(book.purchased!)}</span>
+                          </div>
+                        )}
+                        {(book.donations ?? 0) > 0 && (
+                          <div className="flex items-center gap-1 text-[11px] text-muted">
+                            <Heart className="w-3.5 h-3.5" />
+                            <span>{formatNumber(book.donations!)}</span>
                           </div>
                         )}
                       </div>
@@ -715,13 +763,38 @@ export default function BookDetailClient({ id }: { id: string }) {
               )}
 
               {isPaid && !isScheduled && (
-                <button
-                  onClick={handleBuyWhatsApp}
-                  className="w-full flex items-center justify-center gap-2.5 px-6 py-3.5 bg-green-600 text-white font-semibold rounded-2xl hover:bg-green-700 transition-colors duration-300 shadow-lg shadow-green-600/15 mb-4 sm:mb-6"
-                >
-                  <ShoppingCart className="w-5 h-5" />
-                  Beli Rp {priceFormatted}
-                </button>
+                <>
+                  <button
+                    onClick={handleBuyWhatsApp}
+                    className="w-full flex items-center justify-center gap-2.5 px-6 py-3.5 bg-green-600 text-white font-semibold rounded-2xl hover:bg-green-700 transition-colors duration-300 shadow-lg shadow-green-600/15 mb-2"
+                  >
+                    <ShoppingCart className="w-5 h-5" />
+                    Beli Rp {priceFormatted}
+                  </button>
+                  <div className="flex items-center justify-center gap-1.5 mb-4 sm:mb-6 text-xs text-muted">
+                    <Heart className="w-3.5 h-3.5 text-accent flex-shrink-0" />
+                    <span>Buku ini berbayar — dukung penulis agar terus berkarya.</span>
+                  </div>
+                </>
+              )}
+
+              {!isPaid && !isScheduled && volumes.length > 0 && (
+                <div className="glass rounded-2xl p-4 mb-4 sm:mb-6 border border-accent/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                  <div className="flex items-start gap-2.5 text-xs text-muted leading-relaxed">
+                    <HeartHandshake className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" />
+                    <span>
+                      Buku ini gratis untuk dibaca. Dukung penulis agar terus
+                      berkarya dengan donasi sukarela.
+                    </span>
+                  </div>
+                  <button
+                    onClick={handleDonateClick}
+                    className="flex-shrink-0 flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-accent bg-accent/10 rounded-xl hover:bg-accent/20 transition-colors"
+                  >
+                    <HeartHandshake className="w-3.5 h-3.5" />
+                    Dukung Penulis
+                  </button>
+                </div>
               )}
 
               {/* Comments */}
@@ -948,6 +1021,39 @@ export default function BookDetailClient({ id }: { id: string }) {
                       <Loader2 className="w-8 h-8 text-primary animate-spin" />
                     </div>
                   )}
+                  {showPreviewEnd ? (
+                    <div className="flex flex-col items-center justify-center text-center px-6 py-16 w-full max-w-md mx-auto">
+                      {book.cover_url && (
+                        <div className="relative w-36 h-52 rounded-xl overflow-hidden shadow-2xl mb-6">
+                          <Image
+                            src={book.cover_url}
+                            alt={book.title}
+                            fill
+                            className="object-contain"
+                            unoptimized
+                          />
+                        </div>
+                      )}
+                      <h3 className="text-lg font-bold text-foreground mb-1">
+                        {book.title}
+                      </h3>
+                      {book.author && (
+                        <p className="text-xs text-muted mb-4">{book.author}</p>
+                      )}
+                      <p className="text-sm text-muted leading-relaxed mb-6">
+                        Kamu sudah membaca {MAX_FREE_PAGES} halaman pertama.
+                        Buku ini berbayar — dukung penulis agar terus berkarya
+                        dengan membelinya.
+                      </p>
+                      <button
+                        onClick={handleBuyWhatsApp}
+                        className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white font-semibold rounded-2xl hover:bg-green-700 transition-colors shadow-lg shadow-green-600/15"
+                      >
+                        <ShoppingCart className="w-4 h-4" />
+                        Beli Rp {priceFormatted}
+                      </button>
+                    </div>
+                  ) : (
                   <PdfViewer
                     file={`/api/pdf-proxy?book_id=${book?.id || ""}${selectedVolume && selectedVolume.id !== "legacy" ? `&volume_id=${selectedVolume.id}` : ""}`}
                     currentPage={currentPage}
@@ -959,6 +1065,7 @@ export default function BookDetailClient({ id }: { id: string }) {
                     onLoadSuccess={({ numPages: pages }) => { setNumPages(pages); numPagesRef.current = pages; setPdfLoading(false); }}
                     onLoadError={() => { setPdfError(true); setPdfLoading(false); }}
                   />
+                  )}
                 </div>
                 <div className="flex-shrink-0 grid grid-cols-3 items-center px-2 py-1.5 border-t border-border bg-background/95 backdrop-blur-sm">
                   <button
@@ -971,7 +1078,9 @@ export default function BookDetailClient({ id }: { id: string }) {
                   </button>
                   <div className="justify-self-center flex items-center gap-1.5">
                     <span className="text-xs text-muted">
-                      {currentPage} / {numPages > 0 ? (isPaid ? Math.min(numPages, MAX_FREE_PAGES) : numPages) : "?"}
+                      {showPreviewEnd
+                        ? "Preview selesai"
+                        : `${currentPage} / ${numPages > 0 ? (isPaid ? Math.min(numPages, MAX_FREE_PAGES) : numPages) : "?"}`}
                     </span>
                     <button
                       onClick={() => { persistPage(currentPage); setSaveFeedback(true); setTimeout(() => setSaveFeedback(false), 1500); }}
@@ -980,6 +1089,7 @@ export default function BookDetailClient({ id }: { id: string }) {
                       <BookmarkCheck className={`w-3.5 h-3.5 ${saveFeedback ? "fill-current" : ""}`} />
                       <span className="hidden sm:inline">{saveFeedback ? "Tersimpan" : "Simpan"}</span>
                     </button>
+                    {!showPreviewEnd && (
                     <button
                       onClick={() => { window.speechSynthesis?.cancel(); setTtsChunks([]); setTtsStatus("extracting"); setTtsMsg(`Mengekstrak halaman ${currentPage}...`); setTtsKey(k => k + 1); }}
                       className="flex items-center gap-0.5 px-2 py-1.5 text-xs font-medium rounded-lg bg-surface-dark text-muted hover:text-primary hover:bg-primary/10 transition-colors"
@@ -987,6 +1097,7 @@ export default function BookDetailClient({ id }: { id: string }) {
                       <Volume2 className="w-3.5 h-3.5" />
                       <span className="hidden sm:inline">Dengarkan</span>
                     </button>
+                    )}
                   </div>
                   <div className="justify-self-end flex items-center gap-1">
                     {isPaid && currentPage >= MAX_FREE_PAGES && numPages > 0 && (
@@ -1000,7 +1111,7 @@ export default function BookDetailClient({ id }: { id: string }) {
                     )}
                     <button
                       onClick={() => goPage(1)}
-                      disabled={numPages === 0 || (isPaid ? currentPage >= Math.min(numPages, MAX_FREE_PAGES) : currentPage >= numPages)}
+                      disabled={numPages === 0 || (isPaid ? currentPage >= Math.min(numPages, MAX_FREE_PAGES + 1) : currentPage >= numPages)}
                       className="flex items-center gap-0.5 px-2 py-1.5 text-xs font-medium rounded-lg bg-surface-dark text-muted hover:bg-border disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                     >
                       <span className="hidden sm:inline">Selanjutnya</span>
@@ -1019,7 +1130,9 @@ export default function BookDetailClient({ id }: { id: string }) {
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="glass rounded-2xl p-6 sm:p-8 max-w-md w-full border border-accent/20 shadow-2xl">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-foreground">Info Pembayaran</h3>
+              <h3 className="text-lg font-semibold text-foreground">
+                {paymentMode === "donate" ? "Dukung Penulis" : "Info Pembayaran"}
+              </h3>
               <button
                 onClick={() => setShowPaymentModal(false)}
                 className="p-1.5 rounded-xl text-muted hover:text-foreground hover:bg-surface-dark transition-colors"
@@ -1038,10 +1151,37 @@ export default function BookDetailClient({ id }: { id: string }) {
                 <p className="text-sm text-muted mt-1">a.n. YUVI ADS INDONESIA</p>
               </div>
 
+              {paymentMode === "donate" && (
+                <div className="bg-surface-dark rounded-xl p-4">
+                  <p className="text-sm text-muted mb-2">Pilih nominal dukungan</p>
+                  <div className="grid grid-cols-4 gap-2">
+                    {[5000, 10000, 25000, 50000].map((a) => (
+                      <button
+                        key={a}
+                        onClick={() => { setDonationAmount(a); setCustomDonation(""); }}
+                        className={`px-2 py-2 text-xs font-semibold rounded-xl transition-colors ${getDonationAmount() === a ? "bg-accent text-white" : "bg-surface text-muted hover:text-foreground hover:bg-border"}`}
+                      >
+                        {a.toLocaleString("id-ID")}
+                      </button>
+                    ))}
+                  </div>
+                  <input
+                    type="number"
+                    min={1000}
+                    placeholder="Nominal lain (Rp)..."
+                    value={customDonation}
+                    onChange={(e) => setCustomDonation(e.target.value)}
+                    className="mt-2 w-full px-3 py-2 bg-surface-dark border border-border rounded-xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent/40 transition-all"
+                  />
+                </div>
+              )}
+
               <div className="flex items-center justify-between text-sm px-1">
-                <span className="text-muted">Total Pembayaran</span>
+                <span className="text-muted">
+                  {paymentMode === "donate" ? "Nominal Dukungan" : "Total Pembayaran"}
+                </span>
                 <span className="font-semibold text-foreground">
-                  Rp {priceFormatted}
+                  Rp {paymentMode === "donate" ? getDonationAmount().toLocaleString("id-ID") : priceFormatted}
                 </span>
               </div>
 
@@ -1049,11 +1189,17 @@ export default function BookDetailClient({ id }: { id: string }) {
                 onClick={handlePaymentConfirm}
                 className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-green-600 text-white font-semibold rounded-xl hover:bg-green-700 transition-colors"
               >
+                <HeartHandshake className="w-4 h-4" />
                 Konfirmasi via WhatsApp
               </button>
 
               <p className="text-xs text-muted text-center">
                 Klik konfirmasi setelah transfer, lalu kirim bukti transfer via WhatsApp.
+              </p>
+
+              <p className="text-xs text-muted text-center flex items-center justify-center gap-1">
+                <Heart className="w-3 h-3 text-accent flex-shrink-0" />
+                Terima kasih! {paymentMode === "donate" ? "Dukungan Anda" : "Pembelian Anda"} sangat berarti bagi penulis.
               </p>
             </div>
           </div>

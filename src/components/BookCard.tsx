@@ -5,7 +5,7 @@ import { formatNumber } from "@/lib/format";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Eye, Lock, ShoppingCart, MessageCircle, BookOpen, Gem } from "lucide-react";
+import { Eye, Lock, ShoppingCart, MessageCircle, BookOpen, Gem, Heart } from "lucide-react";
 
 function getCommentCount(book: Book): number {
   if (!book.comment_count) return 0;
@@ -34,6 +34,7 @@ interface BookCardProps {
 export default function BookCard({ book, index = 0, onClick, isNew }: BookCardProps) {
   const showViews = book.views > 0;
   const showPurchased = book.is_paid && book.purchased > 0;
+  const showDonations = (book.donations ?? 0) > 0;
   const hasPromo = book.is_paid && (book.promo_price || 0) > 0 && (book.promo_price || 0) < (book.price || 25000);
   const commentCount = getCommentCount(book);
   const volumeCount = getVolumeCount(book);
@@ -126,6 +127,12 @@ export default function BookCard({ book, index = 0, onClick, isNew }: BookCardPr
                 <span className="text-[10px] text-muted flex items-center gap-0.5">
                   <ShoppingCart className="w-2.5 h-2.5" />
                   {formatNumber(book.purchased)}
+                </span>
+              )}
+              {showDonations && (
+                <span className="text-[10px] text-muted flex items-center gap-0.5">
+                  <Heart className="w-2.5 h-2.5" />
+                  {formatNumber(book.donations!)}
                 </span>
               )}
               {commentCount > 0 && (

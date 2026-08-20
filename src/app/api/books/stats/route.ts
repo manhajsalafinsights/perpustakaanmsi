@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "id and type are required" }, { status: 400 });
   }
 
-  const validTypes = ["views", "downloads", "purchased"];
+  const validTypes = ["views", "downloads", "purchased", "donations"];
   if (!validTypes.includes(type)) {
     return NextResponse.json({ error: "invalid type" }, { status: 400 });
   }

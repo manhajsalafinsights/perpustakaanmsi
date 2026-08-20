@@ -3,6 +3,11 @@
 -- ALTER TABLE books ADD COLUMN IF NOT EXISTS published_at TIMESTAMPTZ; 
 
 -- ============================================
+-- DONASI (2026-08-20): Dukung Penulis
+-- ============================================
+-- ALTER TABLE books ADD COLUMN IF NOT EXISTS donations INTEGER DEFAULT 0; 
+
+-- ============================================
 -- Catatan Penting: Tabel Admins
 -- ============================================
 -- Jalankan SQL berikut di Supabase SQL Editor:
