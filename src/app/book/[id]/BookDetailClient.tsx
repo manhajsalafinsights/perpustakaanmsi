@@ -143,10 +143,11 @@ export default function BookDetailClient({ id }: { id: string }) {
   const [commentRating, setCommentRating] = useState(0);
   const [submitting, setSubmitting] = useState(false);
 
-  const avgRating = comments.length
-    ? comments.reduce((sum, c) => sum + (c.rating || 0), 0) / comments.length
+  const ratedComments = comments.filter((c) => (c.rating || 0) > 0);
+  const avgRating = ratedComments.length
+    ? ratedComments.reduce((sum, c) => sum + (c.rating || 0), 0) / ratedComments.length
     : 0;
-  const ratingCount = comments.filter((c) => (c.rating || 0) > 0).length;
+  const ratingCount = ratedComments.length;
   const [loading, setLoading] = useState(true);
   const [showViewer, setShowViewer] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);

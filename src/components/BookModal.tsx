@@ -30,10 +30,11 @@ export default function BookModal({ book, isOpen, onClose }: BookModalProps) {
   const [submitting, setSubmitting] = useState(false);
   const [activeTab, setActiveTab] = useState<"detail" | "comments">("detail");
 
-  const avgRating = comments.length
-    ? comments.reduce((sum, c) => sum + (c.rating || 0), 0) / comments.length
+  const ratedComments = comments.filter((c) => (c.rating || 0) > 0);
+  const avgRating = ratedComments.length
+    ? ratedComments.reduce((sum, c) => sum + (c.rating || 0), 0) / ratedComments.length
     : 0;
-  const ratingCount = comments.filter((c) => (c.rating || 0) > 0).length;
+  const ratingCount = ratedComments.length;
 
   const fetchComments = useCallback(async (bookId: string) => {
     try {
