@@ -26,7 +26,12 @@ function stripPaidUrls(
 export async function GET(request: NextRequest) {
   await db()
     .from("books")
-    .update({ status: "published", published_at: new Date().toISOString() })
+    .update({
+      status: "published",
+      published_at: new Date().toISOString(),
+      promo_price: null,
+      promo_text: "",
+    })
     .eq("status", "scheduled")
     .lte("scheduled_at", new Date().toISOString());
 

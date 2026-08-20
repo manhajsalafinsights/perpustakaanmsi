@@ -754,7 +754,7 @@ export default function BookDetailClient({ id }: { id: string }) {
                 </div>
               )}
 
-              {isPaid && (
+              {isPaid && !isScheduled && (
                 <div className="glass rounded-2xl p-4 mb-4 sm:mb-6 border border-accent/20">
                   <p className="text-sm text-muted leading-relaxed">
                     <span className="font-semibold text-accent">Preview gratis:</span> Kamu bisa preview {MAX_FREE_PAGES} halaman pertama. Beli untuk membaca selengkapnya dan download PDF.
@@ -762,7 +762,7 @@ export default function BookDetailClient({ id }: { id: string }) {
                 </div>
               )}
 
-              {isPaid && !isScheduled && (
+              {isPaid && (
                 <>
                   <button
                     onClick={handleBuyWhatsApp}
