@@ -30,6 +30,8 @@ export interface Book {
   is_featured?: boolean;
   page_count?: number;
   comment_count: number | { count: number };
+  avg_rating?: number;
+  rating_count?: number;
   created_at: string;
   volumes?: BookVolume[];
 }

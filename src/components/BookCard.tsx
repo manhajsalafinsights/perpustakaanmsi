@@ -5,7 +5,7 @@ import { formatNumber } from "@/lib/format";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Eye, Lock, ShoppingCart, MessageCircle, BookOpen, Gem, Heart } from "lucide-react";
+import { Eye, Lock, ShoppingCart, MessageCircle, BookOpen, Gem, Heart, Star } from "lucide-react";
 
 function getCommentCount(book: Book): number {
   if (!book.comment_count) return 0;
@@ -141,6 +141,12 @@ export default function BookCard({ book, index = 0, onClick, isNew }: BookCardPr
                   {commentCount}
                 </span>
               )}
+              {book.avg_rating ? (
+                <span className="text-[10px] text-muted flex items-center gap-0.5">
+                  <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400" />
+                  {book.avg_rating.toFixed(1)}
+                </span>
+              ) : null}
             </div>
           </div>
         </div>

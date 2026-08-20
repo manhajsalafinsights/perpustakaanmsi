@@ -23,6 +23,34 @@ function stripPaidUrls(
   return cleaned;
 }
 
+async function attachAvgRatings(
+  books: Record<string, unknown>[]
+): Promise<Record<string, unknown>[]> {
+  try {
+    const { data } = await supabase
+      .from("comments")
+      .select("book_id, rating")
+      .gt("rating", 0);
+    if (!data || data.length === 0) return books;
+
+    const map = new Map<string, { sum: number; count: number }>();
+    for (const row of data) {
+      const entry = map.get(String(row.book_id)) || { sum: 0, count: 0 };
+      entry.sum += Number(row.rating) || 0;
+      entry.count += 1;
+      map.set(String(row.book_id), entry);
+    }
+
+    return books.map((b) => {
+      const entry = map.get(String(b.id));
+      if (!entry) return b;
+      return { ...b, avg_rating: entry.sum / entry.count, rating_count: entry.count };
+    });
+  } catch {
+    return books;
+  }
+}
+
 export async function GET(request: NextRequest) {
   await db()
     .from("books")
@@ -81,8 +109,10 @@ export async function GET(request: NextRequest) {
       (data as Record<string, unknown>).volumes = volumes || [];
     }
 
+    const enriched = (await attachAvgRatings([data as Record<string, unknown>]))[0];
+
     return NextResponse.json(
-      isAdmin ? data : stripPaidUrls(data as Record<string, unknown>, includeVolumes)
+      isAdmin ? enriched : stripPaidUrls(enriched, includeVolumes)
     );
   }
 
@@ -145,14 +175,18 @@ export async function GET(request: NextRequest) {
 
   if (featured) {
     const first = (data as unknown as Book[] | null)?.[0] ?? null;
+    const enriched =
+      (await attachAvgRatings(first ? [first as unknown as Record<string, unknown>] : []))[0] ?? null;
     return NextResponse.json(
-      isAdmin ? first : stripPaidUrls(first as Record<string, unknown> | null, includeVolumes)
+      isAdmin ? enriched : stripPaidUrls(enriched as Record<string, unknown> | null, includeVolumes)
     );
   }
 
-  const sanitized = isAdmin
+  const rawSanitized = isAdmin
     ? data
     : (data as unknown as Record<string, unknown>[]).map((b) => stripPaidUrls(b, includeVolumes));
+
+  const sanitized = await attachAvgRatings(rawSanitized as Record<string, unknown>[]);
 
   if (page) {
     return NextResponse.json({

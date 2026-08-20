@@ -3,6 +3,11 @@
 -- ALTER TABLE books ADD COLUMN IF NOT EXISTS published_at TIMESTAMPTZ; 
 
 -- ============================================
+-- RATING KOMENTAR (2026-08-20): Fitur bintang
+-- ============================================
+-- ALTER TABLE comments ADD COLUMN IF NOT EXISTS rating INTEGER DEFAULT 0;
+
+-- ============================================
 -- DONASI (2026-08-20): Dukung Penulis
 -- ============================================
 -- ALTER TABLE books ADD COLUMN IF NOT EXISTS donations INTEGER DEFAULT 0; 

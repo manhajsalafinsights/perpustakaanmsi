@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const { book_id, name, message } = await request.json();
+  const { book_id, name, message, rating } = await request.json();
 
   if (!book_id || !name || !message) {
     return NextResponse.json(
@@ -48,9 +48,12 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  const parsedRating = parseInt(rating, 10);
+  const safeRating = isNaN(parsedRating) ? 0 : Math.min(5, Math.max(0, parsedRating));
+
   const { data, error } = await supabase
     .from("comments")
-    .insert([{ book_id, name, message }])
+    .insert([{ book_id, name, message, rating: safeRating }])
     .select()
     .single();
 

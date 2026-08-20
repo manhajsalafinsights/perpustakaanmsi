@@ -5,9 +5,10 @@ import {
   Trash2, Loader2,
 } from "lucide-react";
 import ConfirmModal from "./ConfirmModal";
+import StarRating from "../StarRating";
 
 interface Comment {
-  id: string; book_id: string; name: string; message: string; created_at: string;
+  id: string; book_id: string; name: string; message: string; rating?: number; created_at: string;
   books?: { title: string };
 }
 
@@ -110,6 +111,9 @@ function CommentsSection() {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 mb-0.5">
                     <span className="text-sm font-medium text-foreground">{comment.name}</span>
+                    {(comment.rating || 0) > 0 && (
+                      <StarRating value={comment.rating || 0} size={11} />
+                    )}
                     <span className="text-xs text-muted">{new Date(comment.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}</span>
                   </div>
                   <p className={`text-sm text-muted ${isExpanded ? "" : "line-clamp-1"}`}>{isExpanded ? comment.message : preview}</p>

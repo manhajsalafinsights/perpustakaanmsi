@@ -7,6 +7,7 @@ import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import StarRating from "@/components/StarRating";
 
 const PdfViewer = dynamic(() => import("./PdfViewer"), { ssr: false });
 
@@ -127,6 +128,7 @@ interface Comment {
   book_id: string;
   name: string;
   message: string;
+  rating?: number;
   created_at: string;
 }
 
@@ -138,7 +140,13 @@ export default function BookDetailClient({ id }: { id: string }) {
   const [comments, setComments] = useState<Comment[]>([]);
   const [commentName, setCommentName] = useState("");
   const [commentMessage, setCommentMessage] = useState("");
+  const [commentRating, setCommentRating] = useState(0);
   const [submitting, setSubmitting] = useState(false);
+
+  const avgRating = comments.length
+    ? comments.reduce((sum, c) => sum + (c.rating || 0), 0) / comments.length
+    : 0;
+  const ratingCount = comments.filter((c) => (c.rating || 0) > 0).length;
   const [loading, setLoading] = useState(true);
   const [showViewer, setShowViewer] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -448,11 +456,13 @@ export default function BookDetailClient({ id }: { id: string }) {
           book_id: book.id,
           name: commentName.trim(),
           message: commentMessage.trim(),
+          rating: commentRating,
         }),
       });
       if (res.ok) {
         setCommentName("");
         setCommentMessage("");
+        setCommentRating(0);
         fetchComments(book.id);
       }
     } catch {
@@ -804,6 +814,12 @@ Dukung Pengembang
                   <h2 className="text-lg font-semibold text-foreground">
                     Komentar ({comments.length})
                   </h2>
+                  {ratingCount > 0 && (
+                    <span className="flex items-center gap-1 text-amber-400">
+                      <StarRating value={avgRating} size={14} />
+                      <span className="text-xs font-medium">{avgRating.toFixed(1)}</span>
+                    </span>
+                  )}
                 </div>
 
                 <form onSubmit={handleSubmitComment} className="space-y-3 mb-6">
@@ -814,6 +830,10 @@ Dukung Pengembang
                     onChange={(e) => setCommentName(e.target.value)}
                     className="w-full px-4 py-2.5 bg-surface-dark border border-border rounded-xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all"
                   />
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted">Rating:</span>
+                    <StarRating value={commentRating} onChange={setCommentRating} size={18} />
+                  </div>
                   <div className="flex gap-2">
                     <input
                       type="text"
@@ -851,6 +871,9 @@ Dukung Pengembang
                           <span className="text-sm font-medium text-foreground">
                             {comment.name}
                           </span>
+                          {(comment.rating || 0) > 0 && (
+                            <StarRating value={comment.rating || 0} size={11} />
+                          )}
                           <span className="text-xs text-muted ml-auto">
                             {new Date(comment.created_at).toLocaleDateString("id-ID", {
                               day: "numeric",

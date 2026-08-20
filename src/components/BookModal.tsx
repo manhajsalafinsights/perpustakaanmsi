@@ -5,12 +5,14 @@ import { Book } from "@/lib/types";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, BookOpen, Download, Tag, MessageCircle, Send, User } from "lucide-react";
+import StarRating from "./StarRating";
 
 interface Comment {
   id: string;
   book_id: string;
   name: string;
   message: string;
+  rating?: number;
   created_at: string;
 }
 
@@ -24,8 +26,14 @@ export default function BookModal({ book, isOpen, onClose }: BookModalProps) {
   const [comments, setComments] = useState<Comment[]>([]);
   const [commentName, setCommentName] = useState("");
   const [commentMessage, setCommentMessage] = useState("");
+  const [commentRating, setCommentRating] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [activeTab, setActiveTab] = useState<"detail" | "comments">("detail");
+
+  const avgRating = comments.length
+    ? comments.reduce((sum, c) => sum + (c.rating || 0), 0) / comments.length
+    : 0;
+  const ratingCount = comments.filter((c) => (c.rating || 0) > 0).length;
 
   const fetchComments = useCallback(async (bookId: string) => {
     try {
@@ -45,6 +53,7 @@ export default function BookModal({ book, isOpen, onClose }: BookModalProps) {
       fetchComments(book.id);
       setCommentName("");
       setCommentMessage("");
+      setCommentRating(0);
     }
   }, [isOpen, book, fetchComments]);
 
@@ -61,12 +70,14 @@ export default function BookModal({ book, isOpen, onClose }: BookModalProps) {
           book_id: book.id,
           name: commentName.trim(),
           message: commentMessage.trim(),
+          rating: commentRating,
         }),
       });
 
       if (res.ok) {
         setCommentName("");
         setCommentMessage("");
+        setCommentRating(0);
         fetchComments(book.id);
       }
     } catch {
@@ -170,6 +181,12 @@ export default function BookModal({ book, isOpen, onClose }: BookModalProps) {
                 >
                   <MessageCircle className="w-4 h-4" />
                   Komentar ({comments.length})
+                  {ratingCount > 0 && (
+                    <span className="flex items-center gap-1 text-amber-400">
+                      <StarRating value={avgRating} size={12} />
+                      <span className="text-xs">{avgRating.toFixed(1)}</span>
+                    </span>
+                  )}
                 </button>
               </div>
 
@@ -216,6 +233,10 @@ export default function BookModal({ book, isOpen, onClose }: BookModalProps) {
                         className="flex-1 px-4 py-2.5 bg-surface-dark border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all"
                       />
                     </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-muted">Rating:</span>
+                      <StarRating value={commentRating} onChange={setCommentRating} size={18} />
+                    </div>
                     <div className="flex gap-2">
                       <input
                         type="text"
@@ -253,6 +274,9 @@ export default function BookModal({ book, isOpen, onClose }: BookModalProps) {
                             <span className="text-sm font-medium text-foreground">
                               {comment.name}
                             </span>
+                            {(comment.rating || 0) > 0 && (
+                              <StarRating value={comment.rating || 0} size={11} />
+                            )}
                             <span className="text-xs text-muted ml-auto">
                               {new Date(comment.created_at).toLocaleDateString("id-ID", {
                                 day: "numeric",
