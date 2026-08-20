@@ -27,15 +27,6 @@ async function fetchPdfStream(fileId: string): Promise<Response | null> {
     const response = await fetch(downloadUrl);
 
     const contentType = response.headers.get("content-type") || "";
-    if (
-      contentType.includes("application/pdf") ||
-      contentType.includes("application/octet-stream") ||
-      contentType.includes("binary") ||
-      response.ok
-    ) {
-      return response;
-    }
-
     if (contentType.includes("text/html")) {
       const html = await response.text();
       const confirmMatch = html.match(/confirm=([^&\s"']+)/);
@@ -44,6 +35,15 @@ async function fetchPdfStream(fileId: string): Promise<Response | null> {
         const confirmResponse = await fetch(confirmUrl);
         return confirmResponse;
       }
+    }
+
+    if (
+      contentType.includes("application/pdf") ||
+      contentType.includes("application/octet-stream") ||
+      contentType.includes("binary") ||
+      response.ok
+    ) {
+      return response;
     }
 
     await new Promise((r) => setTimeout(r, 800 * (attempt + 1)));
