@@ -783,7 +783,7 @@ export default function BookDetailClient({ id }: { id: string }) {
                   <div className="flex items-start gap-2.5 text-xs text-muted leading-relaxed">
                     <HeartHandshake className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" />
                     <span>
-                      Buku ini gratis untuk dibaca. Dukung penulis agar terus
+                      Buku ini gratis untuk dibaca. Dukung pengembang agar terus
                       berkarya dengan donasi sukarela.
                     </span>
                   </div>
